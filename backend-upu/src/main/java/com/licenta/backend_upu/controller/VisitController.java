@@ -33,12 +33,18 @@ public class VisitController {
                 .toList();
     }
 
+
+
     @PatchMapping("/{id}/status")
     public VisitResponse updateVisitStatus(@PathVariable Long id,
                                            @RequestBody VisitStatusUpdateRequest request) {
         Visit updated = visitService.updateVisistStatus(id, request.getStatus());
         return visitMapper.toResponse(updated);
     }
+
+
+
+
 
     @GetMapping("/patient/{patientId}")
     public List<VisitResponse> getVisitsByPatient(@PathVariable Long patientId) {
