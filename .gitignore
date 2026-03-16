@@ -1,0 +1,12 @@
+# backend generated files
+backend-upu/storage/
+
+# frontend
+**/node_modules/
+**/.vite/
+**/dist/
+**/build/
+coverage/
+
+# PDFs
+*.pdf

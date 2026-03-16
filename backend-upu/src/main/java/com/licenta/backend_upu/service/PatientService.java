@@ -19,4 +19,8 @@ public class PatientService {
     public List<Patient> getAllPatients(){
         return patientRepository.findAll();
     }
+    public Patient getById(Long id){
+        return patientRepository.findById(id)
+                .orElseThrow(()->new RuntimeException("Pacientul nu a fost gasit cu id: " + id));
+    }
 }

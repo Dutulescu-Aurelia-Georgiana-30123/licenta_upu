@@ -26,4 +26,7 @@ public class Patient {
 
     @Column(nullable = false, unique = true)
     private String cnp;
+
+    @Column(nullable = false, unique = true)
+    private String email;
 }

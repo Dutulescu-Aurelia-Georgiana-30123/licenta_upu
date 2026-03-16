@@ -30,9 +30,6 @@ public class DischargeFormController {
         return mapper.toResponse(service.getByVisitId(visitId));
     }
 
-    @PostMapping("/export")
-    public ArchivedDocumentResponse exportPdf(@PathVariable Long visitId) throws Exception {
-        return archivedDocumentMapper.toResponse(exportService.exportDischargePdf(visitId));
-    }
+
 
 }
