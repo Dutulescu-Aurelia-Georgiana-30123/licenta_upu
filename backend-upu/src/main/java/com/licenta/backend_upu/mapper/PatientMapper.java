@@ -16,6 +16,7 @@ public class PatientMapper {
         p.setPhoneNumber(request.getPhoneNumber());
         p.setCnp(request.getCnp());
         p.setEmail(request.getEmail());
+        p.setCnp(request.getCnp());
         return p;
     }
 
@@ -26,6 +27,7 @@ public class PatientMapper {
         r.setLastName(patient.getLastName());
         r.setPhoneNumber(patient.getPhoneNumber());
         r.setEmail(patient.getEmail());
+        r.setCnp(patient.getCnp());
         return r;
     }
 
