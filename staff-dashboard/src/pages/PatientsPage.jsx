@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useState } from "react";
 import { apiGet, apiPost } from "../api/api";
 
-export default function PatientsPage() {
+export default function PatientsPage({ onVisitCreated }) {
   const [patients, setPatients] = useState([]);
   const [error, setError] = useState("");
   const [search, setSearch] = useState("");
@@ -11,10 +11,9 @@ export default function PatientsPage() {
   const [form, setForm] = useState({
     firstName: "",
     lastName: "",
-    cnp:"",
+    cnp: "",
     phoneNumber: "",
     email: "",
-
   });
 
   const load = async () => {
@@ -53,7 +52,7 @@ export default function PatientsPage() {
       setForm({
         firstName: "",
         lastName: "",
-        cnp:"",
+        cnp: "",
         phoneNumber: "",
         email: "",
       });
@@ -61,6 +60,21 @@ export default function PatientsPage() {
       load();
     } catch (e) {
       setError(`Eroare creare pacient: ${e}`);
+    }
+  };
+
+  const createVisit = async (patientId) => {
+    setMsg("");
+    setError("");
+
+    try {
+      const createdVisit = await apiPost("/visits", { patientId });
+
+      if (onVisitCreated) {
+        onVisitCreated(createdVisit);
+      }
+    } catch (e) {
+      setError(`Eroare creare vizită: ${e}`);
     }
   };
 
@@ -147,14 +161,15 @@ export default function PatientsPage() {
                 style={{ width: "100%", padding: 8, marginTop: 6 }}
               />
             </label>
+
             <label>
-  CNP
-  <input
-    value={form.cnp}
-    onChange={(e) => setForm({ ...form, cnp: e.target.value })}
-    style={{ width: "100%", padding: 8, marginTop: 6 }}
-  />
-</label>
+              CNP
+              <input
+                value={form.cnp}
+                onChange={(e) => setForm({ ...form, cnp: e.target.value })}
+                style={{ width: "100%", padding: 8, marginTop: 6 }}
+              />
+            </label>
 
             <label>
               Telefon
@@ -193,12 +208,13 @@ export default function PatientsPage() {
         >
           <thead>
             <tr style={{ background: "#151515" }}>
-              <th style={{ border: "1px solid #333", padding: 10, textAlign: "left" }}>ID</th>
-              <th style={{ border: "1px solid #333", padding: 10, textAlign: "left" }}>Prenume</th>
-              <th style={{ border: "1px solid #333", padding: 10, textAlign: "left" }}>Nume</th>
-              <th style={{ border: "1px solid #333", padding: 10, textAlign: "left" }}>CNP</th>
-              <th style={{ border: "1px solid #333", padding: 10, textAlign: "left" }}>Telefon</th>
-              <th style={{ border: "1px solid #333", padding: 10, textAlign: "left" }}>Email</th>
+              <th style={{ border: "1px solid #333", padding: 10 }}>ID</th>
+              <th style={{ border: "1px solid #333", padding: 10 }}>Prenume</th>
+              <th style={{ border: "1px solid #333", padding: 10 }}>Nume</th>
+              <th style={{ border: "1px solid #333", padding: 10 }}>CNP</th>
+              <th style={{ border: "1px solid #333", padding: 10 }}>Telefon</th>
+              <th style={{ border: "1px solid #333", padding: 10 }}>Email</th>
+              <th style={{ border: "1px solid #333", padding: 10 }}>Acțiuni</th>
             </tr>
           </thead>
           <tbody>
@@ -210,20 +226,21 @@ export default function PatientsPage() {
                 <td style={{ border: "1px solid #333", padding: 10 }}>{p.cnp || "-"}</td>
                 <td style={{ border: "1px solid #333", padding: 10 }}>{p.phoneNumber || "-"}</td>
                 <td style={{ border: "1px solid #333", padding: 10 }}>{p.email || "-"}</td>
+
+                <td style={{ border: "1px solid #333", padding: 10 }}>
+                  <button
+                    onClick={() => createVisit(p.id)}
+                    style={{ padding: "6px 10px", cursor: "pointer" }}
+                  >
+                    Creează vizită
+                  </button>
+                </td>
               </tr>
             ))}
 
             {filteredPatients.length === 0 && (
               <tr>
-                <td
-                  colSpan="6"
-                  style={{
-                    border: "1px solid #333",
-                    padding: 14,
-                    textAlign: "center",
-                    color: "#aaa",
-                  }}
-                >
+                <td colSpan="7" style={{ textAlign: "center", padding: 14, color: "#aaa" }}>
                   Nu există pacienți.
                 </td>
               </tr>

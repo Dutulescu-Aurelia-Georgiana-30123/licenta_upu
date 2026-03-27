@@ -12,11 +12,35 @@ export default function App() {
 
   const content = useMemo(() => {
     if (activePage === "home") return <HomePage />;
-    if (activePage === "patients") return <PatientsPage />;
+    if (activePage === "patients") {
+  return (
+    <PatientsPage
+      onVisitCreated={(visit) => {
+        setSelectedVisit(visit);
+        setActivePage("forms");
+      }}
+    />
+  );
+}
     if (activePage === "visits") {
-      return <VisitsPage selected={selectedVisit} onSelect={setSelectedVisit} />;
-    }
-    if (activePage === "forms") return <FormsPage selected={selectedVisit} />;
+  return (
+    <VisitsPage
+      selected={selectedVisit}
+      onSelect={(visit) => {
+        setSelectedVisit(visit);
+        setActivePage("forms");
+      }}
+    />
+  );
+}
+    if (activePage === "forms") {
+  return (
+    <FormsPage
+      selected={selectedVisit}
+      onSelectVisit={setSelectedVisit}
+    />
+  );
+}
     if (activePage === "archive") return <ArchivePage selected={selectedVisit} />;
     return null;
   }, [activePage, selectedVisit]);

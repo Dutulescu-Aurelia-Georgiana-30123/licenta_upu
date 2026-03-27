@@ -10,64 +10,71 @@ function formatDateTime(value) {
   return d.toLocaleString("ro-RO");
 }
 
+function getStatusLabel(status) {
+  const labels = {
+    REGISTERED: "Înregistrat",
+    WAITING_TRIAGE: "În așteptare triaj",
+    TRIAGE_DONE: "Triaj efectuat",
+    WAITING_CONSULT: "În așteptare consult",
+    IN_CONSULT: "În consult",
+    IN_INVESTIGATION: "În investigații",
+    OBSERVATION: "În observație",
+    DISCHARGED: "Externat",
+    ADMITTED: "Internat",
+    TRANSFERRED: "Transferat",
+  };
+
+  return labels[status] || status || "-";
+}
+
 function StatusBadge({ status }) {
   const stylesByStatus = {
     REGISTERED: {
-      label: "REGISTERED",
       background: "#3a2f1a",
       color: "#ffd166",
       border: "#6b5621",
     },
     WAITING_TRIAGE: {
-      label: "WAITING_TRIAGE",
       background: "#2f2f2f",
       color: "#d1d5db",
       border: "#4b5563",
     },
     TRIAGE_DONE: {
-      label: "TRIAGE_DONE",
       background: "#1f3a5f",
       color: "#93c5fd",
       border: "#3b82f6",
     },
     WAITING_CONSULT: {
-      label: "WAITING_CONSULT",
       background: "#4a3410",
       color: "#fcd34d",
       border: "#b45309",
     },
     IN_CONSULT: {
-      label: "IN_CONSULT",
       background: "#0f3d2e",
       color: "#6ee7b7",
       border: "#10b981",
     },
     IN_INVESTIGATION: {
-      label: "IN_INVESTIGATION",
       background: "#312e81",
       color: "#c4b5fd",
       border: "#8b5cf6",
     },
     OBSERVATION: {
-      label: "OBSERVATION",
       background: "#3f1d5c",
       color: "#e9d5ff",
       border: "#a855f7",
     },
     DISCHARGED: {
-      label: "DISCHARGED",
       background: "#16351f",
       color: "#86efac",
       border: "#22c55e",
     },
     ADMITTED: {
-      label: "ADMITTED",
       background: "#0f2f46",
       color: "#7dd3fc",
       border: "#0ea5e9",
     },
     TRANSFERRED: {
-      label: "TRANSFERRED",
       background: "#4a1d1d",
       color: "#fca5a5",
       border: "#ef4444",
@@ -75,7 +82,6 @@ function StatusBadge({ status }) {
   };
 
   const config = stylesByStatus[status] || {
-    label: status || "-",
     background: "#222",
     color: "#ddd",
     border: "#444",
@@ -95,7 +101,7 @@ function StatusBadge({ status }) {
         whiteSpace: "nowrap",
       }}
     >
-      {config.label}
+      {getStatusLabel(status)}
     </span>
   );
 }
@@ -211,7 +217,7 @@ export default function VisitsPage({ selected, onSelect }) {
         >
           {statuses.map((status) => (
             <option key={status} value={status}>
-              {status === "ALL" ? "Toate statusurile" : status}
+              {status === "ALL" ? "Toate statusurile" : getStatusLabel(status)}
             </option>
           ))}
         </select>
@@ -244,10 +250,10 @@ export default function VisitsPage({ selected, onSelect }) {
           <thead>
             <tr style={{ background: "#151515" }}>
               <th style={{ border: "1px solid #333", padding: 10, textAlign: "left" }}>ID</th>
-              <th style={{ border: "1px solid #333", padding: 10, textAlign: "left" }}>Visit Code</th>
+              <th style={{ border: "1px solid #333", padding: 10, textAlign: "left" }}>Cod vizită</th>
               <th style={{ border: "1px solid #333", padding: 10, textAlign: "left" }}>Pacient</th>
               <th style={{ border: "1px solid #333", padding: 10, textAlign: "left" }}>Status</th>
-              <th style={{ border: "1px solid #333", padding: 10, textAlign: "left" }}>Created At</th>
+              <th style={{ border: "1px solid #333", padding: 10, textAlign: "left" }}>Creat la</th>
             </tr>
           </thead>
           <tbody>
