@@ -35,7 +35,7 @@ public class VisitController {
 
 
 
-    @PatchMapping("/{id}/status")
+    @PutMapping("/{id}/status")
     public VisitResponse updateVisitStatus(@PathVariable Long id,
                                            @RequestBody VisitStatusUpdateRequest request) {
         Visit updated = visitService.updateVisistStatus(id, request.getStatus());

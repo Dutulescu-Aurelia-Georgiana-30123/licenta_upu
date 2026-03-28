@@ -34,8 +34,7 @@ public class PreHospitalizationFormService {
         return repo.save(form);
     }
     public PreHospitalizationForm getByVisitId(Long visitId) {
-        return repo.findByVisitId(visitId)
-                .orElseThrow(()-> new RuntimeException("Nu exista fisa de pre-spitalizare pentru vizita: " + visitId));
+        return repo.findByVisitId(visitId).orElse(null);
     }
 
 }
