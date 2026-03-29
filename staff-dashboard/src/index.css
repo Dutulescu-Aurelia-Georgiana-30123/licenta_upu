@@ -17,3 +17,21 @@ body,
 body {
   font-family: Arial, sans-serif;
 }
+@media print {
+  body * {
+    visibility: hidden;
+  }
+
+  #combined-print-area,
+  #combined-print-area * {
+    visibility: visible;
+  }
+
+  #combined-print-area {
+    position: absolute;
+    left: 0;
+    top: 0;
+    width: 100%;
+    background: white;
+  }
+}
