@@ -7,17 +7,15 @@ import org.springframework.stereotype.Component;
 @Component
 public class ArchivedDocumentMapper {
 
-    public ArchivedDocumentResponse toResponse(ArchivedDocument d){
-        ArchivedDocumentResponse r =new ArchivedDocumentResponse();
-        r.setId(d.getId());
-        r.setVisitId(d.getVisit().getId());
-        r.setPatientId(d.getVisit().getPatient().getId());
-
-        r.setDocumentType(d.getDocumentType().name());
-        r.setFileName(d.getFileName());
-        r.setContentType(d.getContentType());
-        r.setCreatedAt(d.getCreatedAt());
+    public ArchivedDocumentResponse toResponse(ArchivedDocument doc) {
+        ArchivedDocumentResponse r = new ArchivedDocumentResponse();
+        r.setId(doc.getId());
+        r.setVisitId(doc.getVisit() != null ? doc.getVisit().getId() : null);
+        r.setDocumentType(doc.getDocumentType() != null ? doc.getDocumentType().name() : null);
+        r.setFileName(doc.getFileName());
+        r.setContentType(doc.getContentType());
+        r.setStoragePath(doc.getStoragePath());
+        r.setCreatedAt(doc.getCreatedAt());
         return r;
     }
-
 }

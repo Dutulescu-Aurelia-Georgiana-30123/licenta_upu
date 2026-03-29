@@ -8,11 +8,9 @@ import java.time.LocalDateTime;
 public class ArchivedDocumentResponse {
     private Long id;
     private Long visitId;
-    private Long patientId;
-
     private String documentType;
     private String fileName;
     private String contentType;
-
+    private String storagePath;
     private LocalDateTime createdAt;
 }
