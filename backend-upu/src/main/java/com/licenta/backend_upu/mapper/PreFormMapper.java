@@ -4,7 +4,6 @@ import com.licenta.backend_upu.dto.PreFormResponse;
 import com.licenta.backend_upu.dto.PreFormUpsertRequest;
 import com.licenta.backend_upu.entity.*;
 import org.springframework.stereotype.Component;
-
 @Component
 public class PreFormMapper {
     public void applyToEntity(PreFormUpsertRequest req, PreHospitalizationForm e) {
@@ -168,6 +167,9 @@ public class PreFormMapper {
     }
 
     public PreFormResponse toResponse(PreHospitalizationForm e) {
+        if (e == null) {
+            return null;
+        }
         PreFormResponse r = new PreFormResponse();
         r.setId(e.getId());
         r.setVisitId(e.getVisit().getId());

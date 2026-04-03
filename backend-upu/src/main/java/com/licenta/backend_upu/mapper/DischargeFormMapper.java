@@ -50,6 +50,9 @@ public class DischargeFormMapper {
         e.setDetails(req.getDetails());
     }
     public DischargeFormResponse toResponse(DischargeForm e){
+        if (e == null) {
+            return null;
+        }
         DischargeFormResponse r=new DischargeFormResponse();
         r.setId(e.getId());
         r.setVisitId(e.getVisit().getId());

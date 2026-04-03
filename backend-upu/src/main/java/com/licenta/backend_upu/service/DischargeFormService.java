@@ -37,8 +37,8 @@ public class DischargeFormService {
     }
 
     public DischargeForm getByVisitId(Long visitId) {
-        return repo.findByVisitId(visitId)
-                .orElseThrow(()->new RuntimeException("Nu exista fisa de externare pentru vizita: " + visitId));
+        return repo.findByVisitId(visitId).orElse(null);
+
     }
 
 }
