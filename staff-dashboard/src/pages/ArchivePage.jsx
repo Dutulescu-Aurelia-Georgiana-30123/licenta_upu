@@ -4,8 +4,8 @@ import { apiGet } from "../api/api";
 function getDocumentTypeLabel(type) {
   const labels = {
     COMBINED_VISIT_PDF: "PDF fișe combinate",
-    PREHOSPITALIZATION_PDF: "PDF pre-spitalizare",
-    DISCHARGE_PDF: "PDF externare",
+    PRE_FORM_PDF: "PDF pre-spitalizare",
+    DISCHARGE_FORM_PDF: "PDF externare",
   };
 
   return labels[type] || type || "-";

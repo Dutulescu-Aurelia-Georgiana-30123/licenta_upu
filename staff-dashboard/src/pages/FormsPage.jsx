@@ -6,8 +6,9 @@ import PatientDetailsPanel from "../components/forms/PatientDetailsPanel";
 import FormsToolbar from "../components/forms/FormsToolbar";
 import PreformSection from "../components/forms/PreformSection";
 import DischargeSection from "../components/forms/DischargeSection";
-import PreformPrintView from "../components/forms/PreformPrintView";
+import PreformPrintView from "../components/forms/PreFormPrintView";
 import DischargePrintView from "../components/forms/DischargePrintView";
+import html2pdf from "html2pdf.js";
 
 export default function FormsPage({ selected, onSelectVisit }) {
   const [searchMode, setSearchMode] = useState(false);
@@ -518,49 +519,86 @@ export default function FormsPage({ selected, onSelectVisit }) {
   };
 
   const exportCombined = async () => {
-    if (!selected) return;
-    setMsg("");
+  if (!selected) return;
 
+  setMsg("Se generează PDF...");
+  setCombinedPrintMode(true);
+
+  setTimeout(async () => {
     try {
-      const doc = await apiPost(`/visits/${selected.id}/export/combined`);
+      const element = document.getElementById("print-area");
 
-      if (!doc?.id) {
-        throw new Error("Răspuns invalid de la server: lipsește id-ul documentului");
+      if (!element) {
+        throw new Error("Zona de print nu a fost găsită.");
       }
 
-      const response = await fetch(`http://localhost:8081/archived-documents/${doc.id}/download`, {
-        method: "GET",
+      const opt = {
+        margin: 0.4,
+        filename: `visit_${selected.id}.pdf`,
+        image: { type: "jpeg", quality: 0.85 },
+        html2canvas: { scale: 1.2, useCORS: true },
+        jsPDF: { unit: "cm", format: "a4", orientation: "portrait" },
+      };
+
+      const pdfBlob = await html2pdf()
+        .set(opt)
+        .from(element)
+        .outputPdf("blob");
+
+      const formData = new FormData();
+      formData.append("file", pdfBlob, `visit_${selected.id}.pdf`);
+      formData.append("visitId", selected.id);
+
+      const response = await fetch("http://localhost:8081/archived-documents/upload", {
+        method: "POST",
+        body: formData,
       });
 
       if (!response.ok) {
-        throw new Error("Nu s-a putut descărca PDF-ul");
+        const text = await response.text();
+        throw new Error(`Upload eșuat: ${response.status} ${text}`);
       }
 
-      const blob = await response.blob();
-      const url = window.URL.createObjectURL(blob);
-
-      const a = document.createElement("a");
-      a.href = url;
-      a.download = doc.fileName || `combined_visit_${selected.id}.pdf`;
-      document.body.appendChild(a);
-      a.click();
-      a.remove();
-
-      window.URL.revokeObjectURL(url);
-
-      setMsg("PDF generat.");
+      setMsg("PDF salvat în arhivă.");
     } catch (e) {
-      setMsg(`Eroare export: ${e.message || e}`);
+      console.error("Eroare exportCombined:", e);
+      setMsg(`Eroare export PDF: ${e.message || e}`);
     }
-  };
+  }, 500);
+};
+   
 
-  const handlePrintCombined = () => {
-    setCombinedPrintMode(true);
+  const handlePrintCombined = async () => {
+  if (!selected) return;
 
-    setTimeout(() => {
-      window.print();
-    }, 200);
-  };
+  setMsg("Se generează PDF pentru descărcare...");
+  setCombinedPrintMode(true);
+
+  setTimeout(async () => {
+    try {
+      const element = document.getElementById("print-area");
+
+      if (!element) {
+        throw new Error("Zona de print nu a fost găsită.");
+      }
+
+      const opt = {
+        margin: 0.4,
+        filename: `fise_vizita_${selected.id}.pdf`,
+        image: { type: "jpeg", quality: 0.9 },
+        html2canvas: { scale: 1.2, useCORS: true },
+        jsPDF: { unit: "cm", format: "a4", orientation: "portrait" },
+      };
+
+      await html2pdf().set(opt).from(element).save();
+
+      setMsg("PDF descărcat.");
+    } catch (e) {
+      console.error("Eroare descarcare PDF:", e);
+      setMsg(`Eroare la descărcarea PDF-ului: ${e.message || e}`);
+    }
+  }, 500);
+};
 
   const searchPatients = async () => {
     if (!search.trim()) {
@@ -664,13 +702,12 @@ export default function FormsPage({ selected, onSelectVisit }) {
             </button>
           </div>
 
-          {combinedPrintMode && (
-            <div id="combined-print-area" style={{ marginTop: 16 }}>
-              <PreformPrintView preform={preform} />
-              <div style={{ pageBreakBefore: "always", marginTop: 24 }} />
-              <DischargePrintView discharge={discharge} preform={preform} />
-            </div>
-          )}
+         {combinedPrintMode && (
+  <div id="print-area">
+    <PreformPrintView preform={preform} />
+    <DischargePrintView discharge={discharge} preform={preform} />
+  </div>
+)}
 
           <div style={{ display: "grid", gap: 14, marginTop: 14 }}>
             <PreformSection
