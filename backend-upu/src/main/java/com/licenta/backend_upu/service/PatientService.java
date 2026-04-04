@@ -23,4 +23,16 @@ public class PatientService {
         return patientRepository.findById(id)
                 .orElseThrow(()->new RuntimeException("Pacientul nu a fost gasit cu id: " + id));
     }
+    public Patient updatePatient(Long id, Patient updatedPatient) {
+        Patient existing = patientRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("Pacientul nu a fost gasit cu id: " + id));
+
+        existing.setFirstName(updatedPatient.getFirstName());
+        existing.setLastName(updatedPatient.getLastName());
+        existing.setCnp(updatedPatient.getCnp());
+        existing.setPhoneNumber(updatedPatient.getPhoneNumber());
+        existing.setEmail(updatedPatient.getEmail());
+
+        return patientRepository.save(existing);
+    }
 }

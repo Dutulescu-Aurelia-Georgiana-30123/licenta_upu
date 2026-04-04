@@ -1,7 +1,6 @@
 package com.licenta.backend_upu.controller;
 
 import com.licenta.backend_upu.dto.PatientCreateRequest;
-import com.licenta.backend_upu.dto.PatientDetailsResponse;
 import com.licenta.backend_upu.dto.PatientResponse;
 import com.licenta.backend_upu.entity.Patient;
 import com.licenta.backend_upu.mapper.PatientMapper;
@@ -33,8 +32,12 @@ public class PatientController {
     }
 
     @GetMapping("/{id}")
-    public PatientDetailsResponse getPatientById(@PathVariable Long id){
-            return patientMapper.toDetailsResponse(patientService.getById(id));
+    public PatientResponse getPatientById(@PathVariable Long id){
+            return patientMapper.toResponse(patientService.getById(id));
     }
-
+    @PutMapping("/{id}")
+    public PatientResponse updatePatient(@PathVariable Long id, @RequestBody PatientCreateRequest request) {
+        Patient updated = patientService.updatePatient(id, patientMapper.toEntity(request));
+        return patientMapper.toResponse(updated);
+    }
 }

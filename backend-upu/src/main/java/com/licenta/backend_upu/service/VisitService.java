@@ -17,42 +17,43 @@ public class VisitService {
     private final VisitRepository visitRepository;
     private final PatientRepository patientRepository;
 
-    public Visit createVisit(Long patientId){
+    public Visit createVisit(Long patientId) {
         Patient patient = patientRepository.findById(patientId)
-                .orElseThrow(() -> new RuntimeException("Pacientul nu a fost gasit cu id: "+ patientId));
+                .orElseThrow(() -> new RuntimeException("Pacientul nu a fost gasit cu id: " + patientId));
 
         Visit visit = new Visit();
         visit.setPatient(patient);
-        visit.setVisitCode(generateVisitCode());
         visit.setStatus(VisitStatus.REGISTERED);
         visit.setCreatedAt(LocalDateTime.now());
+
+        visit = visitRepository.save(visit);
+
+        visit.setVisitCode(generateVisitCode(visit.getId()));
 
         return visitRepository.save(visit);
     }
 
-    public List<Visit> getAllVisits(){
+    private String generateVisitCode(Long id) {
+        return "UPU-" + String.format("%04d", id);
+    }
+
+    public List<Visit> getAllVisits() {
         return visitRepository.findAll();
     }
 
-    private String generateVisitCode(){
-        return "UPU-" + System.currentTimeMillis();
+    public Visit updateVisistStatus(Long visitId, String status) {
+        Visit visit = visitRepository.findById(visitId)
+                .orElseThrow(() -> new RuntimeException("Vizita nu a fost gasita cu id" + visitId));
+        try {
+            VisitStatus newStatus = VisitStatus.valueOf(status.toUpperCase());
+            visit.setStatus(newStatus);
+        } catch (IllegalArgumentException e) {
+            throw new RuntimeException("Status invalid: " + status);
+        }
+        return visitRepository.save(visit);
     }
 
-    public Visit updateVisistStatus(Long visitId, String status){
-        Visit visit=visitRepository.findById(visitId)
-                .orElseThrow(() -> new RuntimeException("Vizita nu a fost gasita cu id"+visitId));
-            try
-            {
-                VisitStatus newStatus=VisitStatus.valueOf(status.toUpperCase());
-                visit.setStatus(newStatus);
-            } catch (IllegalArgumentException e) {
-                throw new RuntimeException("Status invalid: "+status);
-            }
-            return visitRepository.save(visit);
-    }
-
-    public List<Visit> getVisitByPatient(Long patientId){
+    public List<Visit> getVisitByPatient(Long patientId) {
         return visitRepository.findByPatient_IdOrderByCreatedAtDesc(patientId);
     }
-
 }

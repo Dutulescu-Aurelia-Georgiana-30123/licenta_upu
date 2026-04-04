@@ -2,7 +2,6 @@ package com.licenta.backend_upu.mapper;
 
 
 import com.licenta.backend_upu.dto.PatientCreateRequest;
-import com.licenta.backend_upu.dto.PatientDetailsResponse;
 import com.licenta.backend_upu.dto.PatientResponse;
 import com.licenta.backend_upu.entity.Patient;
 import org.springframework.stereotype.Component;
@@ -16,23 +15,11 @@ public class PatientMapper {
         p.setPhoneNumber(request.getPhoneNumber());
         p.setCnp(request.getCnp());
         p.setEmail(request.getEmail());
-        p.setCnp(request.getCnp());
         return p;
     }
 
     public PatientResponse toResponse(Patient patient) {
         PatientResponse r = new PatientResponse();
-        r.setId(patient.getId());
-        r.setFirstName(patient.getFirstName());
-        r.setLastName(patient.getLastName());
-        r.setPhoneNumber(patient.getPhoneNumber());
-        r.setEmail(patient.getEmail());
-        r.setCnp(patient.getCnp());
-        return r;
-    }
-
-    public PatientDetailsResponse toDetailsResponse(Patient patient) {
-        PatientDetailsResponse r = new PatientDetailsResponse();
         r.setId(patient.getId());
         r.setFirstName(patient.getFirstName());
         r.setLastName(patient.getLastName());

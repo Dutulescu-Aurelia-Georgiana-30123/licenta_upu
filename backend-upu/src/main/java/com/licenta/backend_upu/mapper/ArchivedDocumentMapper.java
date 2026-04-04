@@ -14,7 +14,6 @@ public class ArchivedDocumentMapper {
         r.setDocumentType(doc.getDocumentType() != null ? doc.getDocumentType().name() : null);
         r.setFileName(doc.getFileName());
         r.setContentType(doc.getContentType());
-        r.setStoragePath(doc.getStoragePath());
         r.setCreatedAt(doc.getCreatedAt());
         return r;
     }

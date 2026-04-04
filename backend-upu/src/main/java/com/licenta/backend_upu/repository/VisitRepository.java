@@ -56,7 +56,7 @@ public interface VisitRepository extends JpaRepository<Visit, Long> {
     @Query(value = """
         SELECT COUNT(*)
         FROM visits v
-        LEFT JOIN discharge_forms d ON d.visit_if = v.id
+        LEFT JOIN discharge_forms d ON d.visit_id = v.id
         WHERE v.status IN (:statuses)
           AND d.id IS NULL
         """, nativeQuery = true)
@@ -97,4 +97,5 @@ public interface VisitRepository extends JpaRepository<Visit, Long> {
         LIMIT 5
         """, nativeQuery = true)
     List<PriorityPatientRow> findPriorityPatients(@Param("statuses") List<String> statuses);
+
 }

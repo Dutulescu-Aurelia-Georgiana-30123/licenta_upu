@@ -18,7 +18,7 @@ public class DischargeForm {
     private Long id;
 
     @OneToOne(optional = false)
-    @JoinColumn(name="visit_if",nullable = false,unique = true)
+    @JoinColumn(name="visit_id",nullable = false,unique = true)
     private Visit visit;
 
     //header

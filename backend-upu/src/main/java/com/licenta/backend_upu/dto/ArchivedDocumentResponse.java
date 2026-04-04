@@ -11,6 +11,5 @@ public class ArchivedDocumentResponse {
     private String documentType;
     private String fileName;
     private String contentType;
-    private String storagePath;
     private LocalDateTime createdAt;
 }
