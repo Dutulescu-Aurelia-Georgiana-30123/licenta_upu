@@ -1,5 +1,6 @@
 import { useEffect, useMemo, useState } from "react";
 import { apiGet } from "../api/api";
+import { getStatusLabel } from "../utils/visitStatus";
 
 function formatDateTime(value) {
   if (!value) return "-";
@@ -10,22 +11,6 @@ function formatDateTime(value) {
   return d.toLocaleString("ro-RO");
 }
 
-function getStatusLabel(status) {
-  const labels = {
-    REGISTERED: "Înregistrat",
-    WAITING_TRIAGE: "În așteptare triaj",
-    TRIAGE_DONE: "Triaj efectuat",
-    WAITING_CONSULT: "În așteptare consult",
-    IN_CONSULT: "În consult",
-    IN_INVESTIGATION: "În investigații",
-    OBSERVATION: "În observație",
-    DISCHARGED: "Externat",
-    ADMITTED: "Internat",
-    TRANSFERRED: "Transferat",
-  };
-
-  return labels[status] || status || "-";
-}
 
 function StatusBadge({ status }) {
   const stylesByStatus = {
@@ -125,7 +110,12 @@ export default function VisitsPage({ selected, onSelect }) {
 
   useEffect(() => {
     load();
-  }, []);
+  const interval = setInterval(() => {
+    load();
+  }, 10000); //la 10 sec isi da refresh
+
+  return () => clearInterval(interval);
+}, []);
 
   const statuses = useMemo(() => {
     const allStatuses = visits.map((v) => v.status).filter(Boolean);
@@ -133,32 +123,35 @@ export default function VisitsPage({ selected, onSelect }) {
   }, [visits]);
 
   const filteredVisits = useMemo(() => {
-    const q = search.trim().toLowerCase();
+  const q = search.trim().toLowerCase();
 
-    const filtered = visits.filter((v) => {
-      const matchesStatus = statusFilter === "ALL" || v.status === statusFilter;
+  const filtered = visits.filter((v) => {
+    const name = `${v.patientFirstName || ""} ${v.patientLastName || ""}`.toLowerCase();
+    const cnp = (v.patientCnp || "").toLowerCase();
+    const code = (v.visitCode || "").toLowerCase();
 
-      const patientName = `${v.patientFirstName || ""} ${v.patientLastName || ""}`.toLowerCase();
-      const visitCode = (v.visitCode || "").toLowerCase();
+    const matchesSearch =
+      q === "" ||
+      name.includes(q) ||
+      cnp.includes(q) ||
+      code.includes(q);
 
-      const matchesSearch =
-        q === "" ||
-        patientName.includes(q) ||
-        visitCode.includes(q);
+    const matchesStatus =
+      statusFilter === "ALL" || v.status === statusFilter;
 
-      return matchesStatus && matchesSearch;
-    });
+    return matchesSearch && matchesStatus;
+  });
 
-    filtered.sort((a, b) => {
-      const da = new Date(a.createdAt).getTime();
-      const db = new Date(b.createdAt).getTime();
+  filtered.sort((a, b) => {
+    const da = new Date(a.createdAt).getTime();
+    const db = new Date(b.createdAt).getTime();
 
-      if (sortOrder === "asc") return da - db;
-      return db - da;
-    });
+    if (sortOrder === "asc") return da - db;
+    return db - da;
+  });
 
-    return filtered;
-  }, [visits, search, statusFilter, sortOrder]);
+  return filtered;
+}, [visits, search, statusFilter, sortOrder]);
 
   return (
     <div>
@@ -172,9 +165,6 @@ export default function VisitsPage({ selected, onSelect }) {
         }}
       >
         <h2 style={{ margin: 0 }}>Vizite ({filteredVisits.length})</h2>
-        <button onClick={load} style={{ padding: "6px 10px" }}>
-          Refresh
-        </button>
       </div>
 
       {error && <p style={{ color: "red" }}>Eroare /visits: {error}</p>}
@@ -249,7 +239,6 @@ export default function VisitsPage({ selected, onSelect }) {
         >
           <thead>
             <tr style={{ background: "#151515" }}>
-              <th style={{ border: "1px solid #333", padding: 10, textAlign: "left" }}>ID</th>
               <th style={{ border: "1px solid #333", padding: 10, textAlign: "left" }}>Cod vizită</th>
               <th style={{ border: "1px solid #333", padding: 10, textAlign: "left" }}>Pacient</th>
               <th style={{ border: "1px solid #333", padding: 10, textAlign: "left" }}>Status</th>
@@ -266,10 +255,9 @@ export default function VisitsPage({ selected, onSelect }) {
                   background: selected?.id === v.id ? "#2a2a2a" : "transparent",
                 }}
               >
-                <td style={{ border: "1px solid #333", padding: 10 }}>{v.id}</td>
                 <td style={{ border: "1px solid #333", padding: 10 }}>{v.visitCode}</td>
                 <td style={{ border: "1px solid #333", padding: 10 }}>
-                  {v.patientFirstName} {v.patientLastName} (ID {v.patientId})
+                  {v.patientFirstName} {v.patientLastName} 
                 </td>
                 <td style={{ border: "1px solid #333", padding: 10 }}>
                   <StatusBadge status={v.status} />

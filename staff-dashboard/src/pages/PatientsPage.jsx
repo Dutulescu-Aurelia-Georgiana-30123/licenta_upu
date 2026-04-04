@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState } from "react";
-import { apiGet, apiPost } from "../api/api";
+import { apiGet, apiPost, apiPut } from "../api/api";
 
 export default function PatientsPage({ onVisitCreated }) {
   const [patients, setPatients] = useState([]);
@@ -7,6 +7,7 @@ export default function PatientsPage({ onVisitCreated }) {
   const [search, setSearch] = useState("");
   const [showCreate, setShowCreate] = useState(false);
   const [msg, setMsg] = useState("");
+  const [editingPatientId, setEditingPatientId] = useState(null);
 
   const [form, setForm] = useState({
     firstName: "",
@@ -15,6 +16,17 @@ export default function PatientsPage({ onVisitCreated }) {
     phoneNumber: "",
     email: "",
   });
+
+  const resetForm = () => {
+    setForm({
+      firstName: "",
+      lastName: "",
+      cnp: "",
+      phoneNumber: "",
+      email: "",
+    });
+    setEditingPatientId(null);
+  };
 
   const load = async () => {
     setError("");
@@ -35,10 +47,9 @@ export default function PatientsPage({ onVisitCreated }) {
 
     return patients.filter((p) => {
       const fullName = `${p.firstName || ""} ${p.lastName || ""}`.toLowerCase();
-      const phone = (p.phoneNumber || "").toLowerCase();
-      const email = (p.email || "").toLowerCase();
+      const cnp = (p.cnp || "").toLowerCase();
 
-      return q === "" || fullName.includes(q) || phone.includes(q) || email.includes(q);
+      return q === "" || fullName.includes(q) || cnp.includes(q);
     });
   }, [patients, search]);
 
@@ -47,19 +58,23 @@ export default function PatientsPage({ onVisitCreated }) {
     setError("");
 
     try {
-      await apiPost("/patients", form);
-      setMsg("Pacient creat cu succes.");
-      setForm({
-        firstName: "",
-        lastName: "",
-        cnp: "",
-        phoneNumber: "",
-        email: "",
-      });
+      if (editingPatientId) {
+        await apiPut(`/patients/${editingPatientId}`, form);
+        setMsg("Pacient actualizat cu succes.");
+      } else {
+        await apiPost("/patients", form);
+        setMsg("Pacient creat cu succes.");
+      }
+
+      resetForm();
       setShowCreate(false);
       load();
     } catch (e) {
-      setError(`Eroare creare pacient: ${e}`);
+      setError(
+        editingPatientId
+          ? `Eroare actualizare pacient: ${e}`
+          : `Eroare creare pacient: ${e}`
+      );
     }
   };
 
@@ -93,14 +108,17 @@ export default function PatientsPage({ onVisitCreated }) {
 
         <div style={{ display: "flex", gap: 10, flexWrap: "wrap" }}>
           <button
-            onClick={() => setShowCreate((prev) => !prev)}
+            onClick={() => {
+              const next = !showCreate;
+              setShowCreate(next);
+
+              if (!next) {
+                resetForm();
+              }
+            }}
             style={{ padding: "8px 12px" }}
           >
             {showCreate ? "Închide formularul" : "Adaugă pacient"}
-          </button>
-
-          <button onClick={load} style={{ padding: "8px 12px" }}>
-            Refresh
           </button>
         </div>
       </div>
@@ -111,7 +129,7 @@ export default function PatientsPage({ onVisitCreated }) {
       <div style={{ marginTop: 12 }}>
         <input
           type="text"
-          placeholder="Caută după nume, telefon sau email"
+          placeholder="Caută după nume sau CNP"
           value={search}
           onChange={(e) => setSearch(e.target.value)}
           style={{
@@ -135,7 +153,9 @@ export default function PatientsPage({ onVisitCreated }) {
             background: "#121212",
           }}
         >
-          <h3 style={{ marginTop: 0 }}>Creare pacient</h3>
+          <h3 style={{ marginTop: 0 }}>
+            {editingPatientId ? "Editare pacient" : "Creare pacient"}
+          </h3>
 
           <div
             style={{
@@ -190,9 +210,19 @@ export default function PatientsPage({ onVisitCreated }) {
             </label>
           </div>
 
-          <div style={{ marginTop: 14 }}>
+          <div style={{ marginTop: 14, display: "flex", gap: 10, flexWrap: "wrap" }}>
             <button onClick={createPatient} style={{ padding: "8px 12px" }}>
-              Salvează pacient
+              {editingPatientId ? "Salvează modificările" : "Salvează pacient"}
+            </button>
+
+            <button
+              onClick={() => {
+                resetForm();
+                setShowCreate(false);
+              }}
+              style={{ padding: "8px 12px" }}
+            >
+              Renunță
             </button>
           </div>
         </div>
@@ -208,7 +238,6 @@ export default function PatientsPage({ onVisitCreated }) {
         >
           <thead>
             <tr style={{ background: "#151515" }}>
-              <th style={{ border: "1px solid #333", padding: 10 }}>ID</th>
               <th style={{ border: "1px solid #333", padding: 10 }}>Prenume</th>
               <th style={{ border: "1px solid #333", padding: 10 }}>Nume</th>
               <th style={{ border: "1px solid #333", padding: 10 }}>CNP</th>
@@ -220,27 +249,47 @@ export default function PatientsPage({ onVisitCreated }) {
           <tbody>
             {filteredPatients.map((p) => (
               <tr key={p.id}>
-                <td style={{ border: "1px solid #333", padding: 10 }}>{p.id}</td>
                 <td style={{ border: "1px solid #333", padding: 10 }}>{p.firstName}</td>
                 <td style={{ border: "1px solid #333", padding: 10 }}>{p.lastName}</td>
                 <td style={{ border: "1px solid #333", padding: 10 }}>{p.cnp || "-"}</td>
                 <td style={{ border: "1px solid #333", padding: 10 }}>{p.phoneNumber || "-"}</td>
                 <td style={{ border: "1px solid #333", padding: 10 }}>{p.email || "-"}</td>
 
-                <td style={{ border: "1px solid #333", padding: 10 }}>
-                  <button
-                    onClick={() => createVisit(p.id)}
-                    style={{ padding: "6px 10px", cursor: "pointer" }}
-                  >
-                    Creează vizită
-                  </button>
+                <td style={{ border: "1px solid #333", padding: 10, textAlign: "center" }}>
+                  <div style={{ display: "flex", gap: 8, justifyContent:"center"}}>
+                    <button
+                      onClick={() => createVisit(p.id)}
+                      style={{ padding: "6px 10px", cursor: "pointer" }}
+                    >
+                      Creează vizită
+                    </button>
+
+                    <button
+                      onClick={() => {
+                        setForm({
+                          firstName: p.firstName || "",
+                          lastName: p.lastName || "",
+                          cnp: p.cnp || "",
+                          phoneNumber: p.phoneNumber || "",
+                          email: p.email || "",
+                        });
+                        setEditingPatientId(p.id);
+                        setShowCreate(true);
+                        setMsg("");
+                        setError("");
+                      }}
+                      style={{ padding: "6px 10px", cursor: "pointer" }}
+                    >
+                      Editează pacient
+                    </button>
+                  </div>
                 </td>
               </tr>
             ))}
 
             {filteredPatients.length === 0 && (
               <tr>
-                <td colSpan="7" style={{ textAlign: "center", padding: 14, color: "#aaa" }}>
+                <td colSpan="6" style={{ textAlign: "center", padding: 14, color: "#aaa" }}>
                   Nu există pacienți.
                 </td>
               </tr>

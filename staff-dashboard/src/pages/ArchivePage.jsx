@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { apiGet } from "../api/api";
+import { apiGet, API_BASE } from "../api/api";
 
 function getDocumentTypeLabel(type) {
   const labels = {
@@ -93,7 +93,7 @@ export default function ArchivePage() {
     setMsg("");
 
     try {
-      const response = await fetch(`http://localhost:8081/archived-documents/${doc.id}/download`, {
+      const response = await fetch(`${API_BASE}/archived-documents/${doc.id}/download`, {
         method: "GET",
       });
 
