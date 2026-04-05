@@ -10,7 +10,6 @@ export default function PatientDetailsPanel({ patientDetails }) {
         <div><b>CNP:</b> {patientDetails.cnp || "-"}</div>
         <div><b>Telefon:</b> {patientDetails.phoneNumber || "-"}</div>
         <div><b>Email:</b> {patientDetails.email || "-"}</div>
-        <div><b>ID pacient:</b> {patientDetails.id}</div>
       </div>
     </div>
   );

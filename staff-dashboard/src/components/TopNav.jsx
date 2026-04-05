@@ -43,17 +43,6 @@ export default function TopNav({ active, onChange, selected }) {
         </div>
 
         <div style={{ flex: 1 }} />
-
-        <div style={{ fontSize: 12, color: "#ccc", textAlign: "right", maxWidth: 360 }}>
-          {selected ? (
-            <>
-              Vizită: <b>{selected.visitCode}</b> (ID {selected.id})
-            </>
-          ) : (
-            "Nicio vizită selectată"
-          )}
-          <div style={{ fontSize: 11, color: "#777", marginTop: 2 }}>{API_BASE}</div>
-        </div>
       </div>
     </div>
   );

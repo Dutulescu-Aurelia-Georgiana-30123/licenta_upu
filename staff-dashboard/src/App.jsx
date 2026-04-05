@@ -56,7 +56,16 @@ export default function App() {
         flexDirection: "column",
       }}
     >
-      <TopNav active={activePage} onChange={setActivePage} selected={selectedVisit} />
+      <TopNav
+  active={activePage}
+  selected={selectedVisit}
+  onChange={(page) => {
+    setActivePage(page);
+    if (page !== "forms") {
+      setSelectedVisit(null);
+    }
+  }}
+/>
 
       <main
         style={{

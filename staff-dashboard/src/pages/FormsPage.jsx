@@ -1,6 +1,6 @@
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
+import { apiGet } from "../api/api";
 import { initialPreformState, initialDischargeState } from "../forms/initialStates";
-import PatientSearchPanel from "../components/forms/PatientSearchPanel";
 import PatientDetailsPanel from "../components/forms/PatientDetailsPanel";
 import FormsToolbar from "../components/forms/FormsToolbar";
 import PreformSection from "../components/forms/PreformSection";
@@ -10,11 +10,7 @@ import DischargePrintView from "../components/forms/DischargePrintView";
 import { exportCombinedPdf, downloadCombinedPdf } from "./formsPrintActions";
 import { buildPreformPayload, buildDischargePayload } from "./formsPayloadBuilders";
 import { loadPreformIntoState, loadDischargeIntoState } from "./formsPageLoaders";
-import {
-  searchPatientsAction,
-  loadPatientVisitsAction,
-  openVisitFromSearchAction,
-} from "./formsSearchActions";
+import { loadPatientVisitsAction } from "./formsSearchActions";
 import {
   loadPreformData,
   loadDischargeData,
@@ -22,11 +18,10 @@ import {
   saveDischargeData,
   updateVisitStatusData,
   loadPatientVisitsData,
-  searchPatientsData,
 } from "./formsPageApi";
 
 export default function FormsPage({ selected, onSelectVisit }) {
-  const [searchMode, setSearchMode] = useState(false);
+  const [patientsSearch, setPatientsSearch] = useState("");
   const [preformOpen, setPreformOpen] = useState(false);
   const [dischargeOpen, setDischargeOpen] = useState(false);
 
@@ -38,44 +33,72 @@ export default function FormsPage({ selected, onSelectVisit }) {
   const [loading, setLoading] = useState(false);
   const [patientDetails, setPatientDetails] = useState(null);
 
-  const [search, setSearch] = useState("");
-  const [searchResults, setSearchResults] = useState([]);
   const [selectedPatient, setSelectedPatient] = useState(null);
   const [patientVisits, setPatientVisits] = useState([]);
+  const [patientsList, setPatientsList] = useState([]);
 
   const [combinedPrintMode, setCombinedPrintMode] = useState(false);
 
+  const loadAllPatients = async () => {
+    setMsg("");
+    try {
+      const data = await apiGet("/patients");
+      setPatientsList(data || []);
+    } catch (e) {
+      setMsg(`Eroare încărcare pacienți: ${e}`);
+      setPatientsList([]);
+    }
+  };
+
+  const filteredPatientsList = useMemo(() => {
+    const q = patientsSearch.trim().toLowerCase();
+
+    return patientsList.filter((p) => {
+      const fullName = `${p.firstName || ""} ${p.lastName || ""}`.toLowerCase();
+      const cnp = (p.cnp || "").toLowerCase();
+
+      return q === "" || fullName.includes(q) || cnp.includes(q);
+    });
+  }, [patientsList, patientsSearch]);
 
   useEffect(() => {
-  if (!selected) return;
+    setSelectedPatient(null);
+    setPatientVisits([]);
+    setCombinedPrintMode(false);
+    setMsg("");
 
-  setStatus(selected.status || "");
-  setPreformOpen(false);
-  setDischargeOpen(false);
-  setSearchMode(false);
-  setSearch("");
-  setSearchResults([]);
-  setSelectedPatient(null);
-  setPatientVisits([]);
-  setCombinedPrintMode(false);
+    if (!selected) {
+      setPatientDetails(null);
+      setPreform(initialPreformState);
+      setDischarge(initialDischargeState);
+      setStatus("");
+      setPreformOpen(false);
+      setDischargeOpen(false);
+      loadAllPatients();
+      return;
+    }
 
-  loadPreformIntoState({
-    selected,
-    setLoading,
-    setMsg,
-    setPatientDetails,
-    setPreform,
-    loadPreformData,
-  });
+    setStatus(selected.status || "");
+    setPreformOpen(false);
+    setDischargeOpen(false);
 
-  loadDischargeIntoState({
-    selected,
-    setMsg,
-    setPatientDetails,
-    setDischarge,
-    loadDischargeData,
-  });
-}, [selected?.id]);
+    loadPreformIntoState({
+      selected,
+      setLoading,
+      setMsg,
+      setPatientDetails,
+      setPreform,
+      loadPreformData,
+    });
+
+    loadDischargeIntoState({
+      selected,
+      setMsg,
+      setPatientDetails,
+      setDischarge,
+      loadDischargeData,
+    });
+  }, [selected?.id]);
 
   const savePreform = async () => {
     if (!selected) return;
@@ -85,8 +108,8 @@ export default function FormsPage({ selected, onSelectVisit }) {
     const payload = buildPreformPayload(preform);
 
     try {
-     await savePreformData(selected, payload);
-      setMsg("Fișa de pre-spitalizare a fost salvată. ");
+      await savePreformData(selected, payload);
+      setMsg("Fișa de pre-spitalizare a fost salvată.");
     } catch (e) {
       setMsg(`Eroare salvare preform: ${e}`);
     } finally {
@@ -124,150 +147,254 @@ export default function FormsPage({ selected, onSelectVisit }) {
   };
 
   const exportCombined = async () => {
-  if (!selected) return;
+    if (!selected) return;
 
-  setCombinedPrintMode(true);
+    setCombinedPrintMode(true);
 
-  setTimeout(async () => {
-    try {
-      await exportCombinedPdf({ selected, setMsg });
-    } catch (e) {
-      console.error("Eroare exportCombined:", e);
-      setMsg(`Eroare export PDF: ${e.message || e}`);
-    }
-  }, 500);
-};
-  
+    setTimeout(async () => {
+      try {
+        await exportCombinedPdf({ selected, setMsg });
+      } catch (e) {
+        console.error("Eroare exportCombined:", e);
+        setMsg(`Eroare export PDF: ${e.message || e}`);
+      }
+    }, 500);
+  };
 
   const handlePrintCombined = async () => {
-  if (!selected) return;
+    if (!selected) return;
 
-  setCombinedPrintMode(true);
+    setCombinedPrintMode(true);
 
-  setTimeout(async () => {
-    try {
-      await downloadCombinedPdf({ selected, setMsg });
-    } catch (e) {
-      console.error("Eroare descarcare PDF:", e);
-      setMsg(`Eroare la descărcarea PDF-ului: ${e.message || e}`);
-    }
-  }, 500);
-};
-const searchPatients = async () => {
-  await searchPatientsAction({
-    search,
-    setSearchMode,
-    setMsg,
-    setSearchResults,
-    setSelectedPatient,
-    setPatientVisits,
-    searchPatientsData,
-  });
-};
+    setTimeout(async () => {
+      try {
+        await downloadCombinedPdf({ selected, setMsg });
+      } catch (e) {
+        console.error("Eroare descarcare PDF:", e);
+        setMsg(`Eroare la descărcarea PDF-ului: ${e.message || e}`);
+      }
+    }, 500);
+  };
 
-const loadPatientVisits = async (patient) => {
-  await loadPatientVisitsAction({
-    patient,
-    setSelectedPatient,
-    setMsg,
-    setPatientVisits,
-    loadPatientVisitsData,
-  });
-};
-
-const openVisitFromSearch = (visit) => {
-  openVisitFromSearchAction({
-    visit,
-    setSearchMode,
-    setSearch,
-    setSearchResults,
-    setSelectedPatient,
-    setPatientVisits,
-    onSelectVisit,
-  });
-};
+  const loadPatientVisits = async (patient) => {
+    await loadPatientVisitsAction({
+      patient,
+      setSelectedPatient,
+      setMsg,
+      setPatientVisits,
+      loadPatientVisitsData,
+    });
+  };
 
   if (!selected) {
     return (
       <div>
-        <h2>Fișe</h2>
-        <p>Selectează o vizită din “Vizite” ca să lucrezi pe fișe.</p>
+        <h2>Fișe pacienți</h2>
+
+        {msg && <p style={{ color: "#ff8080" }}>{msg}</p>}
+
+        <div style={{ marginTop: 16, marginBottom: 12 }}>
+          <input
+            type="text"
+            placeholder="Caută pacient după nume sau CNP"
+            value={patientsSearch}
+            onChange={(e) => setPatientsSearch(e.target.value)}
+            style={{
+              padding: 10,
+              minWidth: 340,
+              borderRadius: 8,
+              border: "1px solid #333",
+              background: "#121212",
+              color: "#eaeaea",
+            }}
+          />
+        </div>
+
+        <div style={{ marginTop: 16, overflowX: "auto" }}>
+          <table
+            style={{
+              borderCollapse: "collapse",
+              width: "100%",
+              background: "#111",
+            }}
+          >
+            <thead>
+              <tr style={{ background: "#151515" }}>
+                <th style={{ border: "1px solid #333", padding: 10, textAlign: "left" }}>
+                  Prenume
+                </th>
+                <th style={{ border: "1px solid #333", padding: 10, textAlign: "left" }}>
+                  Nume
+                </th>
+                <th style={{ border: "1px solid #333", padding: 10, textAlign: "left" }}>
+                  CNP
+                </th>
+                <th style={{ border: "1px solid #333", padding: 10, textAlign: "left" }}>
+                  Telefon
+                </th>
+                <th style={{ border: "1px solid #333", padding: 10, textAlign: "left" }}>
+                  Email
+                </th>
+              </tr>
+            </thead>
+            <tbody>
+              {filteredPatientsList.map((p) => (
+                <tr
+                  key={p.id}
+                  onClick={() => loadPatientVisits(p)}
+                  style={{
+                    cursor: "pointer",
+                    background: selectedPatient?.id === p.id ? "#2a2a2a" : "transparent",
+                  }}
+                >
+                  <td style={{ border: "1px solid #333", padding: 10 }}>{p.firstName || "-"}</td>
+                  <td style={{ border: "1px solid #333", padding: 10 }}>{p.lastName || "-"}</td>
+                  <td style={{ border: "1px solid #333", padding: 10 }}>{p.cnp || "-"}</td>
+                  <td style={{ border: "1px solid #333", padding: 10 }}>{p.phoneNumber || "-"}</td>
+                  <td style={{ border: "1px solid #333", padding: 10 }}>{p.email || "-"}</td>
+                </tr>
+              ))}
+
+              {filteredPatientsList.length === 0 && (
+                <tr>
+                  <td
+                    colSpan="5"
+                    style={{
+                      textAlign: "center",
+                      padding: 14,
+                      color: "#aaa",
+                      border: "1px solid #333",
+                    }}
+                  >
+                    Nu există pacienți.
+                  </td>
+                </tr>
+              )}
+            </tbody>
+          </table>
+        </div>
+
+        {selectedPatient && (
+          <div
+            style={{
+              marginTop: 18,
+              border: "1px solid #333",
+              borderRadius: 12,
+              padding: 14,
+              background: "#121212",
+            }}
+          >
+            <h3 style={{ marginTop: 0 }}>
+              Fișele pacientului: {selectedPatient.firstName} {selectedPatient.lastName}
+            </h3>
+
+            {patientVisits.length === 0 ? (
+              <div style={{ color: "#aaa" }}>Nu există vizite pentru acest pacient.</div>
+            ) : (
+              <div style={{ border: "1px solid #333", borderRadius: 8, overflow: "hidden" }}>
+                {patientVisits.map((visit, index) => {
+                  const visitDate = visit.createdAt
+                    ? new Date(visit.createdAt).toLocaleString("ro-RO", {
+                        day: "2-digit",
+                        month: "2-digit",
+                        year: "numeric",
+                        hour: "2-digit",
+                        minute: "2-digit",
+                      })
+                    : "-";
+
+                  const statusLabels = {
+                    REGISTERED: "Înregistrat",
+                    WAITING_TRIAGE: "În așteptare triaj",
+                    TRIAGE_DONE: "Triaj făcut",
+                    WAITING_CONSULT: "În așteptare consult",
+                    IN_CONSULT: "În consult",
+                    IN_INVESTIGATION: "În investigații",
+                    OBSERVATION: "În observație",
+                    DISCHARGED: "Externat",
+                    ADMITTED: "Internat",
+                    TRANSFERRED: "Transferat",
+                  };
+
+                  return (
+                    <div
+                      key={visit.id}
+                      onClick={() => onSelectVisit && onSelectVisit(visit)}
+                      style={{
+                        cursor: "pointer",
+                        padding: 12,
+                        borderBottom:
+                          index !== patientVisits.length - 1 ? "1px solid #333" : "none",
+                        background: "#111",
+                      }}
+                    >
+                      Vizita {visit.visitCode}, {visitDate} -{" "}
+                      {statusLabels[visit.status] || visit.status}
+                    </div>
+                  );
+                })}
+              </div>
+            )}
+          </div>
+        )}
       </div>
     );
   }
 
   return (
     <div>
-      <h2>Fișe (vizita {selected.id})</h2>
+      <h2>Fișe ({selected.visitCode || `vizita ${selected.id}`})</h2>
 
-      <PatientSearchPanel
-        search={search}
-        setSearch={setSearch}
-        searchPatients={searchPatients}
-        searchResults={searchResults}
-        loadPatientVisits={loadPatientVisits}
-        selectedPatient={selectedPatient}
-        patientVisits={patientVisits}
-        openVisitFromSearch={openVisitFromSearch}
-      />
+      <PatientDetailsPanel patientDetails={patientDetails} />
 
-      {!searchMode && <PatientDetailsPanel patientDetails={patientDetails} />}
+      <div style={{ display: "flex", gap: 10, marginTop: 12, flexWrap: "wrap" }}>
+  <button
+    onClick={() => setCombinedPrintMode((prev) => !prev)}
+    style={{ padding: "8px 12px" }}
+  >
+    {combinedPrintMode
+      ? "Ascunde previzualizarea fișelor"
+      : "Arată previzualizarea fișelor"}
+  </button>
 
-      {!searchMode && (
+  <button onClick={handlePrintCombined} style={{ padding: "8px 12px" }}>
+    Printează fișele
+  </button>
+</div>
+
+      {combinedPrintMode && (
+        <div id="print-area">
+          <PreformPrintView preform={preform} />
+          <DischargePrintView discharge={discharge} preform={preform} />
+        </div>
+      )}
+
+      <div style={{ display: "grid", gap: 14, marginTop: 14 }}>
         <FormsToolbar
-          loading={loading}
-          savePreform={savePreform}
-          saveDischarge={saveDischarge}
-          exportCombined={exportCombined}
-          status={status}
-          setStatus={setStatus}
-          updateStatus={updateStatus}
-          msg={msg}
+  loading={loading}
+  exportCombined={exportCombined}
+  status={status}
+  setStatus={setStatus}
+  updateStatus={updateStatus}
+  msg={msg}
+/>
+        <PreformSection
+          preformOpen={preformOpen}
+          setPreformOpen={setPreformOpen}
+          preform={preform}
+          setPreform={setPreform}
+          onSave={savePreform}
         />
-      )}
 
-      {!searchMode && (
-        <>
-          <div style={{ display: "flex", gap: 10, marginTop: 12, flexWrap: "wrap" }}>
-            <button onClick={handlePrintCombined} style={{ padding: "8px 12px" }}>
-              Printează fișele
-            </button>
-
-            <button
-              onClick={() => setCombinedPrintMode((prev) => !prev)}
-              style={{ padding: "8px 12px" }}
-            >
-              {combinedPrintMode
-                ? "Ascunde previzualizarea fișelor"
-                : "Arată previzualizarea fișelor"}
-            </button>
-          </div>
-
-         {combinedPrintMode && (
-  <div id="print-area">
-    <PreformPrintView preform={preform} />
-    <DischargePrintView discharge={discharge} preform={preform} />
-  </div>
-)}
-
-          <div style={{ display: "grid", gap: 14, marginTop: 14 }}>
-            <PreformSection
-              preformOpen={preformOpen}
-              setPreformOpen={setPreformOpen}
-              preform={preform}
-              setPreform={setPreform}
-            />
-
-            <DischargeSection
-              dischargeOpen={dischargeOpen}
-              setDischargeOpen={setDischargeOpen}
-              discharge={discharge}
-              setDischarge={setDischarge}
-              preform={preform}
-            />
-          </div>
-        </>
-      )}
+        <DischargeSection
+          dischargeOpen={dischargeOpen}
+          setDischargeOpen={setDischargeOpen}
+          discharge={discharge}
+          setDischarge={setDischarge}
+          preform={preform}
+          onSave={saveDischarge}
+        />
+      </div>
     </div>
   );
 }

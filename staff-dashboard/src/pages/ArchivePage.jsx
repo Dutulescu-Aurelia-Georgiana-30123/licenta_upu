@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { apiGet, API_BASE } from "../api/api";
 
 function getDocumentTypeLabel(type) {
@@ -9,6 +9,32 @@ function getDocumentTypeLabel(type) {
   };
 
   return labels[type] || type || "-";
+}
+
+function getStatusLabel(status) {
+  const labels = {
+    REGISTERED: "Înregistrat",
+    WAITING_TRIAGE: "În așteptare triaj",
+    TRIAGE_DONE: "Triaj efectuat",
+    WAITING_CONSULT: "În așteptare consult",
+    IN_CONSULT: "În consult",
+    IN_INVESTIGATION: "În investigații",
+    OBSERVATION: "În observație",
+    DISCHARGED: "Externat",
+    ADMITTED: "Internat",
+    TRANSFERRED: "Transferat",
+  };
+
+  return labels[status] || status || "-";
+}
+
+function formatDateTime(value) {
+  if (!value) return "-";
+
+  const d = new Date(value);
+  if (Number.isNaN(d.getTime())) return value;
+
+  return d.toLocaleString("ro-RO");
 }
 
 export default function ArchivePage() {
@@ -24,8 +50,10 @@ export default function ArchivePage() {
   const [documents, setDocuments] = useState([]);
   const [loading, setLoading] = useState(false);
 
-  const searchPatients = async () => {
-    if (!search.trim()) {
+  const searchPatients = async (value) => {
+    const q = (value || "").trim().toLowerCase();
+
+    if (q.length < 2) {
       setSearchResults([]);
       setSelectedPatient(null);
       setPatientVisits([]);
@@ -39,11 +67,12 @@ export default function ArchivePage() {
 
     try {
       const data = await apiGet("/patients");
-      const filtered = data.filter((p) =>
-        `${p.firstName || ""} ${p.lastName || ""}`
-          .toLowerCase()
-          .includes(search.trim().toLowerCase())
-      );
+      const filtered = (data || []).filter((p) => {
+        const fullName = `${p.firstName || ""} ${p.lastName || ""}`.toLowerCase();
+        const cnp = (p.cnp || "").toLowerCase();
+
+        return fullName.includes(q) || cnp.includes(q);
+      });
 
       setSearchResults(filtered);
       setSelectedPatient(null);
@@ -57,6 +86,14 @@ export default function ArchivePage() {
     }
   };
 
+  useEffect(() => {
+    const timeout = setTimeout(() => {
+      searchPatients(search);
+    }, 250);
+
+    return () => clearTimeout(timeout);
+  }, [search]);
+
   const loadPatientVisits = async (patient) => {
     setSelectedPatient(patient);
     setSelectedVisit(null);
@@ -66,7 +103,9 @@ export default function ArchivePage() {
 
     try {
       const visits = await apiGet(`/visits/patient/${patient.id}`);
-      setPatientVisits(visits);
+      setPatientVisits(visits || []);
+      setSearchResults([]);
+     // setSearch(`${patient.firstName || ""} ${patient.lastName || ""}`.trim());
     } catch (e) {
       setMsg(`Eroare încărcare vizite: ${e}`);
     } finally {
@@ -126,20 +165,24 @@ export default function ArchivePage() {
 
         <div style={{ display: "flex", gap: 10, flexWrap: "wrap", alignItems: "center" }}>
           <input
-            placeholder="Caută după nume"
+            placeholder="Caută după nume sau CNP"
             value={search}
             onChange={(e) => setSearch(e.target.value)}
             style={{ padding: 8, minWidth: 260 }}
           />
-          <button onClick={searchPatients} disabled={loading} style={{ padding: "8px 12px" }}>
-            Caută
-          </button>
         </div>
 
         {msg && <p style={{ marginTop: 10 }}>{msg}</p>}
 
         {searchResults.length > 0 && (
-          <div style={{ marginTop: 12, border: "1px solid #333", borderRadius: 8, overflow: "hidden" }}>
+          <div
+            style={{
+              marginTop: 12,
+              border: "1px solid #333",
+              borderRadius: 8,
+              overflow: "hidden",
+            }}
+          >
             {searchResults.map((p, index) => (
               <div
                 key={p.id}
@@ -150,7 +193,7 @@ export default function ArchivePage() {
                   borderBottom: index !== searchResults.length - 1 ? "1px solid #333" : "none",
                 }}
               >
-                {p.firstName} {p.lastName} (ID {p.id})
+                {p.firstName} {p.lastName} — {p.cnp || "-"}
               </div>
             ))}
           </div>
@@ -167,19 +210,31 @@ export default function ArchivePage() {
             <div style={{ color: "#aaa" }}>Nu există vizite pentru acest pacient.</div>
           ) : (
             <div style={{ border: "1px solid #333", borderRadius: 8, overflow: "hidden" }}>
-              {patientVisits.map((visit, index) => (
-                <div
-                  key={visit.id}
-                  onClick={() => loadVisitDocuments(visit)}
-                  style={{
-                    cursor: "pointer",
-                    padding: 10,
-                    borderBottom: index !== patientVisits.length - 1 ? "1px solid #333" : "none",
-                  }}
-                >
-                  Vizita #{visit.id} — {visit.status || "-"}
-                </div>
-              ))}
+              {patientVisits.map((visit, index) => {
+  const visitDate = visit.createdAt
+    ? new Date(visit.createdAt).toLocaleString("ro-RO", {
+        day: "2-digit",
+        month: "2-digit",
+        year: "numeric",
+        hour: "2-digit",
+        minute: "2-digit",
+      })
+    : "-";
+
+  return (
+    <div
+      key={visit.id}
+      onClick={() => loadVisitDocuments(visit)}
+      style={{
+        cursor: "pointer",
+        padding: 10,
+        borderBottom: index !== patientVisits.length - 1 ? "1px solid #333" : "none",
+      }}
+    >
+      Vizita {visit.visitCode || `UPU-${visit.id}`}, {visitDate} - {getStatusLabel(visit.status)}
+    </div>
+  );
+})}
             </div>
           )}
         </div>
@@ -188,7 +243,7 @@ export default function ArchivePage() {
       {selectedVisit && (
         <div style={{ marginTop: 14, padding: 12, border: "1px solid #333", borderRadius: 8 }}>
           <div style={{ fontWeight: 700, marginBottom: 10 }}>
-            Documente arhivate pentru vizita #{selectedVisit.id}
+            Documente arhivate pentru {selectedVisit.visitCode || `vizita ${selectedVisit.id}`}
           </div>
 
           {documents.length === 0 ? (
@@ -215,7 +270,7 @@ export default function ArchivePage() {
                       Tip: {getDocumentTypeLabel(doc.documentType)}
                     </div>
                     <div style={{ color: "#aaa", marginTop: 4 }}>
-                      Creat la: {doc.createdAt || "-"}
+                      Creat la: {formatDateTime(doc.createdAt)}
                     </div>
                   </div>
 

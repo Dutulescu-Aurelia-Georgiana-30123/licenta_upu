@@ -6,12 +6,14 @@ export default function DischargeSection({
   discharge,
   setDischarge,
   preform,
+  onSave,
 }) {
   return (
     <SectionCard
       title="Fișa de externare"
       isOpen={dischargeOpen}
       onToggle={() => setDischargeOpen((prev) => !prev)}
+      hideTopButtonWhenOpen={true}
     >
       <div style={{ display: "grid", gap: 16 }}>
         <div style={{ fontWeight: 700, fontSize: 18, textAlign: "center" }}>
@@ -211,7 +213,32 @@ export default function DischargeSection({
             style={{ width: "100%", padding: 8, marginTop: 6 }}
           />
         </label>
+                {dischargeOpen && (
+          <div
+            style={{
+              display: "flex",
+              justifyContent: "flex-end",
+              gap: 10,
+              flexWrap: "wrap",
+              marginTop: 24,
+              paddingTop: 16,
+              borderTop: "1px solid #333",
+            }}
+          >
+            <button onClick={onSave} style={{ padding: "8px 12px" }}>
+              Salvează fișa
+            </button>
+
+            <button
+              onClick={() => setDischargeOpen(false)}
+              style={{ padding: "8px 12px" }}
+            > 
+              Restrânge
+            </button>
+          </div>
+        )}
       </div>
+
     </SectionCard>
   );
 }

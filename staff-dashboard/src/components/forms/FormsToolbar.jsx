@@ -1,7 +1,5 @@
 export default function FormsToolbar({
   loading,
-  savePreform,
-  saveDischarge,
   exportCombined,
   status,
   setStatus,
@@ -9,21 +7,43 @@ export default function FormsToolbar({
   msg,
 }) {
   return (
-    <div style={{ marginTop: 10, padding: 12, border: "1px solid #333", borderRadius: 8 }}>
-      <div style={{ display: "flex", gap: 10, flexWrap: "wrap", alignItems: "center" }}>
-        <button onClick={savePreform} disabled={loading} style={{ padding: "8px 12px" }}>
-          Salvează pre-spitalizarea
-        </button>
-        <button onClick={saveDischarge} disabled={loading} style={{ padding: "8px 12px" }}>
-          Salvează externarea
-        </button>
-        <button onClick={exportCombined} style={{ padding: "8px 12px" }}>
+    <div
+      style={{
+        marginTop: 12,
+        padding: 14,
+        border: "1px solid #333",
+        borderRadius: 12,
+        background: "#121212",
+      }}
+    >
+      <div
+        style={{
+          display: "flex",
+          gap: 12,
+          flexWrap: "wrap",
+          alignItems: "center",
+        }}
+      >
+        <button
+          onClick={exportCombined}
+          disabled={loading}
+          style={{ padding: "8px 12px" }}
+        >
           Export PDF combinat
         </button>
-      </div>
 
-      <div style={{ marginTop: 10, display: "flex", gap: 10, flexWrap: "wrap", alignItems: "center" }}>
-        <select value={status} onChange={(e) => setStatus(e.target.value)} style={{ padding: 8 }}>
+        <select
+          value={status}
+          onChange={(e) => setStatus(e.target.value)}
+          style={{
+            padding: 10,
+            minWidth: 200,
+            borderRadius: 8,
+            border: "1px solid #333",
+            background: "#121212",
+            color: "#eaeaea",
+          }}
+        >
           <option value="">Selectează status</option>
           <option value="REGISTERED">Înregistrat</option>
           <option value="TRIAGE_DONE">Triaj efectuat</option>
@@ -36,13 +56,20 @@ export default function FormsToolbar({
           <option value="TRANSFERRED">Transferat</option>
         </select>
 
-        <button onClick={updateStatus} style={{ padding: "8px 12px" }}>
+        <button
+          onClick={updateStatus}
+          disabled={loading}
+          style={{ padding: "8px 12px" }}
+        >
           Actualizează statusul
         </button>
       </div>
-      
 
-      {msg && <p style={{ marginTop: 10, color: "#ddd" }}>{msg}</p>}
+      {msg && (
+        <p style={{ marginTop: 12, color: "#ddd" }}>
+          {msg}
+        </p>
+      )}
     </div>
   );
 }

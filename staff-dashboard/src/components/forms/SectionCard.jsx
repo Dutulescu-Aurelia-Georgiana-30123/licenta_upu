@@ -1,4 +1,12 @@
-export default function SectionCard({ title, isOpen, onToggle, children }) {
+export default function SectionCard({
+  title,
+  isOpen,
+  onToggle,
+  children,
+  hideTopButtonWhenOpen = false,
+}) {
+  const showTopButton = !isOpen || !hideTopButtonWhenOpen;
+
   return (
     <div
       style={{
@@ -18,9 +26,12 @@ export default function SectionCard({ title, isOpen, onToggle, children }) {
         }}
       >
         <h3 style={{ margin: 0 }}>{title}</h3>
-        <button onClick={onToggle} style={{ padding: "8px 12px" }}>
-          {isOpen ? "Restrânge" : "Extinde"}
-        </button>
+
+        {showTopButton && (
+          <button onClick={onToggle} style={{ padding: "8px 12px" }}>
+            {isOpen ? "Restrânge" : "Extinde"}
+          </button>
+        )}
       </div>
 
       {isOpen && <div style={{ padding: 14 }}>{children}</div>}

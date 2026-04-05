@@ -8,12 +8,14 @@ export default function PreformSection({
   setPreformOpen,
   preform,
   setPreform,
+  onSave,
 }) {
   return (
     <SectionCard
       title="Fișa de pre-spitalizare"
       isOpen={preformOpen}
       onToggle={() => setPreformOpen((prev) => !prev)}
+      hideTopButtonWhenOpen={true}
     >
       <div style={{ display: "grid", gap: 16 }}>
         <div style={{ fontWeight: 700, fontSize: 18, textAlign: "center" }}>
@@ -1512,7 +1514,30 @@ export default function PreformSection({
             </label>
           </div>
         </div>
+        {preformOpen && (
+          <div
+            style={{
+              display: "flex",
+              justifyContent: "flex-end",
+              gap: 10,
+              flexWrap: "wrap",
+              marginTop: 24,
+              paddingTop: 16,
+              borderTop: "1px solid #333",
+            }}
+          >
+            <button onClick={onSave} style={{ padding: "8px 12px" }}>
+              Salvează fișa
+            </button>
 
+            <button
+              onClick={() => setPreformOpen(false)}
+              style={{ padding: "8px 12px" }}
+            >
+              Restrânge
+            </button>
+          </div>
+        )}
       </div>
     </SectionCard>
   );
