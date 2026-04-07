@@ -41,7 +41,14 @@ public class DischargeFormResponse {
 
     private String details;
 
+    private String doctorName;
+    private String doctorSignature;
+    private LocalDateTime doctorSignedAt;
+
+    private String nurseName;
+    private String nurseSignature;
+    private LocalDateTime nurseSignedAt;
+
     private LocalDateTime createdAt;
     private LocalDateTime updatedAt;
-
 }

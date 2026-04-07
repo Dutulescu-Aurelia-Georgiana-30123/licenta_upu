@@ -77,6 +77,51 @@ function safe(value) {
   return value || "-";
 }
 
+function SignatureBlock({ title, name, signature, signedAt }) {
+  return (
+    <div
+      style={{
+        border: "1px solid #000",
+        padding: 12,
+        minHeight: 180,
+      }}
+    >
+      <div style={{ fontWeight: 700, marginBottom: 10 }}>{title}</div>
+
+      <div style={{ marginBottom: 8 }}>
+        <b>Nume:</b> {safe(name)}
+      </div>
+
+      <div
+        style={{
+          height: 90,
+          border: "1px solid #bbb",
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "center",
+          marginBottom: 8,
+          overflow: "hidden",
+        }}
+      >
+        {signature ? (
+          <img
+            src={signature}
+            alt={title}
+            style={{ maxWidth: "100%", maxHeight: "100%", objectFit: "contain" }}
+          />
+        ) : (
+          <span style={{ color: "#666" }}>Fără semnătură</span>
+        )}
+      </div>
+
+      <div>
+        <b>Semnat la:</b>{" "}
+        {signedAt ? new Date(signedAt).toLocaleString("ro-RO") : "-"}
+      </div>
+    </div>
+  );
+}
+
 export default function PreformPrintView({ preform }) {
   return (
     <div
@@ -607,338 +652,360 @@ export default function PreformPrintView({ preform }) {
         </div>
 
         <div style={{ border: "1px solid #000", padding: 10, marginBottom: 14 }}>
-  <SectionTitle>ABDOMEN</SectionTitle>
+          <SectionTitle>ABDOMEN</SectionTitle>
 
-  <div style={{ fontWeight: 700, marginBottom: 6 }}>NORMAL</div>
-  <div style={{ display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: 6 }}>
-    <CheckItem checked={preform.abdomenNormal} label="Normal" />
-    <CheckItem checked={preform.abdomenPalpation} label="120 - Palpare" />
-    <CheckItem checked={preform.abdomenPercussion} label="121 - Percuție" />
-    <CheckItem checked={preform.abdomenBowelTransit} label="122 - Tranzit intest." />
-    <CheckItem checked={preform.abdomenRectalExam} label="123 - Tuseu rectal" />
-    <CheckItem checked={preform.abdomenDistended} label="124 - Abd. destins" />
-    <CheckItem checked={preform.abdomenTransitAbsent} label="125 - Tranzit absent" />
-    <CheckItem checked={preform.abdomenHepatomegaly} label="126 - Hepatomegalie" />
-    <CheckItem checked={preform.abdomenSplenomegaly} label="127 - Splenomegalie" />
-    <CheckItem checked={preform.abdomenPalpableMass} label="128 - Formațiune palpabilă" />
-    <CheckItem checked={preform.abdomenTenderness} label="129 - Sensibil la palpare" />
-    <CheckItem checked={preform.abdomenRectalPositive} label="130 - Tuseu rectal pozitiv" />
-    <CheckItem checked={preform.abdomenPeritonealIrritation} label="131 - Iritație peritoneală" />
-  </div>
+          <div style={{ fontWeight: 700, marginBottom: 6 }}>NORMAL</div>
+          <div style={{ display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: 6 }}>
+            <CheckItem checked={preform.abdomenNormal} label="Normal" />
+            <CheckItem checked={preform.abdomenPalpation} label="120 - Palpare" />
+            <CheckItem checked={preform.abdomenPercussion} label="121 - Percuție" />
+            <CheckItem checked={preform.abdomenBowelTransit} label="122 - Tranzit intest." />
+            <CheckItem checked={preform.abdomenRectalExam} label="123 - Tuseu rectal" />
+            <CheckItem checked={preform.abdomenDistended} label="124 - Abd. destins" />
+            <CheckItem checked={preform.abdomenTransitAbsent} label="125 - Tranzit absent" />
+            <CheckItem checked={preform.abdomenHepatomegaly} label="126 - Hepatomegalie" />
+            <CheckItem checked={preform.abdomenSplenomegaly} label="127 - Splenomegalie" />
+            <CheckItem checked={preform.abdomenPalpableMass} label="128 - Formațiune palpabilă" />
+            <CheckItem checked={preform.abdomenTenderness} label="129 - Sensibil la palpare" />
+            <CheckItem checked={preform.abdomenRectalPositive} label="130 - Tuseu rectal pozitiv" />
+            <CheckItem checked={preform.abdomenPeritonealIrritation} label="131 - Iritație peritoneală" />
+          </div>
 
-  <div style={{ marginTop: 8 }}>
-    <b>Observații:</b> {safe(preform.abdomenObservations)}
-  </div>
-</div>
+          <div style={{ marginTop: 8 }}>
+            <b>Observații:</b> {safe(preform.abdomenObservations)}
+          </div>
+        </div>
 
-<div style={{ border: "1px solid #000", padding: 10, marginBottom: 14 }}>
-  <SectionTitle>TEGUMENT</SectionTitle>
+        <div style={{ border: "1px solid #000", padding: 10, marginBottom: 14 }}>
+          <SectionTitle>TEGUMENT</SectionTitle>
 
-  <div style={{ display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: 6 }}>
-    <CheckItem checked={preform.skinExamNormal} label="140 - Normal" />
-    <CheckItem checked={preform.skinExamWarm} label="141 - Cald" />
-    <CheckItem checked={preform.skinExamCold} label="142 - Rece" />
-    <CheckItem checked={preform.skinExamWet} label="143 - Umed" />
-    <CheckItem checked={preform.skinExamDry} label="37 - Uscat" />
-    <CheckItem checked={preform.skinExamPruritus} label="144 - Prurit" />
-    <CheckItem checked={preform.skinExamExcoriations} label="145 - Escoriații" />
-    <CheckItem checked={preform.skinExamEcchymosis} label="146 - Echimoze" />
-    <CheckItem checked={preform.skinExamPetechiae} label="147 - Peteșii" />
-    <CheckItem checked={preform.skinExamPurpura} label="148 - Purpură" />
-    <CheckItem checked={preform.skinExamJaundice} label="149 - Icter" />
-    <CheckItem checked={preform.skinExamWounds} label="150 - Plăgi" />
-    <CheckItem checked={preform.skinExamPale} label="151 - Palid" />
-    <CheckItem checked={preform.skinExamCyanosis} label="152 - Cianoză" />
-    <CheckItem checked={preform.skinExamSweaty} label="153 - Transpirat" />
-  </div>
+          <div style={{ display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: 6 }}>
+            <CheckItem checked={preform.skinExamNormal} label="140 - Normal" />
+            <CheckItem checked={preform.skinExamWarm} label="141 - Cald" />
+            <CheckItem checked={preform.skinExamCold} label="142 - Rece" />
+            <CheckItem checked={preform.skinExamWet} label="143 - Umed" />
+            <CheckItem checked={preform.skinExamDry} label="37 - Uscat" />
+            <CheckItem checked={preform.skinExamPruritus} label="144 - Prurit" />
+            <CheckItem checked={preform.skinExamExcoriations} label="145 - Escoriații" />
+            <CheckItem checked={preform.skinExamEcchymosis} label="146 - Echimoze" />
+            <CheckItem checked={preform.skinExamPetechiae} label="147 - Peteșii" />
+            <CheckItem checked={preform.skinExamPurpura} label="148 - Purpură" />
+            <CheckItem checked={preform.skinExamJaundice} label="149 - Icter" />
+            <CheckItem checked={preform.skinExamWounds} label="150 - Plăgi" />
+            <CheckItem checked={preform.skinExamPale} label="151 - Palid" />
+            <CheckItem checked={preform.skinExamCyanosis} label="152 - Cianoză" />
+            <CheckItem checked={preform.skinExamSweaty} label="153 - Transpirat" />
+          </div>
 
-  <div style={{ marginTop: 8 }}>
-    <b>Localizare:</b> {safe(preform.skinExamLocation)}
-  </div>
-</div>
+          <div style={{ marginTop: 8 }}>
+            <b>Localizare:</b> {safe(preform.skinExamLocation)}
+          </div>
+        </div>
 
-<div style={{ border: "1px solid #000", padding: 10, marginBottom: 14 }}>
-  <SectionTitle>GENITO URINAR</SectionTitle>
+        <div style={{ border: "1px solid #000", padding: 10, marginBottom: 14 }}>
+          <SectionTitle>GENITO URINAR</SectionTitle>
 
-  <div style={{ fontWeight: 700, marginBottom: 6 }}>NORMAL</div>
-  <div style={{ display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: 6 }}>
-    <CheckItem checked={preform.guExamNormal} label="Normal" />
-    <CheckItem checked={preform.guExternalGenitals} label="160 - Organe genitale externe" />
-    <CheckItem checked={preform.guRegularMenstruation} label="161 - Menstruație regulată" />
-    <CheckItem checked={preform.guRectalExam} label="162 - Tuseu rectal" />
-  </div>
+          <div style={{ fontWeight: 700, marginBottom: 6 }}>NORMAL</div>
+          <div style={{ display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: 6 }}>
+            <CheckItem checked={preform.guExamNormal} label="Normal" />
+            <CheckItem checked={preform.guExternalGenitals} label="160 - Organe genitale externe" />
+            <CheckItem checked={preform.guRegularMenstruation} label="161 - Menstruație regulată" />
+            <CheckItem checked={preform.guRectalExam} label="162 - Tuseu rectal" />
+          </div>
 
-  <div style={{ marginTop: 8 }}>
-    <b>163 - Data ult. menstruație:</b> {safe(preform.guLastMenstruationDate)}
-  </div>
+          <div style={{ marginTop: 8 }}>
+            <b>163 - Data ult. menstruație:</b> {safe(preform.guLastMenstruationDate)}
+          </div>
 
-  <div
-    style={{
-      marginTop: 8,
-      display: "grid",
-      gridTemplateColumns: "repeat(2, 1fr)",
-      gap: 6,
-    }}
-  >
-    <CheckItem checked={preform.guBloodyVaginalDischarge} label="164 - Scurgeri vaginale sanguinolente" />
-    <CheckItem checked={preform.guLeucorrhea} label="165 - Leucoree" />
-    <CheckItem checked={preform.guCervixSensitivity} label="166 - Sensibilitatea colului" />
-    <CheckItem checked={preform.guEnlargedUterus} label="167 - Uter mărit" />
-    <CheckItem checked={preform.guLateroUterineMass} label="168 - Formațiune latero-uterină" />
-    <CheckItem checked={preform.guExamHematuria} label="177 - Hematurie" />
-  </div>
+          <div
+            style={{
+              marginTop: 8,
+              display: "grid",
+              gridTemplateColumns: "repeat(2, 1fr)",
+              gap: 6,
+            }}
+          >
+            <CheckItem checked={preform.guBloodyVaginalDischarge} label="164 - Scurgeri vaginale sanguinolente" />
+            <CheckItem checked={preform.guLeucorrhea} label="165 - Leucoree" />
+            <CheckItem checked={preform.guCervixSensitivity} label="166 - Sensibilitatea colului" />
+            <CheckItem checked={preform.guEnlargedUterus} label="167 - Uter mărit" />
+            <CheckItem checked={preform.guLateroUterineMass} label="168 - Formațiune latero-uterină" />
+            <CheckItem checked={preform.guExamHematuria} label="177 - Hematurie" />
+          </div>
 
-  <div style={{ marginTop: 10 }}>
-    <LrRow
-      leftChecked={preform.guGiordanoLeft}
-      label="169 - Giordano pozitiv - 170"
-      rightChecked={preform.guGiordanoRight}
-    />
-    <LrRow
-      leftChecked={preform.guTesticularSwellingLeft}
-      label="171 - Tumefiere testicul - 172"
-      rightChecked={preform.guTesticularSwellingRight}
-    />
-    <LrRow
-      leftChecked={preform.guTesticularPainLeft}
-      label="173 - Durere testicul - 174"
-      rightChecked={preform.guTesticularPainRight}
-    />
-    <LrRow
-      leftChecked={preform.guBreastMassLeft}
-      label="175 - Formațiune mamară - 176"
-      rightChecked={preform.guBreastMassRight}
-    />
-    <LrRow
-      leftChecked={preform.guTraumaLeft}
-      label="249 - Traumă - 250"
-      rightChecked={preform.guTraumaRight}
-    />
-  </div>
+          <div style={{ marginTop: 10 }}>
+            <LrRow
+              leftChecked={preform.guGiordanoLeft}
+              label="169 - Giordano pozitiv - 170"
+              rightChecked={preform.guGiordanoRight}
+            />
+            <LrRow
+              leftChecked={preform.guTesticularSwellingLeft}
+              label="171 - Tumefiere testicul - 172"
+              rightChecked={preform.guTesticularSwellingRight}
+            />
+            <LrRow
+              leftChecked={preform.guTesticularPainLeft}
+              label="173 - Durere testicul - 174"
+              rightChecked={preform.guTesticularPainRight}
+            />
+            <LrRow
+              leftChecked={preform.guBreastMassLeft}
+              label="175 - Formațiune mamară - 176"
+              rightChecked={preform.guBreastMassRight}
+            />
+            <LrRow
+              leftChecked={preform.guTraumaLeft}
+              label="249 - Traumă - 250"
+              rightChecked={preform.guTraumaRight}
+            />
+          </div>
 
-  <div style={{ marginTop: 8 }}>
-    <b>Alte:</b> {safe(preform.guExamOther)}
-  </div>
-</div>
+          <div style={{ marginTop: 8 }}>
+            <b>Alte:</b> {safe(preform.guExamOther)}
+          </div>
+        </div>
 
-<div style={{ border: "1px solid #000", padding: 10, marginBottom: 14 }}>
-  <SectionTitle>AP. LOCOMOTOR</SectionTitle>
+        <div style={{ border: "1px solid #000", padding: 10, marginBottom: 14 }}>
+          <SectionTitle>AP. LOCOMOTOR</SectionTitle>
 
-  <div style={{ fontWeight: 700, marginBottom: 6 }}>NORMAL</div>
-  <div style={{ display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: 6 }}>
-    <CheckItem checked={preform.locomotorExamNormal} label="Normal" />
-    <CheckItem checked={preform.locomotorHead} label="190 - Cap" />
-    <CheckItem checked={preform.locomotorNeck} label="191 - Gât" />
-    <CheckItem checked={preform.locomotorTrunk} label="192 - Trunchi" />
-    <CheckItem checked={preform.locomotorUpperLimbs} label="193 - Membre superioare" />
-    <CheckItem checked={preform.locomotorLowerLimbs} label="194 - Membre inferioare" />
-  </div>
+          <div style={{ fontWeight: 700, marginBottom: 6 }}>NORMAL</div>
+          <div style={{ display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: 6 }}>
+            <CheckItem checked={preform.locomotorExamNormal} label="Normal" />
+            <CheckItem checked={preform.locomotorHead} label="190 - Cap" />
+            <CheckItem checked={preform.locomotorNeck} label="191 - Gât" />
+            <CheckItem checked={preform.locomotorTrunk} label="192 - Trunchi" />
+            <CheckItem checked={preform.locomotorUpperLimbs} label="193 - Membre superioare" />
+            <CheckItem checked={preform.locomotorLowerLimbs} label="194 - Membre inferioare" />
+          </div>
 
-  <div style={{ marginTop: 10, fontWeight: 700 }}>Puls prezent</div>
-  <div style={{ marginTop: 6 }}>
-    <LrRow
-      leftChecked={preform.locomotorPulseCarotidLeft}
-      label="251 - Carotidă - 252"
-      rightChecked={preform.locomotorPulseCarotidRight}
-    />
-    <LrRow
-      leftChecked={preform.locomotorPulseBrachialLeft}
-      label="194 - Brahială - 195"
-      rightChecked={preform.locomotorPulseBrachialRight}
-    />
-    <LrRow
-      leftChecked={preform.locomotorPulseRadialLeft}
-      label="196 - Radială - 197"
-      rightChecked={preform.locomotorPulseRadialRight}
-    />
-    <LrRow
-      leftChecked={preform.locomotorPulseFemoralLeft}
-      label="198 - Femurală - 199"
-      rightChecked={preform.locomotorPulseFemoralRight}
-    />
-    <LrRow
-      leftChecked={preform.locomotorPulsePoplitealLeft}
-      label="200 - Poplitee - 201"
-      rightChecked={preform.locomotorPulsePoplitealRight}
-    />
-    <LrRow
-      leftChecked={preform.locomotorPulsePedialLeft}
-      label="202 - Pedioasă - 203"
-      rightChecked={preform.locomotorPulsePedialRight}
-    />
-  </div>
+          <div style={{ marginTop: 10, fontWeight: 700 }}>Puls prezent</div>
+          <div style={{ marginTop: 6 }}>
+            <LrRow
+              leftChecked={preform.locomotorPulseCarotidLeft}
+              label="251 - Carotidă - 252"
+              rightChecked={preform.locomotorPulseCarotidRight}
+            />
+            <LrRow
+              leftChecked={preform.locomotorPulseBrachialLeft}
+              label="194 - Brahială - 195"
+              rightChecked={preform.locomotorPulseBrachialRight}
+            />
+            <LrRow
+              leftChecked={preform.locomotorPulseRadialLeft}
+              label="196 - Radială - 197"
+              rightChecked={preform.locomotorPulseRadialRight}
+            />
+            <LrRow
+              leftChecked={preform.locomotorPulseFemoralLeft}
+              label="198 - Femurală - 199"
+              rightChecked={preform.locomotorPulseFemoralRight}
+            />
+            <LrRow
+              leftChecked={preform.locomotorPulsePoplitealLeft}
+              label="200 - Poplitee - 201"
+              rightChecked={preform.locomotorPulsePoplitealRight}
+            />
+            <LrRow
+              leftChecked={preform.locomotorPulsePedialLeft}
+              label="202 - Pedioasă - 203"
+              rightChecked={preform.locomotorPulsePedialRight}
+            />
+          </div>
 
-  <div
-    style={{
-      marginTop: 10,
-      display: "grid",
-      gridTemplateColumns: "repeat(3, 1fr)",
-      gap: 6,
-    }}
-  >
-    <CheckItem checked={preform.locomotorExamPain} label="204 - Durere" />
-    <CheckItem checked={preform.locomotorExamSwelling} label="205 - Tumefiere" />
-    <CheckItem checked={preform.locomotorExamEdema} label="206 - Edem" />
-    <CheckItem checked={preform.locomotorExamFunctionalImpairment} label="207 - Impotență funcț." />
-    <CheckItem checked={preform.locomotorExamCyanosis} label="208 - Cianoză" />
-    <CheckItem checked={preform.locomotorExamOpenFracture} label="209 - Fract. deschisă" />
-    <CheckItem checked={preform.locomotorExamClosedFracture} label="210 - Fract. închisă" />
-  </div>
+          <div
+            style={{
+              marginTop: 10,
+              display: "grid",
+              gridTemplateColumns: "repeat(3, 1fr)",
+              gap: 6,
+            }}
+          >
+            <CheckItem checked={preform.locomotorExamPain} label="204 - Durere" />
+            <CheckItem checked={preform.locomotorExamSwelling} label="205 - Tumefiere" />
+            <CheckItem checked={preform.locomotorExamEdema} label="206 - Edem" />
+            <CheckItem checked={preform.locomotorExamFunctionalImpairment} label="207 - Impotență funcț." />
+            <CheckItem checked={preform.locomotorExamCyanosis} label="208 - Cianoză" />
+            <CheckItem checked={preform.locomotorExamOpenFracture} label="209 - Fract. deschisă" />
+            <CheckItem checked={preform.locomotorExamClosedFracture} label="210 - Fract. închisă" />
+          </div>
 
-  <div style={{ marginTop: 8 }}>
-    <b>Observații:</b> {safe(preform.locomotorExamObservations)}
-  </div>
-</div>
+          <div style={{ marginTop: 8 }}>
+            <b>Observații:</b> {safe(preform.locomotorExamObservations)}
+          </div>
+        </div>
 
-<div style={{ border: "1px solid #000", padding: 10, marginBottom: 14 }}>
-  <SectionTitle>NEURO PSIHIATRIC</SectionTitle>
+        <div style={{ border: "1px solid #000", padding: 10, marginBottom: 14 }}>
+          <SectionTitle>NEURO PSIHIATRIC</SectionTitle>
 
-  <div style={{ fontWeight: 700, marginBottom: 6 }}>NORMAL</div>
-  <div style={{ display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: 6 }}>
-    <CheckItem checked={preform.neuroPsychNormal} label="Normal" />
-    <CheckItem checked={preform.neuroPsychOriented} label="220 - Orientat temp-sp" />
-    <CheckItem checked={preform.neuroPsychCranialNerves} label="221 - Nervi cranieni" />
-    <CheckItem checked={preform.neuroPsychMotor} label="222 - Motor" />
-    <CheckItem checked={preform.neuroPsychSensitive} label="223 - Senzitiv" />
-    <CheckItem checked={preform.neuroPsychRot} label="224 - ROT" />
-  </div>
+          <div style={{ fontWeight: 700, marginBottom: 6 }}>NORMAL</div>
+          <div style={{ display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: 6 }}>
+            <CheckItem checked={preform.neuroPsychNormal} label="Normal" />
+            <CheckItem checked={preform.neuroPsychOriented} label="220 - Orientat temp-sp" />
+            <CheckItem checked={preform.neuroPsychCranialNerves} label="221 - Nervi cranieni" />
+            <CheckItem checked={preform.neuroPsychMotor} label="222 - Motor" />
+            <CheckItem checked={preform.neuroPsychSensitive} label="223 - Senzitiv" />
+            <CheckItem checked={preform.neuroPsychRot} label="224 - ROT" />
+          </div>
 
-  <div
-    style={{
-      marginTop: 10,
-      display: "grid",
-      gridTemplateColumns: "repeat(3, 1fr)",
-      gap: 6,
-    }}
-  >
-    <CheckItem checked={preform.neuroPsychHallucinations} label="225 - Halucinații" />
-    <CheckItem checked={preform.neuroPsychDelirium} label="226 - Delir" />
-    <CheckItem checked={preform.neuroPsychBehaviorDisorders} label="227 - Tulb. comp" />
-    <CheckItem checked={preform.neuroPsychAgitated} label="228 - Agitat" />
-    <CheckItem checked={preform.neuroPsychObnubilated} label="229 - Obnubilat" />
-    <CheckItem checked={preform.neuroPsychConfused} label="230 - Confuz" />
-    <CheckItem checked={preform.neuroPsychPhotophobia} label="231 - Fotofobie" />
-    <CheckItem checked={preform.neuroPsychNeckStiffness} label="232 - Redoarea cefei" />
-    <CheckItem checked={preform.neuroPsychParesthesia} label="233 - Parestezii" />
-    <CheckItem checked={preform.neuroPsychAtaxia} label="234 - Ataxie" />
-    <CheckItem checked={preform.neuroPsychAphasia} label="235 - Afazie" />
-    <CheckItem checked={preform.neuroPsychMyoclonus} label="236 - Mioclonii" />
-    <CheckItem checked={preform.neuroPsychConvulsions} label="237 - Convulsii" />
-  </div>
+          <div
+            style={{
+              marginTop: 10,
+              display: "grid",
+              gridTemplateColumns: "repeat(3, 1fr)",
+              gap: 6,
+            }}
+          >
+            <CheckItem checked={preform.neuroPsychHallucinations} label="225 - Halucinații" />
+            <CheckItem checked={preform.neuroPsychDelirium} label="226 - Delir" />
+            <CheckItem checked={preform.neuroPsychBehaviorDisorders} label="227 - Tulb. comp" />
+            <CheckItem checked={preform.neuroPsychAgitated} label="228 - Agitat" />
+            <CheckItem checked={preform.neuroPsychObnubilated} label="229 - Obnubilat" />
+            <CheckItem checked={preform.neuroPsychConfused} label="230 - Confuz" />
+            <CheckItem checked={preform.neuroPsychPhotophobia} label="231 - Fotofobie" />
+            <CheckItem checked={preform.neuroPsychNeckStiffness} label="232 - Redoarea cefei" />
+            <CheckItem checked={preform.neuroPsychParesthesia} label="233 - Parestezii" />
+            <CheckItem checked={preform.neuroPsychAtaxia} label="234 - Ataxie" />
+            <CheckItem checked={preform.neuroPsychAphasia} label="235 - Afazie" />
+            <CheckItem checked={preform.neuroPsychMyoclonus} label="236 - Mioclonii" />
+            <CheckItem checked={preform.neuroPsychConvulsions} label="237 - Convulsii" />
+          </div>
 
-  <div style={{ marginTop: 10 }}>
-    <LrRow
-      leftChecked={preform.neuroPsychPlegiaLeft}
-      label="238 - Plegie - 239"
-      rightChecked={preform.neuroPsychPlegiaRight}
-    />
-    <LrRow
-      leftChecked={preform.neuroPsychParesisLeft}
-      label="240 - Pareză - 241"
-      rightChecked={preform.neuroPsychParesisRight}
-    />
-    <LrRow
-      leftChecked={preform.neuroPsychAnesthesiaLeft}
-      label="242 - Anestezie - 243"
-      rightChecked={preform.neuroPsychAnesthesiaRight}
-    />
-    <LrRow
-      leftChecked={preform.neuroPsychBabinskiLeft}
-      label="244 - Babinski - 245"
-      rightChecked={preform.neuroPsychBabinskiRight}
-    />
-  </div>
+          <div style={{ marginTop: 10 }}>
+            <LrRow
+              leftChecked={preform.neuroPsychPlegiaLeft}
+              label="238 - Plegie - 239"
+              rightChecked={preform.neuroPsychPlegiaRight}
+            />
+            <LrRow
+              leftChecked={preform.neuroPsychParesisLeft}
+              label="240 - Pareză - 241"
+              rightChecked={preform.neuroPsychParesisRight}
+            />
+            <LrRow
+              leftChecked={preform.neuroPsychAnesthesiaLeft}
+              label="242 - Anestezie - 243"
+              rightChecked={preform.neuroPsychAnesthesiaRight}
+            />
+            <LrRow
+              leftChecked={preform.neuroPsychBabinskiLeft}
+              label="244 - Babinski - 245"
+              rightChecked={preform.neuroPsychBabinskiRight}
+            />
+          </div>
 
-  <div style={{ marginTop: 8 }}>
-    <b>Alte:</b> {safe(preform.neuroPsychOther)}
-  </div>
-  <div style={{ marginTop: 4 }}>
-    <b>Observații:</b> {safe(preform.neuroPsychObservations)}
-  </div>
-</div>
+          <div style={{ marginTop: 8 }}>
+            <b>Alte:</b> {safe(preform.neuroPsychOther)}
+          </div>
+          <div style={{ marginTop: 4 }}>
+            <b>Observații:</b> {safe(preform.neuroPsychObservations)}
+          </div>
+        </div>
 
-<div style={{ border: "1px solid #000", padding: 10 }}>
-  <SectionTitle>MANEVRE / PROCEDURI</SectionTitle>
+        <div style={{ border: "1px solid #000", padding: 10, marginBottom: 14 }}>
+          <SectionTitle>MANEVRE / PROCEDURI</SectionTitle>
 
-  <div style={{ display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: 12 }}>
-    <div>
-      <CheckItem checked={preform.proceduresO2Mask} label={`10 - O2 mască (l/min): ${safe(preform.proceduresO2MaskValue)}`} />
-      <CheckItem checked={preform.proceduresGuedelCannula} label="11 - Pipa Guedel" />
-      <CheckItem checked={preform.proceduresOralCavityAspiration} label="12 - Aspirare cavitate bucală" />
-      <CheckItem checked={preform.proceduresIotTubeAspiration} label={`13 - Aspirare pe sondă IOT (ml): ${safe(preform.proceduresIotTubeAspirationValue)}`} />
-      <CheckItem checked={preform.proceduresIotWithInduction} label="14 - IOT cu inducție" />
-      <CheckItem checked={preform.proceduresIotWithoutInduction} label="15 - IOT fără inducție" />
-      <CheckItem checked={preform.proceduresIntWithInduction} label="16 - INT cu inducție" />
-      <CheckItem checked={preform.proceduresCombitube} label="17 - Combitub" />
-      <CheckItem checked={preform.proceduresLaryngealMask} label="18 - Mască laringiană" />
-      <CheckItem checked={preform.proceduresNeedleThoracicDecompression} label="19 - Decompresie toracică pe ac" />
-      <CheckItem checked={preform.proceduresChestDrain} label={`20 - Drenaj toracic: ${safe(preform.proceduresChestDrainValue)}`} />
-      <CheckItem checked={preform.proceduresMiniCricothyrotomy} label="21 - Minicricotirostomie" />
-      <CheckItem checked={preform.proceduresTracheostomy} label="22 - Traheostomie" />
-      <CheckItem checked={preform.proceduresNonInvasiveVentilation} label="23 - Ventilație noninvazivă" />
-      <CheckItem checked={preform.proceduresMechanicalVentilation} label="24 - Ventilație mecanică" />
-      <CheckItem checked={preform.proceduresPeripheralVenousAccess} label={`25 - Acces venos periferic - nr.: ${safe(preform.proceduresPeripheralVenousAccessCount)}`} />
-      <CheckItem checked={preform.proceduresIntraosseousAccess} label={`26 - Acces intraosos - nr.: ${safe(preform.proceduresIntraosseousAccessCount)}`} />
-      <CheckItem checked={preform.proceduresCentralVenousAccess} label={`27 - Acces venos central: ${safe(preform.proceduresCentralVenousAccessValue)}`} />
-      <CheckItem checked={preform.proceduresPvcMeasurement} label="28 - Măsurare PVC" />
-      <CheckItem checked={preform.proceduresThrombolysisAmi} label="Tromboliză IMA" />
-      <CheckItem checked={preform.proceduresThrombolysisStroke} label="Tromboliză AVC" />
-      <CheckItem checked={preform.proceduresThrombolysisPep} label="Tromboliză TEP" />
-    </div>
+          <div style={{ display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: 12 }}>
+            <div>
+              <CheckItem checked={preform.proceduresO2Mask} label={`10 - O2 mască (l/min): ${safe(preform.proceduresO2MaskValue)}`} />
+              <CheckItem checked={preform.proceduresGuedelCannula} label="11 - Pipa Guedel" />
+              <CheckItem checked={preform.proceduresOralCavityAspiration} label="12 - Aspirare cavitate bucală" />
+              <CheckItem checked={preform.proceduresIotTubeAspiration} label={`13 - Aspirare pe sondă IOT (ml): ${safe(preform.proceduresIotTubeAspirationValue)}`} />
+              <CheckItem checked={preform.proceduresIotWithInduction} label="14 - IOT cu inducție" />
+              <CheckItem checked={preform.proceduresIotWithoutInduction} label="15 - IOT fără inducție" />
+              <CheckItem checked={preform.proceduresIntWithInduction} label="16 - INT cu inducție" />
+              <CheckItem checked={preform.proceduresCombitube} label="17 - Combitub" />
+              <CheckItem checked={preform.proceduresLaryngealMask} label="18 - Mască laringiană" />
+              <CheckItem checked={preform.proceduresNeedleThoracicDecompression} label="19 - Decompresie toracică pe ac" />
+              <CheckItem checked={preform.proceduresChestDrain} label={`20 - Drenaj toracic: ${safe(preform.proceduresChestDrainValue)}`} />
+              <CheckItem checked={preform.proceduresMiniCricothyrotomy} label="21 - Minicricotirostomie" />
+              <CheckItem checked={preform.proceduresTracheostomy} label="22 - Traheostomie" />
+              <CheckItem checked={preform.proceduresNonInvasiveVentilation} label="23 - Ventilație noninvazivă" />
+              <CheckItem checked={preform.proceduresMechanicalVentilation} label="24 - Ventilație mecanică" />
+              <CheckItem checked={preform.proceduresPeripheralVenousAccess} label={`25 - Acces venos periferic - nr.: ${safe(preform.proceduresPeripheralVenousAccessCount)}`} />
+              <CheckItem checked={preform.proceduresIntraosseousAccess} label={`26 - Acces intraosos - nr.: ${safe(preform.proceduresIntraosseousAccessCount)}`} />
+              <CheckItem checked={preform.proceduresCentralVenousAccess} label={`27 - Acces venos central: ${safe(preform.proceduresCentralVenousAccessValue)}`} />
+              <CheckItem checked={preform.proceduresPvcMeasurement} label="28 - Măsurare PVC" />
+              <CheckItem checked={preform.proceduresThrombolysisAmi} label="Tromboliză IMA" />
+              <CheckItem checked={preform.proceduresThrombolysisStroke} label="Tromboliză AVC" />
+              <CheckItem checked={preform.proceduresThrombolysisPep} label="Tromboliză TEP" />
+            </div>
 
-    <div>
-      <CheckItem checked={preform.proceduresArterialAccess} label="29 - Acces arterial" />
-      <CheckItem checked={preform.proceduresIntramuscularInjection} label="30 - Inj. intramusculară" />
-      <CheckItem checked={preform.proceduresSubcutaneousInjection} label="31 - Inj. subcutanată" />
-      <CheckItem checked={preform.proceduresIntradermalInjection} label="32 - Inj. intradermică" />
-      <CheckItem checked={preform.proceduresIntranasalAdministration} label="33 - Adm. intranazală" />
-      <CheckItem checked={preform.proceduresNebulization} label="34 - Nebulizare" />
-      <CheckItem checked={preform.proceduresExternalChestCompressions} label="35 - Compresiuni toracice externe" />
-      <CheckItem checked={preform.proceduresInvasiveBpMeasurement} label="36 - Măsurare TA invazivă" />
-      <CheckItem checked={preform.proceduresEkgMonitoring} label="37 - Monitorizare EKG" />
-      <CheckItem checked={preform.proceduresO2SatMonitoring} label="38 - Monitorizare Sat O2" />
-      <CheckItem checked={preform.proceduresCapnometry} label="39 - Capnometrie" />
-      <div style={{ marginBottom: 4 }}><b>40 - Alte monitorizări:</b> {safe(preform.proceduresOtherMonitoring)}</div>
-      <CheckItem checked={preform.proceduresManualDefibrillation} label="41 - Defibrilare manuală" />
-      <CheckItem checked={preform.proceduresAutomaticDefibrillation} label="42 - Defibrilare automată" />
-      <CheckItem checked={preform.proceduresCardioversion} label="43 - Cardioversie" />
-      <CheckItem checked={preform.proceduresTranscutaneousPm} label={`PM transcutanat: ${safe(preform.proceduresTranscutaneousPmValue)}`} />
-      <CheckItem checked={preform.proceduresTransvenousPm} label={`PM transvenos: ${safe(preform.proceduresTransvenousPmValue)}`} />
-      <CheckItem checked={preform.proceduresAnalgosedation} label="Analgosedare" />
-      <CheckItem checked={preform.proceduresLocalAnesthesia} label="Anestezie locală" />
-      <CheckItem checked={preform.proceduresShortIvAnesthesia} label="Anestezie iv scurtă durată" />
-    </div>
+            <div>
+              <CheckItem checked={preform.proceduresArterialAccess} label="29 - Acces arterial" />
+              <CheckItem checked={preform.proceduresIntramuscularInjection} label="30 - Inj. intramusculară" />
+              <CheckItem checked={preform.proceduresSubcutaneousInjection} label="31 - Inj. subcutanată" />
+              <CheckItem checked={preform.proceduresIntradermalInjection} label="32 - Inj. intradermică" />
+              <CheckItem checked={preform.proceduresIntranasalAdministration} label="33 - Adm. intranazală" />
+              <CheckItem checked={preform.proceduresNebulization} label="34 - Nebulizare" />
+              <CheckItem checked={preform.proceduresExternalChestCompressions} label="35 - Compresiuni toracice externe" />
+              <CheckItem checked={preform.proceduresInvasiveBpMeasurement} label="36 - Măsurare TA invazivă" />
+              <CheckItem checked={preform.proceduresEkgMonitoring} label="37 - Monitorizare EKG" />
+              <CheckItem checked={preform.proceduresO2SatMonitoring} label="38 - Monitorizare Sat O2" />
+              <CheckItem checked={preform.proceduresCapnometry} label="39 - Capnometrie" />
+              <div style={{ marginBottom: 4 }}><b>40 - Alte monitorizări:</b> {safe(preform.proceduresOtherMonitoring)}</div>
+              <CheckItem checked={preform.proceduresManualDefibrillation} label="41 - Defibrilare manuală" />
+              <CheckItem checked={preform.proceduresAutomaticDefibrillation} label="42 - Defibrilare automată" />
+              <CheckItem checked={preform.proceduresCardioversion} label="43 - Cardioversie" />
+              <CheckItem checked={preform.proceduresTranscutaneousPm} label={`PM transcutanat: ${safe(preform.proceduresTranscutaneousPmValue)}`} />
+              <CheckItem checked={preform.proceduresTransvenousPm} label={`PM transvenos: ${safe(preform.proceduresTransvenousPmValue)}`} />
+              <CheckItem checked={preform.proceduresAnalgosedation} label="Analgosedare" />
+              <CheckItem checked={preform.proceduresLocalAnesthesia} label="Anestezie locală" />
+              <CheckItem checked={preform.proceduresShortIvAnesthesia} label="Anestezie iv scurtă durată" />
+            </div>
 
-    <div>
-      <CheckItem checked={preform.proceduresPericardialPuncture} label="45 - Puncție pericardică" />
-      <CheckItem checked={preform.proceduresPeritonealDiagnosticLavage} label="46 - Lavaj peritoneal diag." />
-      <CheckItem checked={preform.proceduresActiveRewarming} label="47 - Reîncălzire activă" />
-      <CheckItem checked={preform.proceduresPassiveRewarming} label="48 - Reîncălzire pasivă" />
-      <CheckItem checked={preform.proceduresGastricLavage} label={`49 - Lavaj gastric: ${safe(preform.proceduresGastricLavageValue)}`} />
-      <CheckItem checked={preform.proceduresNasogastricTube} label={`50 - Sondă nazogastrică: ${safe(preform.proceduresNasogastricTubeValue)}`} />
-      <CheckItem checked={preform.proceduresUrinaryCatheter} label={`51 - Sondă vezică urinară: ${safe(preform.proceduresUrinaryCatheterValue)}`} />
-      <CheckItem checked={preform.proceduresCervicalCollar} label="52 - Guler cervical" />
-      <CheckItem checked={preform.proceduresScoopStretcher} label="53 - Targă cu lopeți" />
-      <CheckItem checked={preform.proceduresSpineBoard} label="54 - Targă coloană" />
-      <CheckItem checked={preform.proceduresLimbImmobilization} label="55 - Imobilizare membre" />
-      <CheckItem checked={preform.proceduresSplint} label={`56 - Atelă: ${safe(preform.proceduresSplintValue)}`} />
-      <CheckItem checked={preform.proceduresCastDevice} label="57 - Aparat gipsat" />
-      <CheckItem checked={preform.proceduresWoundCleaning} label="58 - Toaletă plagă" />
-      <CheckItem checked={preform.proceduresSuture} label="59 - Sutură" />
-      <CheckItem checked={preform.proceduresMessage} label="60 - Mesaj" />
-      <CheckItem checked={preform.proceduresNasalPacking} label="61 - Tamponament nazal" />
-      <CheckItem checked={preform.proceduresShortSedation} label="Sedare de scurtă durată" />
-      <CheckItem checked={preform.proceduresProceduralSedation} label="Sedare procedurală" />
-      <CheckItem checked={preform.proceduresLongSedation} label="Sedare de lungă durată" />
-      <CheckItem checked={preform.proceduresArterialPuncture} label="Puncție arterială" />
-      <div style={{ marginBottom: 4 }}><b>Alte:</b> {safe(preform.proceduresOther)}</div>
-    </div>
-  </div>
+            <div>
+              <CheckItem checked={preform.proceduresPericardialPuncture} label="45 - Puncție pericardică" />
+              <CheckItem checked={preform.proceduresPeritonealDiagnosticLavage} label="46 - Lavaj peritoneal diag." />
+              <CheckItem checked={preform.proceduresActiveRewarming} label="47 - Reîncălzire activă" />
+              <CheckItem checked={preform.proceduresPassiveRewarming} label="48 - Reîncălzire pasivă" />
+              <CheckItem checked={preform.proceduresGastricLavage} label={`49 - Lavaj gastric: ${safe(preform.proceduresGastricLavageValue)}`} />
+              <CheckItem checked={preform.proceduresNasogastricTube} label={`50 - Sondă nazogastrică: ${safe(preform.proceduresNasogastricTubeValue)}`} />
+              <CheckItem checked={preform.proceduresUrinaryCatheter} label={`51 - Sondă vezică urinară: ${safe(preform.proceduresUrinaryCatheterValue)}`} />
+              <CheckItem checked={preform.proceduresCervicalCollar} label="52 - Guler cervical" />
+              <CheckItem checked={preform.proceduresScoopStretcher} label="53 - Targă cu lopeți" />
+              <CheckItem checked={preform.proceduresSpineBoard} label="54 - Targă coloană" />
+              <CheckItem checked={preform.proceduresLimbImmobilization} label="55 - Imobilizare membre" />
+              <CheckItem checked={preform.proceduresSplint} label={`56 - Atelă: ${safe(preform.proceduresSplintValue)}`} />
+              <CheckItem checked={preform.proceduresCastDevice} label="57 - Aparat gipsat" />
+              <CheckItem checked={preform.proceduresWoundCleaning} label="58 - Toaletă plagă" />
+              <CheckItem checked={preform.proceduresSuture} label="59 - Sutură" />
+              <CheckItem checked={preform.proceduresMessage} label="60 - Mesaj" />
+              <CheckItem checked={preform.proceduresNasalPacking} label="61 - Tamponament nazal" />
+              <CheckItem checked={preform.proceduresShortSedation} label="Sedare de scurtă durată" />
+              <CheckItem checked={preform.proceduresProceduralSedation} label="Sedare procedurală" />
+              <CheckItem checked={preform.proceduresLongSedation} label="Sedare de lungă durată" />
+              <CheckItem checked={preform.proceduresArterialPuncture} label="Puncție arterială" />
+              <div style={{ marginBottom: 4 }}><b>Alte:</b> {safe(preform.proceduresOther)}</div>
+            </div>
+          </div>
 
-  <div style={{ marginTop: 10 }}>
-    <b>Observații:</b> {safe(preform.proceduresObservations)}
-  </div>
-</div>
+          <div style={{ marginTop: 10 }}>
+            <b>Observații:</b> {safe(preform.proceduresObservations)}
+          </div>
+        </div>
+
+        <div
+          style={{
+            display: "grid",
+            gridTemplateColumns: "1fr 1fr",
+            gap: 14,
+          }}
+        >
+          <SignatureBlock
+            title="Semnătura asistent(ă)"
+            name={preform.nurseName}
+            signature={preform.nurseSignature}
+            signedAt={preform.nurseSignedAt}
+          />
+
+          <SignatureBlock
+            title="Semnătura medic"
+            name={preform.doctorName}
+            signature={preform.doctorSignature}
+            signedAt={preform.doctorSignedAt}
+          />
+        </div>
       </div>
     </div>
   );

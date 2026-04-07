@@ -18,6 +18,13 @@ export function buildPreformPayload(preform) {
     glycemia: toIntOrNull(preform.glycemia),
     temperature: toFloatOrNull(preform.temperature),
 
+    doctorName: preform.doctorName || "",
+    doctorSignature: preform.doctorSignature || "",
+    doctorSignedAt: preform.doctorSignedAt || null,
+    nurseName: preform.nurseName || "",
+    nurseSignature: preform.nurseSignature || "",
+    nurseSignedAt: preform.nurseSignedAt || null,
+
     details: JSON.stringify({
       objectiveGeneralState: preform.objectiveGeneralState || "",
 
@@ -321,6 +328,12 @@ export function buildDischargePayload(discharge) {
 
   return {
     ...discharge,
+    doctorName: discharge.doctorName || "",
+    doctorSignature: discharge.doctorSignature || "",
+    doctorSignedAt: discharge.doctorSignedAt || null,
+    nurseName: discharge.nurseName || "",
+    nurseSignature: discharge.nurseSignature || "",
+    nurseSignedAt: discharge.nurseSignedAt || null,
     details: JSON.stringify({
       appliedProcedures: discharge.appliedProcedures || "",
       patientStateAtDischarge: discharge.patientStateAtDischarge || "",

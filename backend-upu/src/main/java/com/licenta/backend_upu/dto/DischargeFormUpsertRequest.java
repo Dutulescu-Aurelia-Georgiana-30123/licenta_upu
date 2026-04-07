@@ -28,10 +28,10 @@ public class DischargeFormUpsertRequest {
     private String citizenshipType;
     private String citizenshipCountry;
 
-    private String insuranceStatus; //asigurat
-    private String admissionType; //criteriul internarii
-    private String hospitalizationOutcome; //tipul internarii
-    private String dischargeType; //tipul externarii
+    private String insuranceStatus;
+    private String admissionType;
+    private String hospitalizationOutcome;
+    private String dischargeType;
 
     private String diagnosisAtAdmission;
     private String diagnosisAtDischarge;
@@ -39,4 +39,11 @@ public class DischargeFormUpsertRequest {
 
     private String details;
 
+    private String doctorName;
+    private String doctorSignature;
+    private LocalDateTime doctorSignedAt;
+
+    private String nurseName;
+    private String nurseSignature;
+    private LocalDateTime nurseSignedAt;
 }

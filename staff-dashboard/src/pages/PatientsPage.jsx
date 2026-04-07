@@ -1,13 +1,15 @@
 import { useEffect, useMemo, useState } from "react";
 import { apiGet, apiPost, apiPut } from "../api/api";
+import { useToast } from "../context/ToastContext";
 
 export default function PatientsPage({ onVisitCreated }) {
   const [patients, setPatients] = useState([]);
   const [error, setError] = useState("");
   const [search, setSearch] = useState("");
   const [showCreate, setShowCreate] = useState(false);
-  const [msg, setMsg] = useState("");
   const [editingPatientId, setEditingPatientId] = useState(null);
+
+  const { showSuccess, showError } = useToast();
 
   const [form, setForm] = useState({
     firstName: "",
@@ -28,18 +30,20 @@ export default function PatientsPage({ onVisitCreated }) {
     setEditingPatientId(null);
   };
 
-  const load = async () => {
+  const load = async (silent = false) => {
     setError("");
     try {
       const data = await apiGet("/patients");
       setPatients(data);
     } catch (e) {
-      setError(String(e));
+      const msg = String(e);
+      setError(msg);
+      if (!silent) showError("Eroare la încărcarea pacienților");
     }
   };
 
   useEffect(() => {
-    load();
+    load(true);
   }, []);
 
   const filteredPatients = useMemo(() => {
@@ -54,42 +58,44 @@ export default function PatientsPage({ onVisitCreated }) {
   }, [patients, search]);
 
   const createPatient = async () => {
-    setMsg("");
     setError("");
 
     try {
       if (editingPatientId) {
         await apiPut(`/patients/${editingPatientId}`, form);
-        setMsg("Pacient actualizat cu succes.");
+        showSuccess("Pacient actualizat cu succes");
       } else {
         await apiPost("/patients", form);
-        setMsg("Pacient creat cu succes.");
+        showSuccess("Pacient creat cu succes");
       }
 
       resetForm();
       setShowCreate(false);
-      load();
+      load(true);
     } catch (e) {
-      setError(
+      showError(
         editingPatientId
-          ? `Eroare actualizare pacient: ${e}`
-          : `Eroare creare pacient: ${e}`
+          ? "Eroare la actualizarea pacientului"
+          : "Eroare la crearea pacientului"
       );
+      setError(String(e));
     }
   };
 
   const createVisit = async (patientId) => {
-    setMsg("");
     setError("");
 
     try {
       const createdVisit = await apiPost("/visits", { patientId });
 
+      showSuccess("Vizită creată");
+
       if (onVisitCreated) {
         onVisitCreated(createdVisit);
       }
     } catch (e) {
-      setError(`Eroare creare vizită: ${e}`);
+      showError("Eroare la crearea vizitei");
+      setError(String(e));
     }
   };
 
@@ -124,7 +130,6 @@ export default function PatientsPage({ onVisitCreated }) {
       </div>
 
       {error && <p style={{ color: "red" }}>{error}</p>}
-      {msg && <p style={{ color: "#9ae6b4" }}>{msg}</p>}
 
       <div style={{ marginTop: 12 }}>
         <input
@@ -275,7 +280,6 @@ export default function PatientsPage({ onVisitCreated }) {
                         });
                         setEditingPatientId(p.id);
                         setShowCreate(true);
-                        setMsg("");
                         setError("");
                       }}
                       style={{ padding: "6px 10px", cursor: "pointer" }}

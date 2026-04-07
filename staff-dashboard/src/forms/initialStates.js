@@ -234,7 +234,7 @@ export const initialPreformState = {
   locomotorFunctionalImpairment: false,
   locomotorHematoma: false,
 
-    abdomenNormal: false,
+  abdomenNormal: false,
   abdomenPalpation: false,
   abdomenPercussion: false,
   abdomenBowelTransit: false,
@@ -349,7 +349,8 @@ export const initialPreformState = {
   neuroPsychBabinskiRight: false,
   neuroPsychOther: "",
   neuroPsychObservations: "",
-    proceduresO2Mask: false,
+
+  proceduresO2Mask: false,
   proceduresO2MaskValue: "",
 
   proceduresGuedelCannula: false,
@@ -450,6 +451,13 @@ export const initialPreformState = {
   proceduresObservations: "",
 
   allergies: "",
+
+  doctorName: "",
+  doctorSignature: "",
+  doctorSignedAt: null,
+  nurseName: "",
+  nurseSignature: "",
+  nurseSignedAt: null,
 };
 
 export const initialDischargeState = {
@@ -469,4 +477,11 @@ export const initialDischargeState = {
   transferredSection: "",
   leavesWithRecommendations: false,
   treatmentAndRecommendations: "",
+
+  doctorName: "",
+  doctorSignature: "",
+  doctorSignedAt: null,
+  nurseName: "",
+  nurseSignature: "",
+  nurseSignedAt: null,
 };

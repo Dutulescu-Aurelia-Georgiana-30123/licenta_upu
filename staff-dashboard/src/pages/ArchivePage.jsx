@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import { apiGet, API_BASE } from "../api/api";
+import { useToast } from "../context/ToastContext";
 
 function getDocumentTypeLabel(type) {
   const labels = {
@@ -50,6 +51,8 @@ export default function ArchivePage() {
   const [documents, setDocuments] = useState([]);
   const [loading, setLoading] = useState(false);
 
+  const { showSuccess, showError, showInfo } = useToast();
+
   const searchPatients = async (value) => {
     const q = (value || "").trim().toLowerCase();
 
@@ -81,6 +84,7 @@ export default function ArchivePage() {
       setDocuments([]);
     } catch (e) {
       setMsg(`Eroare căutare pacient: ${e}`);
+      showError("Eroare la căutarea pacientului");
     } finally {
       setLoading(false);
     }
@@ -105,9 +109,10 @@ export default function ArchivePage() {
       const visits = await apiGet(`/visits/patient/${patient.id}`);
       setPatientVisits(visits || []);
       setSearchResults([]);
-     // setSearch(`${patient.firstName || ""} ${patient.lastName || ""}`.trim());
+      showInfo("Pacient selectat");
     } catch (e) {
       setMsg(`Eroare încărcare vizite: ${e}`);
+      showError("Eroare la încărcarea vizitelor");
     } finally {
       setLoading(false);
     }
@@ -121,40 +126,58 @@ export default function ArchivePage() {
     try {
       const docs = await apiGet(`/archived-documents/visit/${visit.id}`);
       setDocuments(docs || []);
+      showInfo("Vizită selectată");
     } catch (e) {
       setMsg(`Eroare încărcare documente: ${e}`);
+      showError("Eroare la încărcarea documentelor");
     } finally {
       setLoading(false);
     }
   };
 
   const downloadDocument = async (doc) => {
-    setMsg("");
+  setMsg("");
 
-    try {
-      const response = await fetch(`${API_BASE}/archived-documents/${doc.id}/download`, {
-        method: "GET",
-      });
+  try {
+    const response = await fetch(`${API_BASE}/archived-documents/${doc.id}/download`, {
+      method: "GET",
+    });
 
-      if (!response.ok) {
-        throw new Error("Nu s-a putut descărca documentul");
-      }
-
-      const blob = await response.blob();
-      const url = window.URL.createObjectURL(blob);
-
-      const a = document.createElement("a");
-      a.href = url;
-      a.download = doc.fileName || "document.pdf";
-      document.body.appendChild(a);
-      a.click();
-      a.remove();
-
-      window.URL.revokeObjectURL(url);
-    } catch (e) {
-      setMsg(`Eroare download: ${e.message || e}`);
+    if (!response.ok) {
+      throw new Error("Nu s-a putut descărca documentul");
     }
-  };
+
+    const blob = await response.blob();
+    const url = window.URL.createObjectURL(blob);
+
+    const visitDate = selectedVisit?.createdAt
+      ? new Date(selectedVisit.createdAt).toLocaleString("ro-RO", {
+          day: "2-digit",
+          month: "2-digit",
+          year: "numeric",
+          hour: "2-digit",
+          minute: "2-digit",
+        })
+      : "";
+
+    const fileName = `Vizita ${selectedVisit?.visitCode || selectedVisit?.id}, ${visitDate}.pdf`;
+
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = fileName;
+
+    document.body.appendChild(a);
+    a.click();
+    a.remove();
+
+    window.URL.revokeObjectURL(url);
+
+    showSuccess("Document descărcat");
+  } catch (e) {
+    setMsg(`Eroare download: ${e.message || e}`);
+    showError("Eroare la descărcarea documentului");
+  }
+};
 
   return (
     <div>
@@ -211,30 +234,31 @@ export default function ArchivePage() {
           ) : (
             <div style={{ border: "1px solid #333", borderRadius: 8, overflow: "hidden" }}>
               {patientVisits.map((visit, index) => {
-  const visitDate = visit.createdAt
-    ? new Date(visit.createdAt).toLocaleString("ro-RO", {
-        day: "2-digit",
-        month: "2-digit",
-        year: "numeric",
-        hour: "2-digit",
-        minute: "2-digit",
-      })
-    : "-";
+                const visitDate = visit.createdAt
+                  ? new Date(visit.createdAt).toLocaleString("ro-RO", {
+                      day: "2-digit",
+                      month: "2-digit",
+                      year: "numeric",
+                      hour: "2-digit",
+                      minute: "2-digit",
+                    })
+                  : "-";
 
-  return (
-    <div
-      key={visit.id}
-      onClick={() => loadVisitDocuments(visit)}
-      style={{
-        cursor: "pointer",
-        padding: 10,
-        borderBottom: index !== patientVisits.length - 1 ? "1px solid #333" : "none",
-      }}
-    >
-      Vizita {visit.visitCode || `UPU-${visit.id}`}, {visitDate} - {getStatusLabel(visit.status)}
-    </div>
-  );
-})}
+                return (
+                  <div
+                    key={visit.id}
+                    onClick={() => loadVisitDocuments(visit)}
+                    style={{
+                      cursor: "pointer",
+                      padding: 10,
+                      borderBottom: index !== patientVisits.length - 1 ? "1px solid #333" : "none",
+                    }}
+                  >
+                    Vizita {visit.visitCode || `UPU-${visit.id}`}, {visitDate} -{" "}
+                    {getStatusLabel(visit.status)}
+                  </div>
+                );
+              })}
             </div>
           )}
         </div>
@@ -265,7 +289,18 @@ export default function ArchivePage() {
                   }}
                 >
                   <div>
-                    <div style={{ fontWeight: 700 }}>{doc.fileName || "Document"}</div>
+                    <div style={{ fontWeight: 700 }}>
+  Vizita {selectedVisit?.visitCode || selectedVisit?.id},{" "}
+  {selectedVisit?.createdAt
+    ? new Date(selectedVisit.createdAt).toLocaleString("ro-RO", {
+        day: "2-digit",
+        month: "2-digit",
+        year: "numeric",
+        hour: "2-digit",
+        minute: "2-digit",
+      })
+    : ""}
+</div>
                     <div style={{ color: "#aaa", marginTop: 4 }}>
                       Tip: {getDocumentTypeLabel(doc.documentType)}
                     </div>

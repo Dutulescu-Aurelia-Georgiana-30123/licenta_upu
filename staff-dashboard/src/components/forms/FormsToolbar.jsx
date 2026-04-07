@@ -4,7 +4,6 @@ export default function FormsToolbar({
   status,
   setStatus,
   updateStatus,
-  msg,
 }) {
   return (
     <div
@@ -16,19 +15,8 @@ export default function FormsToolbar({
         background: "#121212",
       }}
     >
-      <div
-        style={{
-          display: "flex",
-          gap: 12,
-          flexWrap: "wrap",
-          alignItems: "center",
-        }}
-      >
-        <button
-          onClick={exportCombined}
-          disabled={loading}
-          style={{ padding: "8px 12px" }}
-        >
+      <div style={{ display: "flex", gap: 12, flexWrap: "wrap" }}>
+        <button onClick={exportCombined} disabled={loading} style={{ padding: "8px 12px" }}>
           Export PDF combinat
         </button>
 
@@ -56,20 +44,10 @@ export default function FormsToolbar({
           <option value="TRANSFERRED">Transferat</option>
         </select>
 
-        <button
-          onClick={updateStatus}
-          disabled={loading}
-          style={{ padding: "8px 12px" }}
-        >
+        <button onClick={updateStatus} disabled={loading} style={{ padding: "8px 12px" }}>
           Actualizează statusul
         </button>
       </div>
-
-      {msg && (
-        <p style={{ marginTop: 12, color: "#ddd" }}>
-          {msg}
-        </p>
-      )}
     </div>
   );
 }

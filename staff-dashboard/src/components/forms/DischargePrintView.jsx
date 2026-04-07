@@ -26,6 +26,51 @@ function SectionTitle({ children }) {
   );
 }
 
+function SignatureBlock({ title, name, signature, signedAt }) {
+  return (
+    <div
+      style={{
+        border: "1px solid #000",
+        padding: 12,
+        minHeight: 180,
+      }}
+    >
+      <div style={{ fontWeight: 700, marginBottom: 10 }}>{title}</div>
+
+      <div style={{ marginBottom: 8 }}>
+        <b>Nume:</b> {safe(name)}
+      </div>
+
+      <div
+        style={{
+          height: 90,
+          border: "1px solid #bbb",
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "center",
+          marginBottom: 8,
+          overflow: "hidden",
+        }}
+      >
+        {signature ? (
+          <img
+            src={signature}
+            alt={title}
+            style={{ maxWidth: "100%", maxHeight: "100%", objectFit: "contain" }}
+          />
+        ) : (
+          <span style={{ color: "#666" }}>Fără semnătură</span>
+        )}
+      </div>
+
+      <div>
+        <b>Semnat la:</b>{" "}
+        {signedAt ? new Date(signedAt).toLocaleString("ro-RO") : "-"}
+      </div>
+    </div>
+  );
+}
+
 export default function DischargePrintView({ discharge, preform }) {
   const patientStateLabel =
     discharge.patientStateAtDischarge === "AMELIORAT"
@@ -159,11 +204,33 @@ export default function DischargePrintView({ discharge, preform }) {
         </div>
       </div>
 
-      <div style={{ border: "1px solid #000", padding: 12 }}>
+      <div style={{ border: "1px solid #000", padding: 12, marginBottom: 14 }}>
         <SectionTitle>Tratament și recomandări</SectionTitle>
         <div style={{ whiteSpace: "pre-wrap", minHeight: 100 }}>
           {safe(discharge.treatmentAndRecommendations)}
         </div>
+      </div>
+
+      <div
+        style={{
+          display: "grid",
+          gridTemplateColumns: "1fr 1fr",
+          gap: 14,
+        }}
+      >
+        <SignatureBlock
+          title="Semnătura asistent(ă)"
+          name={discharge.nurseName}
+          signature={discharge.nurseSignature}
+          signedAt={discharge.nurseSignedAt}
+        />
+
+        <SignatureBlock
+          title="Semnătura medic"
+          name={discharge.doctorName}
+          signature={discharge.doctorSignature}
+          signedAt={discharge.doctorSignedAt}
+        />
       </div>
     </div>
   );

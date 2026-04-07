@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import { apiGet } from "../api/api";
+import { useToast } from "../context/ToastContext";
 
 function StatBox({ title, children }) {
   return (
@@ -83,20 +84,24 @@ function PriorityRow({ patient }) {
 export default function HomePage() {
   const [stats, setStats] = useState(null);
   const [error, setError] = useState("");
+  const { showSuccess, showError } = useToast();
 
-  const load = async () => {
-    setError("");
-    try {
-      const data = await apiGet("/stats/home");
-      setStats(data);
-    } catch (e) {
-      setError(String(e));
-    }
-  };
+ const load = async (silent = false) => {
+  setError("");
+  try {
+    const data = await apiGet("/stats/home");
+    setStats(data);
+    if (!silent) showSuccess("Datele au fost actualizate");
+  } catch (e) {
+    const msg = String(e);
+    setError(msg);
+    if (!silent) showError("Eroare la încărcarea datelor");
+  }
+};
 
-  useEffect(() => {
-    load();
-  }, []);
+useEffect(() => {
+  load(true); 
+}, []);
 
   return (
     <div style={{ padding: 12, width: "100%" }}>

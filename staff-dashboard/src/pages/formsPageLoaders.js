@@ -28,6 +28,12 @@ export async function loadPreformIntoState({
       cnp: data?.cnp ? data.cnp : patient.cnp || "",
       phoneNumber: data?.phoneNumber ? data.phoneNumber : patient.phoneNumber || "",
       email: data?.email ? data.email : patient.email || "",
+      doctorName: data?.doctorName || prev.doctorName || "",
+      doctorSignature: data?.doctorSignature || prev.doctorSignature || "",
+      doctorSignedAt: data?.doctorSignedAt || prev.doctorSignedAt || null,
+      nurseName: data?.nurseName || prev.nurseName || "",
+      nurseSignature: data?.nurseSignature || prev.nurseSignature || "",
+      nurseSignedAt: data?.nurseSignedAt || prev.nurseSignedAt || null,
     }));
   } catch (e) {
     setMsg(`Eroare load preform: ${e}`);
@@ -83,6 +89,12 @@ export async function loadDischargeIntoState({
       birthDate: data?.birthDate || preformData?.birthDate || "",
       age: data?.age ?? preformData?.age ?? "",
       dischargeHour: parsedDetails?.dischargeHour || currentHour,
+      doctorName: data?.doctorName || prev.doctorName || "",
+      doctorSignature: data?.doctorSignature || prev.doctorSignature || "",
+      doctorSignedAt: data?.doctorSignedAt || prev.doctorSignedAt || null,
+      nurseName: data?.nurseName || prev.nurseName || "",
+      nurseSignature: data?.nurseSignature || prev.nurseSignature || "",
+      nurseSignedAt: data?.nurseSignedAt || prev.nurseSignedAt || null,
     }));
   } catch (e) {
     setMsg(`Eroare load externare: ${e}`);

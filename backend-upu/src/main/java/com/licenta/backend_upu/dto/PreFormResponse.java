@@ -1,7 +1,6 @@
 package com.licenta.backend_upu.dto;
 
 import lombok.Data;
-//import com.fasterxml.jackson.databind.JsonNode;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
@@ -163,4 +162,12 @@ public class PreFormResponse {
     private Boolean locomotorHematoma;
 
     private String allergies;
+
+    private String doctorName;
+    private String doctorSignature;
+    private LocalDateTime doctorSignedAt;
+
+    private String nurseName;
+    private String nurseSignature;
+    private LocalDateTime nurseSignedAt;
 }

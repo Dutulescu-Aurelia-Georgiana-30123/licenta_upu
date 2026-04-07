@@ -4,6 +4,7 @@ import com.licenta.backend_upu.dto.PreFormResponse;
 import com.licenta.backend_upu.dto.PreFormUpsertRequest;
 import com.licenta.backend_upu.entity.*;
 import org.springframework.stereotype.Component;
+
 @Component
 public class PreFormMapper {
     public void applyToEntity(PreFormUpsertRequest req, PreHospitalizationForm e) {
@@ -15,9 +16,14 @@ public class PreFormMapper {
 
         if (req.getTriageColor() != null) {
             e.setTriageColor(TriageColor.valueOf(req.getTriageColor().toUpperCase()));
+        } else {
+            e.setTriageColor(null);
         }
+
         if (req.getArrivalMode() != null) {
             e.setArrivalMode(ArrivalMode.valueOf(req.getArrivalMode().toUpperCase()));
+        } else {
+            e.setArrivalMode(null);
         }
 
         e.setReason(req.getReason());
@@ -158,18 +164,32 @@ public class PreFormMapper {
 
         if (req.getOutcome() != null) {
             e.setOutcome(PatientOutcome.valueOf(req.getOutcome().toUpperCase()));
+        } else {
+            e.setOutcome(null);
         }
+
         if (req.getHandoverTo() != null) {
             e.setHandoverTo(HandoverTo.valueOf(req.getHandoverTo().toUpperCase()));
+        } else {
+            e.setHandoverTo(null);
         }
 
         e.setDetails(req.getDetails());
+
+        e.setDoctorName(req.getDoctorName());
+        e.setDoctorSignature(req.getDoctorSignature());
+        e.setDoctorSignedAt(req.getDoctorSignedAt());
+
+        e.setNurseName(req.getNurseName());
+        e.setNurseSignature(req.getNurseSignature());
+        e.setNurseSignedAt(req.getNurseSignedAt());
     }
 
     public PreFormResponse toResponse(PreHospitalizationForm e) {
         if (e == null) {
             return null;
         }
+
         PreFormResponse r = new PreFormResponse();
         r.setId(e.getId());
         r.setVisitId(e.getVisit().getId());
@@ -182,7 +202,6 @@ public class PreFormMapper {
 
         r.setTriageColor(e.getTriageColor() != null ? e.getTriageColor().name() : null);
         r.setArrivalMode(e.getArrivalMode() != null ? e.getArrivalMode().name() : null);
-
 
         r.setReason(e.getReason());
 
@@ -326,7 +345,15 @@ public class PreFormMapper {
         r.setLocomotorHematoma(e.getLocomotorHematoma());
 
         r.setAllergies(e.getAllergies());
+
+        r.setDoctorName(e.getDoctorName());
+        r.setDoctorSignature(e.getDoctorSignature());
+        r.setDoctorSignedAt(e.getDoctorSignedAt());
+
+        r.setNurseName(e.getNurseName());
+        r.setNurseSignature(e.getNurseSignature());
+        r.setNurseSignedAt(e.getNurseSignedAt());
+
         return r;
     }
-
 }

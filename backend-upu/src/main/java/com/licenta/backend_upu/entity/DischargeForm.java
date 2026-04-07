@@ -10,7 +10,6 @@ import java.time.LocalDateTime;
 @Entity
 @Table(name="discharge_forms")
 @Data
-
 public class DischargeForm {
 
     @Id
@@ -21,7 +20,6 @@ public class DischargeForm {
     @JoinColumn(name="visit_id",nullable = false,unique = true)
     private Visit visit;
 
-    //header
     private String hospitalName;
     private String sectionName;
     private String foNumber;
@@ -29,7 +27,6 @@ public class DischargeForm {
     private LocalDateTime admissionDateTime;
     private LocalDateTime dischargeDateTime;
 
-    //indentificare pacient
     private String firstName;
     private String lastName;
     private String cnp;
@@ -72,8 +69,22 @@ public class DischargeForm {
     @ColumnTransformer(write="?::jsonb")
     private String details;
 
+    @Column(columnDefinition = "text")
+    private String doctorName;
+
+    @Column(columnDefinition = "text")
+    private String doctorSignature;
+
+    private LocalDateTime doctorSignedAt;
+
+    @Column(columnDefinition = "text")
+    private String nurseName;
+
+    @Column(columnDefinition = "text")
+    private String nurseSignature;
+
+    private LocalDateTime nurseSignedAt;
+
     private LocalDateTime createdAt;
     private LocalDateTime updatedAt;
-
-
 }

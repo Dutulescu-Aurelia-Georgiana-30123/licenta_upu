@@ -11,6 +11,7 @@ import { exportCombinedPdf, downloadCombinedPdf } from "./formsPrintActions";
 import { buildPreformPayload, buildDischargePayload } from "./formsPayloadBuilders";
 import { loadPreformIntoState, loadDischargeIntoState } from "./formsPageLoaders";
 import { loadPatientVisitsAction } from "./formsSearchActions";
+import SignaturesSection from "../components/forms/SignaturesSection";
 import {
   loadPreformData,
   loadDischargeData,
@@ -19,6 +20,7 @@ import {
   updateVisitStatusData,
   loadPatientVisitsData,
 } from "./formsPageApi";
+import { useToast } from "../context/ToastContext";
 
 export default function FormsPage({ selected, onSelectVisit }) {
   const [patientsSearch, setPatientsSearch] = useState("");
@@ -39,6 +41,8 @@ export default function FormsPage({ selected, onSelectVisit }) {
 
   const [combinedPrintMode, setCombinedPrintMode] = useState(false);
 
+  const { showSuccess, showError, showInfo } = useToast();
+
   const loadAllPatients = async () => {
     setMsg("");
     try {
@@ -46,6 +50,7 @@ export default function FormsPage({ selected, onSelectVisit }) {
       setPatientsList(data || []);
     } catch (e) {
       setMsg(`Eroare încărcare pacienți: ${e}`);
+      showError("Eroare la încărcarea pacienților");
       setPatientsList([]);
     }
   };
@@ -110,8 +115,10 @@ export default function FormsPage({ selected, onSelectVisit }) {
     try {
       await savePreformData(selected, payload);
       setMsg("Fișa de pre-spitalizare a fost salvată.");
+      showSuccess("Fișa de pre-spitalizare a fost salvată.");
     } catch (e) {
       setMsg(`Eroare salvare preform: ${e}`);
+      showError("Eroare salvare preform");
     } finally {
       setLoading(false);
     }
@@ -127,8 +134,10 @@ export default function FormsPage({ selected, onSelectVisit }) {
     try {
       await saveDischargeData(selected, payload);
       setMsg("Fișa de externare a fost salvată.");
+      showSuccess("Fișa de externare a fost salvată.");
     } catch (e) {
       setMsg(`Eroare salvare externare: ${e}`);
+      showError("Eroare salvare externare");
     } finally {
       setLoading(false);
     }
@@ -141,8 +150,10 @@ export default function FormsPage({ selected, onSelectVisit }) {
     try {
       await updateVisitStatusData(selected, status);
       setMsg("Status actualizat.");
+      showSuccess("Status actualizat.");
     } catch (e) {
       setMsg(`Eroare status: ${e}`);
+      showError("Eroare actualizare status");
     }
   };
 
@@ -154,9 +165,11 @@ export default function FormsPage({ selected, onSelectVisit }) {
     setTimeout(async () => {
       try {
         await exportCombinedPdf({ selected, setMsg });
+        showSuccess("PDF generat.");
       } catch (e) {
         console.error("Eroare exportCombined:", e);
         setMsg(`Eroare export PDF: ${e.message || e}`);
+        showError("Eroare export PDF");
       }
     }, 500);
   };
@@ -169,9 +182,11 @@ export default function FormsPage({ selected, onSelectVisit }) {
     setTimeout(async () => {
       try {
         await downloadCombinedPdf({ selected, setMsg });
+        showSuccess("PDF descărcat.");
       } catch (e) {
         console.error("Eroare descarcare PDF:", e);
         setMsg(`Eroare la descărcarea PDF-ului: ${e.message || e}`);
+        showError("Eroare la descărcarea PDF-ului");
       }
     }, 500);
   };
@@ -184,6 +199,8 @@ export default function FormsPage({ selected, onSelectVisit }) {
       setPatientVisits,
       loadPatientVisitsData,
     });
+
+    showInfo("Pacient selectat");
   };
 
   if (!selected) {
@@ -348,19 +365,19 @@ export default function FormsPage({ selected, onSelectVisit }) {
       <PatientDetailsPanel patientDetails={patientDetails} />
 
       <div style={{ display: "flex", gap: 10, marginTop: 12, flexWrap: "wrap" }}>
-  <button
-    onClick={() => setCombinedPrintMode((prev) => !prev)}
-    style={{ padding: "8px 12px" }}
-  >
-    {combinedPrintMode
-      ? "Ascunde previzualizarea fișelor"
-      : "Arată previzualizarea fișelor"}
-  </button>
+        <button
+          onClick={() => setCombinedPrintMode((prev) => !prev)}
+          style={{ padding: "8px 12px" }}
+        >
+          {combinedPrintMode
+            ? "Ascunde previzualizarea fișelor"
+            : "Arată previzualizarea fișelor"}
+        </button>
 
-  <button onClick={handlePrintCombined} style={{ padding: "8px 12px" }}>
-    Printează fișele
-  </button>
-</div>
+        <button onClick={handlePrintCombined} style={{ padding: "8px 12px" }}>
+          Printează fișele
+        </button>
+      </div>
 
       {combinedPrintMode && (
         <div id="print-area">
@@ -369,15 +386,22 @@ export default function FormsPage({ selected, onSelectVisit }) {
         </div>
       )}
 
+      <SignaturesSection
+  preform={preform}
+  setPreform={setPreform}
+  discharge={discharge}
+  setDischarge={setDischarge}
+/>
+
       <div style={{ display: "grid", gap: 14, marginTop: 14 }}>
         <FormsToolbar
-  loading={loading}
-  exportCombined={exportCombined}
-  status={status}
-  setStatus={setStatus}
-  updateStatus={updateStatus}
-  msg={msg}
-/>
+          loading={loading}
+          exportCombined={exportCombined}
+          status={status}
+          setStatus={setStatus}
+          updateStatus={updateStatus}
+          msg={msg}
+        />
         <PreformSection
           preformOpen={preformOpen}
           setPreformOpen={setPreformOpen}

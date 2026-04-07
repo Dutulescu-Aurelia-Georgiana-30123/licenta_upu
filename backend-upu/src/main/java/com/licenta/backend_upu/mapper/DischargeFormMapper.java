@@ -28,31 +28,56 @@ public class DischargeFormMapper {
 
         if(req.getCitizenshipType()!=null){
             e.setCitizenshipType(CitizenshipType.valueOf(req.getCitizenshipType().toUpperCase()));
+        } else {
+            e.setCitizenshipType(null);
         }
+
         e.setCitizenshipCountry(req.getCitizenshipCountry());
 
         if(req.getInsuranceStatus()!=null){
             e.setInsuranceStatus(InsuranceStatus.valueOf(req.getInsuranceStatus().toUpperCase()));
+        } else {
+            e.setInsuranceStatus(null);
         }
+
         if(req.getAdmissionType()!=null){
             e.setAdmissionType(AdmissionType.valueOf(req.getAdmissionType().toUpperCase()));
+        } else {
+            e.setAdmissionType(null);
         }
+
         if (req.getHospitalizationOutcome() != null) {
             e.setHospitalizationOutcome(HospitalizationOutcome.valueOf(req.getHospitalizationOutcome().toUpperCase()));
+        } else {
+            e.setHospitalizationOutcome(null);
         }
+
         if (req.getDischargeType() != null) {
             e.setDischargeType(DischargeType.valueOf(req.getDischargeType().toUpperCase()));
+        } else {
+            e.setDischargeType(null);
         }
+
         e.setDiagnosisAtAdmission(req.getDiagnosisAtAdmission());
         e.setDiagnosisAtDischarge(req.getDiagnosisAtDischarge());
         e.setTreatmentAndRecommendations(req.getTreatmentAndRecommendations());
 
         e.setDetails(req.getDetails());
+
+        e.setDoctorName(req.getDoctorName());
+        e.setDoctorSignature(req.getDoctorSignature());
+        e.setDoctorSignedAt(req.getDoctorSignedAt());
+
+        e.setNurseName(req.getNurseName());
+        e.setNurseSignature(req.getNurseSignature());
+        e.setNurseSignedAt(req.getNurseSignedAt());
     }
+
     public DischargeFormResponse toResponse(DischargeForm e){
         if (e == null) {
             return null;
         }
+
         DischargeFormResponse r=new DischargeFormResponse();
         r.setId(e.getId());
         r.setVisitId(e.getVisit().getId());
@@ -89,10 +114,16 @@ public class DischargeFormMapper {
 
         r.setDetails(e.getDetails());
 
+        r.setDoctorName(e.getDoctorName());
+        r.setDoctorSignature(e.getDoctorSignature());
+        r.setDoctorSignedAt(e.getDoctorSignedAt());
+
+        r.setNurseName(e.getNurseName());
+        r.setNurseSignature(e.getNurseSignature());
+        r.setNurseSignedAt(e.getNurseSignedAt());
+
         r.setCreatedAt(e.getCreatedAt());
         r.setUpdatedAt(e.getUpdatedAt());
         return r;
-
     }
-
 }
