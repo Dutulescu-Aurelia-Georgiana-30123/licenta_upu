@@ -83,6 +83,7 @@ function PriorityRow({ patient }) {
 
 export default function HomePage() {
   const [stats, setStats] = useState(null);
+  const [availableDoctors, setAvailableDoctors] = useState(0);
   const [error, setError] = useState("");
   const { showSuccess, showError } = useToast();
 
@@ -91,6 +92,10 @@ export default function HomePage() {
   try {
     const data = await apiGet("/stats/home");
     setStats(data);
+
+  const doctors = await apiGet("/auth/available-doctors");
+  setAvailableDoctors(doctors);
+
     if (!silent) showSuccess("Datele au fost actualizate");
   } catch (e) {
     const msg = String(e);
@@ -154,6 +159,14 @@ useEffect(() => {
                 Vizite create astăzi
               </div>
             </StatBox>
+            <StatBox title="Medici disponibili">
+  <div style={{ fontSize: 28, fontWeight: 800, marginTop: 6 }}>
+    {availableDoctors}
+  </div>
+  <div style={{ marginTop: 10, color: "#aaa", fontSize: 12 }}>
+    Medici disponibili în acest moment
+  </div>
+</StatBox>
           </div>
 
           <div

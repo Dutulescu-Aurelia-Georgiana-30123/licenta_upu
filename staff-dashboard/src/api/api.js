@@ -28,7 +28,11 @@ export async function apiPut(path, body) {
     body: JSON.stringify(body),
   });
   if (!res.ok) throw new Error(`HTTP ${res.status}`);
-  return res.json();
+  try {
+    return await res.json();
+  } catch {
+    return null;
+  }
 }
 
 export async function apiPatch(path, body) {

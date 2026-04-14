@@ -9,6 +9,10 @@ export default function TopNav({ active, onChange, selected }) {
     { key: "archive", label: "Arhivă" },
 
   ];
+  const handleLogout = () => {
+  localStorage.removeItem("user");
+  window.location.reload();
+};
 
   return (
     <div style={{ borderBottom: "1px solid #333", background: "#0f0f0f" }}>
@@ -43,6 +47,20 @@ export default function TopNav({ active, onChange, selected }) {
         </div>
 
         <div style={{ flex: 1 }} />
+        <button
+  onClick={handleLogout}
+  style={{
+    padding: "6px 10px",
+    borderRadius: 10,
+    cursor: "pointer",
+    border: "1px solid #222",
+    background: "#151515",
+    color: "#eaeaea",
+    fontSize: 13,
+  }}
+>
+  Logout
+</button>
       </div>
     </div>
   );

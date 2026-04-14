@@ -5,11 +5,28 @@ import PatientsPage from "./pages/PatientsPage";
 import VisitsPage from "./pages/VisitsPage";
 import FormsPage from "./pages/FormsPage";
 import ArchivePage from "./pages/ArchivePage";
+import LoginPage from "./pages/LoginPage";
 import { ToastProvider } from "./context/ToastContext";
+import MedicalPage from "./pages/MedicalPage";
+import PatientPortal from "./pages/PatientPortal";
 
 export default function App() {
   const [activePage, setActivePage] = useState("home");
   const [selectedVisit, setSelectedVisit] = useState(null);
+
+  const user = JSON.parse(localStorage.getItem("user"));
+const role = user?.role;
+
+  if (!user) {
+    return <LoginPage />;
+  }
+  if (role === "DOCTOR" || role === "NURSE") {
+  return <MedicalPage />;
+}
+
+if (role === "PATIENT") {
+  return <PatientPortal />;
+}
 
   const content = useMemo(() => {
     if (activePage === "home") return <HomePage />;
