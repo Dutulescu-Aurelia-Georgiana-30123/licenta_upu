@@ -21,11 +21,19 @@ const role = user?.role;
     return <LoginPage />;
   }
   if (role === "DOCTOR" || role === "NURSE") {
-  return <MedicalPage />;
+  return (
+    <ToastProvider>
+      <MedicalPage />
+    </ToastProvider>
+  );
 }
 
 if (role === "PATIENT") {
-  return <PatientPortal />;
+  return (
+    <ToastProvider>
+      <PatientPortal />
+    </ToastProvider>
+  );
 }
 
   const content = useMemo(() => {

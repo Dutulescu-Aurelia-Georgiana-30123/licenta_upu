@@ -203,12 +203,13 @@ export default function VisitsPage({ selected, onSelect }) {
           }}
         >
           <thead>
-            <tr style={{ background: "#151515" }}>
-              <th style={{ border: "1px solid #333", padding: 10, textAlign: "left" }}>Cod vizită</th>
-              <th style={{ border: "1px solid #333", padding: 10, textAlign: "left" }}>Pacient</th>
-              <th style={{ border: "1px solid #333", padding: 10, textAlign: "left" }}>Status</th>
-              <th style={{ border: "1px solid #333", padding: 10, textAlign: "left" }}>Creat la</th>
-            </tr>
+           <tr style={{ background: "#151515" }}>
+  <th style={{ border: "1px solid #333", padding: 10, textAlign: "left" }}>Cod vizită</th>
+  <th style={{ border: "1px solid #333", padding: 10, textAlign: "left" }}>Pacient</th>
+  <th style={{ border: "1px solid #333", padding: 10, textAlign: "left" }}>Medic</th> {/* NOU */}
+  <th style={{ border: "1px solid #333", padding: 10, textAlign: "left" }}>Status</th>
+  <th style={{ border: "1px solid #333", padding: 10, textAlign: "left" }}>Creat la</th>
+</tr>
           </thead>
           <tbody>
             {filteredVisits.map((v) => (
@@ -227,6 +228,9 @@ export default function VisitsPage({ selected, onSelect }) {
                 <td style={{ border: "1px solid #333", padding: 10 }}>
                   {v.patientFirstName} {v.patientLastName}
                 </td>
+                <td style={{ border: "1px solid #333", padding: 10 }}>
+  {v.doctorEmail || "Neasignat"}
+</td>
                 <td style={{ border: "1px solid #333", padding: 10 }}>
                   <StatusBadge status={v.status} />
                 </td>

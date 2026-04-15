@@ -15,6 +15,9 @@ public class VisitMapper {
         response.setPatientLastName(visit.getPatient().getLastName());
         response.setStatus(visit.getStatus().name());
         response.setCreatedAt(visit.getCreatedAt());
+        if (visit.getDoctor() != null) {
+            response.setDoctorEmail(visit.getDoctor().getEmail());
+        }
         return response;
 
     }
