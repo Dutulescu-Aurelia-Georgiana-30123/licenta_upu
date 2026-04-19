@@ -3,13 +3,54 @@ import CheckboxField from "./CheckboxField";
 import TextField from "./TextField";
 import LrCheckboxRow from "./LrCheckboxRow";
 
+function formatBirthDateInput(value) {
+  const digits = value.replace(/\D/g, "").slice(0, 8);
+
+  if (digits.length <= 2) return digits;
+  if (digits.length <= 4) return `${digits.slice(0, 2)}/${digits.slice(2)}`;
+  return `${digits.slice(0, 2)}/${digits.slice(2, 4)}/${digits.slice(4)}`;
+}
+
+function calculateAgeFromBirthDate(value) {
+  const parts = value.split("/");
+  if (parts.length !== 3) return "";
+
+  const day = parseInt(parts[0], 10);
+  const month = parseInt(parts[1], 10);
+  const year = parseInt(parts[2], 10);
+
+  if (!day || !month || !year) return "";
+
+  const birthDate = new Date(year, month - 1, day);
+  if (Number.isNaN(birthDate.getTime())) return "";
+
+  const today = new Date();
+  let age = today.getFullYear() - birthDate.getFullYear();
+
+  const hasHadBirthdayThisYear =
+    today.getMonth() > birthDate.getMonth() ||
+    (today.getMonth() === birthDate.getMonth() &&
+      today.getDate() >= birthDate.getDate());
+
+  if (!hasHadBirthdayThisYear) {
+    age--;
+  }
+
+  return age >= 0 ? String(age) : "";
+}
+
 export default function PreformSection({
   preformOpen,
   setPreformOpen,
   preform,
   setPreform,
   onSave,
+  readOnly=false,
 }) {
+  const user = JSON.parse(localStorage.getItem("user"));
+const isReception = user?.role === "RECEPTION";
+const isRestricted = isReception || readOnly;
+
   return (
     <SectionCard
       title="Fișa de pre-spitalizare"
@@ -17,7 +58,14 @@ export default function PreformSection({
       onToggle={() => setPreformOpen((prev) => !prev)}
       hideTopButtonWhenOpen={true}
     >
-      <div style={{ display: "grid", gap: 16 }}>
+      <div
+  style={{
+    display: "grid",
+    gap: 16,
+    pointerEvents: isRestricted ? "none" : "auto",
+    opacity: isRestricted ? 0.6 : 1,
+  }}
+>
         <div style={{ fontWeight: 700, fontSize: 18, textAlign: "center" }}>
           SPITALUL CLINIC DE URGENȚĂ
         </div>
@@ -84,7 +132,7 @@ export default function PreformSection({
           <label>
             Vârstă
             <input
-              value={preform.age}
+              value={preform.age} readOnly
               onChange={(e) => setPreform({ ...preform, age: e.target.value })}
               style={{ width: "100%", padding: 8, marginTop: 6 }}
             />
@@ -92,11 +140,20 @@ export default function PreformSection({
           <label>
             Data nașterii
             <input
-              type="date"
-              value={preform.birthDate}
-              onChange={(e) => setPreform({ ...preform, birthDate: e.target.value })}
-              style={{ width: "100%", padding: 8, marginTop: 6 }}
-            />
+  type="text"
+  placeholder="zz/ll/aaaa"
+  value={preform.birthDate}
+  onChange={(e) => {
+    const formatted = formatBirthDateInput(e.target.value);
+
+    setPreform({
+      ...preform,
+      birthDate: formatted,
+      age: calculateAgeFromBirthDate(formatted),
+    });
+  }}
+  style={{ width: "100%", padding: 8, marginTop: 6 }}
+/>
           </label>
 
           <label>
@@ -242,10 +299,25 @@ export default function PreformSection({
           <label>
             Ora GCS
             <input
-              value={preform.gcsHour}
-              onChange={(e) => setPreform({ ...preform, gcsHour: e.target.value })}
-              style={{ width: "100%", padding: 8, marginTop: 6 }}
-            />
+  value={preform.gcsHour}
+  onChange={(e) =>
+    setPreform({ ...preform, gcsHour: e.target.value })
+  }
+  onFocus={() => {
+    if (!preform.gcsHour) {
+      const currentTime = new Date().toLocaleTimeString("ro-RO", {
+        hour: "2-digit",
+        minute: "2-digit",
+      });
+
+      setPreform((prev) => ({
+        ...prev,
+        gcsHour: currentTime,
+      }));
+    }
+  }}
+  style={{ width: "100%", padding: 8, marginTop: 6 }}
+/>
           </label>
           <label>
             M
@@ -518,7 +590,7 @@ export default function PreformSection({
 
         <div style={{ display: "grid", gridTemplateColumns: "repeat(4, 1fr)", gap: 12 }}>
           <label>
-            14 - Talie (cm)
+            14 - Înălțime (cm)
             <input
               value={preform.heightCm}
               onChange={(e) => setPreform({ ...preform, heightCm: e.target.value })}
@@ -659,7 +731,16 @@ export default function PreformSection({
             style={{ width: "100%", padding: 8, marginTop: 6 }}
           />
         </label>
-
+<fieldset
+  style={{
+    border: "none",
+    padding: 0,
+    margin: 0,
+    minWidth: 0,
+    pointerEvents: isRestricted ? "none" : "auto",
+    opacity: 1,
+  }}
+>
         <div
           style={{
             border: "1px solid #333",
@@ -1514,6 +1595,7 @@ export default function PreformSection({
             </label>
           </div>
         </div>
+        </fieldset>
         {preformOpen && (
           <div
             style={{
@@ -1526,9 +1608,11 @@ export default function PreformSection({
               borderTop: "1px solid #333",
             }}
           >
-            <button onClick={onSave} style={{ padding: "8px 12px" }}>
-              Salvează fișa
-            </button>
+            {!isRestricted && (
+  <button onClick={onSave} style={{ padding: "8px 12px" }}>
+    Salvează fișa
+  </button>
+)}
 
             <button
               onClick={() => setPreformOpen(false)}

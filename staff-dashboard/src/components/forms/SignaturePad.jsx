@@ -8,6 +8,7 @@ export default function SignaturePad({
   onSignatureChange,
   signedAtValue,
   onSignedAtChange,
+  readOnly = false,
 }) {
   const canvasRef = useRef(null);
   const wrapperRef = useRef(null);
@@ -77,6 +78,8 @@ export default function SignaturePad({
   };
 
   const startDrawing = (e) => {
+    if (readOnly) return;
+
     e.preventDefault();
     const canvas = canvasRef.current;
     const ctx = canvas.getContext("2d");
@@ -89,7 +92,7 @@ export default function SignaturePad({
   };
 
   const draw = (e) => {
-    if (!isDrawing) return;
+    if (readOnly || !isDrawing) return;
     e.preventDefault();
 
     const canvas = canvasRef.current;
@@ -101,7 +104,7 @@ export default function SignaturePad({
   };
 
   const stopDrawing = () => {
-    if (!isDrawing) return;
+    if (readOnly || !isDrawing) return;
     setIsDrawing(false);
 
     const canvas = canvasRef.current;
@@ -110,6 +113,8 @@ export default function SignaturePad({
   };
 
   const clearSignature = () => {
+    if (readOnly) return;
+
     const canvas = canvasRef.current;
     const ctx = canvas.getContext("2d");
     paintWhiteBackground(ctx, canvas);
@@ -136,6 +141,7 @@ export default function SignaturePad({
           value={nameValue}
           onChange={(e) => onNameChange(e.target.value)}
           placeholder="Introdu numele complet"
+          disabled={readOnly}
           style={{
             width: "100%",
             padding: 10,
@@ -158,7 +164,7 @@ export default function SignaturePad({
             borderRadius: 8,
             background: "#ffffff",
             touchAction: "none",
-            cursor: "crosshair",
+            cursor: readOnly ? "default" : "crosshair",
           }}
           onMouseDown={startDrawing}
           onMouseMove={draw}
@@ -170,11 +176,13 @@ export default function SignaturePad({
         />
       </div>
 
-      <div style={{ display: "flex", gap: 10, marginTop: 12, flexWrap: "wrap" }}>
-        <button type="button" onClick={clearSignature} style={{ padding: "8px 12px" }}>
-          Șterge semnătura
-        </button>
-      </div>
+      {!readOnly && (
+        <div style={{ display: "flex", gap: 10, marginTop: 12, flexWrap: "wrap" }}>
+          <button type="button" onClick={clearSignature} style={{ padding: "8px 12px" }}>
+            Șterge semnătura
+          </button>
+        </div>
+      )}
 
       <div style={{ marginTop: 10, color: "#aaa", fontSize: 13 }}>
         {signedAtValue

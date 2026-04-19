@@ -5,6 +5,7 @@ export default function SignaturesSection({
   setPreform,
   discharge,
   setDischarge,
+  readOnly=false,
 }) {
   return (
     <div
@@ -31,6 +32,7 @@ export default function SignaturesSection({
           setPreform((prev) => ({ ...prev, nurseSignedAt: value }));
           setDischarge((prev) => ({ ...prev, nurseSignedAt: value }));
         }}
+        readOnly={readOnly}
       />
 
       <SignaturePad
@@ -50,6 +52,7 @@ export default function SignaturesSection({
           setPreform((prev) => ({ ...prev, doctorSignedAt: value }));
           setDischarge((prev) => ({ ...prev, doctorSignedAt: value }));
         }}
+        readOnly={readOnly}
       />
     </div>
   );

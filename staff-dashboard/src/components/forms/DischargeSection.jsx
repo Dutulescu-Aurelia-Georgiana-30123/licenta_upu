@@ -7,7 +7,11 @@ export default function DischargeSection({
   setDischarge,
   preform,
   onSave,
+  readOnly=false,
 }) {
+  const user = JSON.parse(localStorage.getItem("user"));
+const isReception = user?.role === "RECEPTION";
+const isRestricted = isReception || readOnly;
   return (
     <SectionCard
       title="Fișa de externare"
@@ -15,7 +19,24 @@ export default function DischargeSection({
       onToggle={() => setDischargeOpen((prev) => !prev)}
       hideTopButtonWhenOpen={true}
     >
-      <div style={{ display: "grid", gap: 16 }}>
+      <div
+  style={{
+    display: "grid",
+    gap: 16,
+    pointerEvents: isRestricted ? "none" : "auto",
+    opacity: isRestricted ? 0.6 : 1,
+  }}
+>
+       <fieldset
+  style={{
+    border: "none",
+    padding: 0,
+    margin: 0,
+    minWidth: 0,
+    pointerEvents: isRestricted ? "none" : "auto",
+    opacity: 1,
+  }}
+>
         <div style={{ fontWeight: 700, fontSize: 18, textAlign: "center" }}>
           {discharge.hospitalName || "SPITALUL CLINIC DE URGENȚĂ"}
         </div>
@@ -213,6 +234,7 @@ export default function DischargeSection({
             style={{ width: "100%", padding: 8, marginTop: 6 }}
           />
         </label>
+        </fieldset>
                 {dischargeOpen && (
           <div
             style={{
@@ -225,9 +247,11 @@ export default function DischargeSection({
               borderTop: "1px solid #333",
             }}
           >
-            <button onClick={onSave} style={{ padding: "8px 12px" }}>
-              Salvează fișa
-            </button>
+           {!isRestricted && (
+  <button onClick={onSave} style={{ padding: "8px 12px" }}>
+    Salvează fișa
+  </button>
+)}
 
             <button
               onClick={() => setDischargeOpen(false)}

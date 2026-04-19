@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { apiGet } from "../api/api";
 import { initialPreformState, initialDischargeState } from "../forms/initialStates";
 import PatientDetailsPanel from "../components/forms/PatientDetailsPanel";
@@ -40,8 +40,19 @@ export default function FormsPage({ selected, onSelectVisit }) {
   const [patientsList, setPatientsList] = useState([]);
 
   const [combinedPrintMode, setCombinedPrintMode] = useState(false);
+  const [alreadyExported, setAlreadyExported] = useState(false);
 
   const { showSuccess, showError, showInfo } = useToast();
+
+  const lastEditAtRef = useRef(0);
+  const isClosedVisit =
+  selected?.status === "DISCHARGED" ||
+  selected?.status === "ADMITTED" ||
+  selected?.status === "TRANSFERRED";
+
+  const markEditing = () => {
+    lastEditAtRef.current = Date.now();
+  };
 
   const loadAllPatients = async () => {
     setMsg("");
@@ -65,6 +76,51 @@ export default function FormsPage({ selected, onSelectVisit }) {
       return q === "" || fullName.includes(q) || cnp.includes(q);
     });
   }, [patientsList, patientsSearch]);
+
+  const reloadCurrentForms = async () => {
+    if (!selected) return;
+
+    const now = Date.now();
+    const msSinceLastEdit = now - lastEditAtRef.current;
+
+    if (msSinceLastEdit < 4000) {
+      return;
+    }
+
+    setMsg("");
+
+    await loadPreformIntoState({
+      selected,
+      setLoading,
+      setMsg,
+      setPatientDetails,
+      setPreform,
+      loadPreformData,
+    });
+
+    await loadDischargeIntoState({
+      selected,
+      setMsg,
+      setPatientDetails,
+      setDischarge,
+      loadDischargeData,
+    });
+  };
+
+ useEffect(() => {
+  if (!selected) return;
+
+  const checkIfExported = async () => {
+    try {
+      const docs = await apiGet(`/archived-documents/visit/${selected.id}`);
+      setAlreadyExported(docs.length > 0);
+    } catch (e) {
+      console.error("Eroare verificare documente:", e);
+    }
+  };
+
+  checkIfExported();
+}, [selected?.id]);
 
   useEffect(() => {
     setSelectedPatient(null);
@@ -105,8 +161,8 @@ export default function FormsPage({ selected, onSelectVisit }) {
     });
   }, [selected?.id]);
 
-  const savePreform = async () => {
-    if (!selected) return;
+ const savePreform = async () => {
+  if (!selected || isClosedVisit) return;
     setMsg("");
     setLoading(true);
 
@@ -114,6 +170,7 @@ export default function FormsPage({ selected, onSelectVisit }) {
 
     try {
       await savePreformData(selected, payload);
+      lastEditAtRef.current = 0;
       setMsg("Fișa de pre-spitalizare a fost salvată.");
       showSuccess("Fișa de pre-spitalizare a fost salvată.");
     } catch (e) {
@@ -124,8 +181,8 @@ export default function FormsPage({ selected, onSelectVisit }) {
     }
   };
 
-  const saveDischarge = async () => {
-    if (!selected) return;
+ const saveDischarge = async () => {
+  if (!selected || isClosedVisit) return;
     setMsg("");
     setLoading(true);
 
@@ -133,6 +190,7 @@ export default function FormsPage({ selected, onSelectVisit }) {
 
     try {
       await saveDischargeData(selected, payload);
+      lastEditAtRef.current = 0;
       setMsg("Fișa de externare a fost salvată.");
       showSuccess("Fișa de externare a fost salvată.");
     } catch (e) {
@@ -144,7 +202,7 @@ export default function FormsPage({ selected, onSelectVisit }) {
   };
 
   const updateStatus = async () => {
-    if (!selected || !status) return;
+  if (!selected || !status || isClosedVisit) return;
     setMsg("");
 
     try {
@@ -158,21 +216,24 @@ export default function FormsPage({ selected, onSelectVisit }) {
   };
 
   const exportCombined = async () => {
-    if (!selected) return;
+  if (!selected) return;
 
-    setCombinedPrintMode(true);
+  setCombinedPrintMode(true);
 
-    setTimeout(async () => {
-      try {
-        await exportCombinedPdf({ selected, setMsg });
+  setTimeout(async () => {
+    try {
+      const success = await exportCombinedPdf({ selected, setMsg });
+
+      if (success) {
         showSuccess("PDF generat.");
-      } catch (e) {
-        console.error("Eroare exportCombined:", e);
-        setMsg(`Eroare export PDF: ${e.message || e}`);
-        showError("Eroare export PDF");
       }
-    }, 500);
-  };
+    } catch (e) {
+      console.error("Eroare exportCombined:", e);
+      setMsg(e.message || "Eroare export PDF");
+      showError(e.message || "Eroare export PDF");
+    }
+  }, 500);
+};
 
   const handlePrintCombined = async () => {
     if (!selected) return;
@@ -391,33 +452,43 @@ export default function FormsPage({ selected, onSelectVisit }) {
   setPreform={setPreform}
   discharge={discharge}
   setDischarge={setDischarge}
+  readOnly={isClosedVisit}
 />
 
-      <div style={{ display: "grid", gap: 14, marginTop: 14 }}>
-        <FormsToolbar
-          loading={loading}
-          exportCombined={exportCombined}
-          status={status}
-          setStatus={setStatus}
-          updateStatus={updateStatus}
-          msg={msg}
-        />
-        <PreformSection
-          preformOpen={preformOpen}
-          setPreformOpen={setPreformOpen}
-          preform={preform}
-          setPreform={setPreform}
-          onSave={savePreform}
-        />
+      <div
+        style={{ display: "grid", gap: 14, marginTop: 14 }}
+        onInputCapture={markEditing}
+        onChangeCapture={markEditing}
+      >
+       <FormsToolbar
+  loading={loading}
+  exportCombined={exportCombined}
+  status={status}
+  setStatus={setStatus}
+  updateStatus={updateStatus}
+  msg={msg}
+  readOnly={isClosedVisit}
+  
+/>
 
-        <DischargeSection
-          dischargeOpen={dischargeOpen}
-          setDischargeOpen={setDischargeOpen}
-          discharge={discharge}
-          setDischarge={setDischarge}
-          preform={preform}
-          onSave={saveDischarge}
-        />
+        <PreformSection
+  preformOpen={preformOpen}
+  setPreformOpen={setPreformOpen}
+  preform={preform}
+  setPreform={setPreform}
+  onSave={savePreform}
+  readOnly={isClosedVisit}
+/>
+
+      <DischargeSection
+  dischargeOpen={dischargeOpen}
+  setDischargeOpen={setDischargeOpen}
+  discharge={discharge}
+  setDischarge={setDischarge}
+  preform={preform}
+  onSave={saveDischarge}
+  readOnly={isClosedVisit}
+/>
       </div>
     </div>
   );

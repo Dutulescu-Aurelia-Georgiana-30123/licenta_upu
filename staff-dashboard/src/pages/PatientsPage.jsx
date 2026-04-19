@@ -188,31 +188,67 @@ export default function PatientsPage({ onVisitCreated }) {
             </label>
 
             <label>
-              CNP
-              <input
-                value={form.cnp}
-                onChange={(e) => setForm({ ...form, cnp: e.target.value })}
-                style={{ width: "100%", padding: 8, marginTop: 6 }}
-              />
-            </label>
+  CNP
+  <input
+    value={form.cnp}
+    onChange={(e) => {
+      const value = e.target.value;
+
+      if (!/^\d*$/.test(value)) return;
+      if (value.length > 13) return;
+
+      setForm({ ...form, cnp: value });
+    }}
+    style={{ width: "100%", padding: 8, marginTop: 6 }}
+  />
+
+  {form.cnp.length > 0 && form.cnp.length < 13 && (
+    <div style={{ color: "red", fontSize: 12, marginTop: 4 }}>
+      CNP-ul trebuie să aibă maxim 13 cifre
+    </div>
+  )}
+</label>
 
             <label>
-              Telefon
-              <input
-                value={form.phoneNumber}
-                onChange={(e) => setForm({ ...form, phoneNumber: e.target.value })}
-                style={{ width: "100%", padding: 8, marginTop: 6 }}
-              />
-            </label>
+  Telefon
+  <input
+    value={form.phoneNumber}
+    onChange={(e) => {
+      const value = e.target.value;
+
+      // doar cifre
+      if (!/^\d*$/.test(value)) return;
+
+      // max 15 (pentru internațional)
+      if (value.length > 15) return;
+
+      setForm({ ...form, phoneNumber: value });
+    }}
+    style={{ width: "100%", padding: 8, marginTop: 6 }}
+  />
+
+  {form.phoneNumber.length > 0 && form.phoneNumber.length < 10 && (
+    <div style={{ color: "red", fontSize: 12, marginTop: 4 }}>
+      Numărul trebuie să aibă cel puțin 10 cifre
+    </div>
+  )}
+</label>
 
             <label>
-              Email
-              <input
-                value={form.email}
-                onChange={(e) => setForm({ ...form, email: e.target.value })}
-                style={{ width: "100%", padding: 8, marginTop: 6 }}
-              />
-            </label>
+  Email
+  <input
+    value={form.email}
+    onChange={(e) => setForm({ ...form, email: e.target.value })}
+    style={{ width: "100%", padding: 8, marginTop: 6 }}
+  />
+
+  {form.email.length > 0 &&
+    !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(form.email) && (
+      <div style={{ color: "red", fontSize: 12, marginTop: 4 }}>
+        Email invalid (ex: nume@domeniu.ro)
+      </div>
+  )}
+</label>
           </div>
 
           <div style={{ marginTop: 14, display: "flex", gap: 10, flexWrap: "wrap" }}>

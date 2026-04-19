@@ -4,6 +4,8 @@ export default function FormsToolbar({
   status,
   setStatus,
   updateStatus,
+  readOnly = false,
+  alreadyExported,
 }) {
   return (
     <div
@@ -16,13 +18,18 @@ export default function FormsToolbar({
       }}
     >
       <div style={{ display: "flex", gap: 12, flexWrap: "wrap" }}>
-        <button onClick={exportCombined} disabled={loading} style={{ padding: "8px 12px" }}>
-          Export PDF combinat
-        </button>
+       <button
+  onClick={exportCombined}
+  disabled={loading || alreadyExported}
+  style={{ padding: "8px 12px" }}
+>
+  {alreadyExported ? "Fișa deja exportată" : "Export PDF combinat"}
+</button>
 
         <select
           value={status}
           onChange={(e) => setStatus(e.target.value)}
+          disabled={readOnly}
           style={{
             padding: 10,
             minWidth: 200,
@@ -44,7 +51,11 @@ export default function FormsToolbar({
           <option value="TRANSFERRED">Transferat</option>
         </select>
 
-        <button onClick={updateStatus} disabled={loading} style={{ padding: "8px 12px" }}>
+        <button
+          onClick={updateStatus}
+          disabled={loading || readOnly}
+          style={{ padding: "8px 12px" }}
+        >
           Actualizează statusul
         </button>
       </div>

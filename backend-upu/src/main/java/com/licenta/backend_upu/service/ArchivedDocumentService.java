@@ -11,6 +11,9 @@ import org.springframework.core.io.Resource;
 import org.springframework.stereotype.Service;
 import com.licenta.backend_upu.entity.DocumentType;
 import org.springframework.web.multipart.MultipartFile;
+import com.licenta.backend_upu.entity.VisitStatus;
+import org.springframework.http.HttpStatus;
+import org.springframework.web.server.ResponseStatusException;
 
 
 import java.io.File;
@@ -64,7 +67,31 @@ public class ArchivedDocumentService {
     public void saveUploadedFile(MultipartFile file, Long visitId) {
         try {
             Visit visit = visitRepository.findById(visitId)
-                    .orElseThrow(() -> new RuntimeException("Vizita nu exista"));
+                    .orElseThrow(() -> new ResponseStatusException(
+                            HttpStatus.NOT_FOUND,
+                            "Vizita nu există."
+                    ));
+
+            if (visit.getStatus() != VisitStatus.DISCHARGED &&
+                    visit.getStatus() != VisitStatus.ADMITTED &&
+                    visit.getStatus() != VisitStatus.TRANSFERRED) {
+                throw new ResponseStatusException(
+                        HttpStatus.BAD_REQUEST,
+                        "Fișa nu poate fi exportată. Pacientul trebuie să aibă statusul Externat, Internat sau Transferat."
+                );
+            }
+
+            boolean alreadyExported = repo.existsByVisit_IdAndDocumentType(
+                    visitId,
+                    DocumentType.COMBINED_VISIT_PDF
+            );
+
+            if (alreadyExported) {
+                throw new ResponseStatusException(
+                        HttpStatus.BAD_REQUEST,
+                        "Fișa medicală a fost deja exportată pentru această vizită."
+                );
+            }
 
             String fileName = "visit_" + visitId + "_" + System.currentTimeMillis() + ".pdf";
 
@@ -85,8 +112,13 @@ public class ArchivedDocumentService {
 
             repo.save(doc);
 
+        } catch (ResponseStatusException e) {
+            throw e;
         } catch (Exception e) {
-            throw new RuntimeException("Eroare salvare document: " + e.getMessage(), e);
+            throw new ResponseStatusException(
+                    HttpStatus.INTERNAL_SERVER_ERROR,
+                    "Eroare la salvarea documentului."
+            );
         }
     }
 }

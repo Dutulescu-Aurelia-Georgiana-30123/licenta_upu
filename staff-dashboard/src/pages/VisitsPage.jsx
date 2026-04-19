@@ -51,11 +51,34 @@ function StatusBadge({ status }) {
   );
 }
 
+function DoctorBadge({ doctorEmail }) {
+  const assigned = !!doctorEmail;
+
+  return (
+    <span
+      style={{
+        display: "inline-block",
+        padding: "5px 10px",
+        borderRadius: 999,
+        border: assigned ? "1px solid #1f6f4a" : "1px solid #6b5621",
+        background: assigned ? "#0f3d2e" : "#3a2f1a",
+        color: assigned ? "#6ee7b7" : "#ffd166",
+        fontSize: 12,
+        fontWeight: 700,
+        whiteSpace: "nowrap",
+      }}
+    >
+      {assigned ? `Preluat: ${doctorEmail}` : "Neasignat"}
+    </span>
+  );
+}
+
 export default function VisitsPage({ selected, onSelect }) {
   const [visits, setVisits] = useState([]);
   const [error, setError] = useState("");
   const [search, setSearch] = useState("");
   const [statusFilter, setStatusFilter] = useState("ALL");
+  const [assignmentFilter, setAssignmentFilter] = useState("ALL");
   const [sortOrder, setSortOrder] = useState("desc");
 
   const { showError, showInfo } = useToast();
@@ -104,7 +127,12 @@ export default function VisitsPage({ selected, onSelect }) {
       const matchesStatus =
         statusFilter === "ALL" || v.status === statusFilter;
 
-      return matchesSearch && matchesStatus;
+      const matchesAssignment =
+        assignmentFilter === "ALL" ||
+        (assignmentFilter === "UNASSIGNED" && !v.doctorEmail) ||
+        (assignmentFilter === "ASSIGNED" && !!v.doctorEmail);
+
+      return matchesSearch && matchesStatus && matchesAssignment;
     });
 
     filtered.sort((a, b) => {
@@ -116,7 +144,7 @@ export default function VisitsPage({ selected, onSelect }) {
     });
 
     return filtered;
-  }, [visits, search, statusFilter, sortOrder]);
+  }, [visits, search, statusFilter, assignmentFilter, sortOrder]);
 
   return (
     <div>
@@ -178,6 +206,23 @@ export default function VisitsPage({ selected, onSelect }) {
         </select>
 
         <select
+          value={assignmentFilter}
+          onChange={(e) => setAssignmentFilter(e.target.value)}
+          style={{
+            padding: 10,
+            minWidth: 200,
+            borderRadius: 8,
+            border: "1px solid #333",
+            background: "#121212",
+            color: "#eaeaea",
+          }}
+        >
+          <option value="ALL">Toți pacienții</option>
+          <option value="UNASSIGNED">Neasignați</option>
+          <option value="ASSIGNED">Asignați</option>
+        </select>
+
+        <select
           value={sortOrder}
           onChange={(e) => setSortOrder(e.target.value)}
           style={{
@@ -203,13 +248,23 @@ export default function VisitsPage({ selected, onSelect }) {
           }}
         >
           <thead>
-           <tr style={{ background: "#151515" }}>
-  <th style={{ border: "1px solid #333", padding: 10, textAlign: "left" }}>Cod vizită</th>
-  <th style={{ border: "1px solid #333", padding: 10, textAlign: "left" }}>Pacient</th>
-  <th style={{ border: "1px solid #333", padding: 10, textAlign: "left" }}>Medic</th> {/* NOU */}
-  <th style={{ border: "1px solid #333", padding: 10, textAlign: "left" }}>Status</th>
-  <th style={{ border: "1px solid #333", padding: 10, textAlign: "left" }}>Creat la</th>
-</tr>
+            <tr style={{ background: "#151515" }}>
+              <th style={{ border: "1px solid #333", padding: 10, textAlign: "left" }}>
+                Cod vizită
+              </th>
+              <th style={{ border: "1px solid #333", padding: 10, textAlign: "left" }}>
+                Pacient
+              </th>
+              <th style={{ border: "1px solid #333", padding: 10, textAlign: "left" }}>
+                Asignare
+              </th>
+              <th style={{ border: "1px solid #333", padding: 10, textAlign: "left" }}>
+                Status
+              </th>
+              <th style={{ border: "1px solid #333", padding: 10, textAlign: "left" }}>
+                Creat la
+              </th>
+            </tr>
           </thead>
           <tbody>
             {filteredVisits.map((v) => (
@@ -220,17 +275,22 @@ export default function VisitsPage({ selected, onSelect }) {
                   showInfo(`Vizită selectată: ${v.visitCode}`);
                 }}
                 style={{
-                  cursor: "pointer",
-                  background: selected?.id === v.id ? "#2a2a2a" : "transparent",
-                }}
+  cursor: "pointer",
+  background:
+    selected?.id === v.id
+      ? "#2a2a2a"
+      : !v.doctorEmail
+      ? "#1f170a"
+      : "transparent",
+}}
               >
                 <td style={{ border: "1px solid #333", padding: 10 }}>{v.visitCode}</td>
                 <td style={{ border: "1px solid #333", padding: 10 }}>
                   {v.patientFirstName} {v.patientLastName}
                 </td>
                 <td style={{ border: "1px solid #333", padding: 10 }}>
-  {v.doctorEmail || "Neasignat"}
-</td>
+                  <DoctorBadge doctorEmail={v.doctorEmail} />
+                </td>
                 <td style={{ border: "1px solid #333", padding: 10 }}>
                   <StatusBadge status={v.status} />
                 </td>

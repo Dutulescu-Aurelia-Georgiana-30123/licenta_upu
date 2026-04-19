@@ -48,18 +48,21 @@ public class VisitService {
 
     public Visit updateVisistStatus(Long visitId, String status) {
         Visit visit = visitRepository.findById(visitId)
-                .orElseThrow(() -> new RuntimeException("Vizita nu a fost gasita cu id" + visitId));
+                .orElseThrow(() -> new RuntimeException("Vizita nu a fost gasita cu id " + visitId));
 
         try {
             VisitStatus newStatus = VisitStatus.valueOf(status.toUpperCase());
             visit.setStatus(newStatus);
 
-            if (visit.getDoctor() != null &&
+            // salvează întâi statusul nou
+            Visit savedVisit = visitRepository.save(visit);
+
+            if (savedVisit.getDoctor() != null &&
                     (newStatus == VisitStatus.DISCHARGED ||
                             newStatus == VisitStatus.ADMITTED ||
                             newStatus == VisitStatus.TRANSFERRED)) {
 
-                User doctor = visit.getDoctor();
+                User doctor = savedVisit.getDoctor();
 
                 long activeVisits = visitRepository.countByDoctor_IdAndStatusNotIn(
                         doctor.getId(),
@@ -76,11 +79,11 @@ public class VisitService {
                 }
             }
 
+            return savedVisit;
+
         } catch (IllegalArgumentException e) {
             throw new RuntimeException("Status invalid: " + status);
         }
-
-        return visitRepository.save(visit);
     }
 
     public List<Visit> getVisitByPatient(Long patientId) {

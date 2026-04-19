@@ -2,7 +2,7 @@ import html2pdf from "html2pdf.js";
 import { API_BASE } from "../api/api";
 
 export async function exportCombinedPdf({ selected, setMsg }) {
-  if (!selected) return;
+  if (!selected) return false;
 
   setMsg("Se generează PDF...");
 
@@ -35,11 +35,21 @@ export async function exportCombinedPdf({ selected, setMsg }) {
   });
 
   if (!response.ok) {
+  let errorMessage = "Eroare upload PDF";
+
+  try {
+    const errorData = await response.json();
+    errorMessage = errorData.message || errorData.error || errorMessage;
+  } catch {
     const text = await response.text();
-    throw new Error(`Upload eșuat: ${response.status} ${text}`);
+    errorMessage = text || errorMessage;
   }
 
+  throw new Error(errorMessage);
+}
+
   setMsg("PDF salvat în arhivă.");
+  return true; 
 }
 
 export async function downloadCombinedPdf({ selected, setMsg }) {
