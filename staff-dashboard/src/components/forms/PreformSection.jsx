@@ -49,7 +49,8 @@ export default function PreformSection({
 }) {
   const user = JSON.parse(localStorage.getItem("user"));
 const isReception = user?.role === "RECEPTION";
-const isRestricted = isReception || readOnly;
+const isFormLocked = readOnly;
+const isObjectiveRestricted = isReception || readOnly;
 
   return (
     <SectionCard
@@ -62,8 +63,8 @@ const isRestricted = isReception || readOnly;
   style={{
     display: "grid",
     gap: 16,
-    pointerEvents: isRestricted ? "none" : "auto",
-    opacity: isRestricted ? 0.6 : 1,
+    pointerEvents: isFormLocked ? "none" : "auto",
+opacity: isFormLocked ? 0.6 : 1,
   }}
 >
         <div style={{ fontWeight: 700, fontSize: 18, textAlign: "center" }}>
@@ -542,6 +543,14 @@ const isRestricted = isReception || readOnly;
               style={{ width: "100%", padding: 8, marginTop: 6 }}
             />
           </label>
+          <label>
+  Scor durere 0-10
+  <input
+    value={preform.painScale}
+    onChange={(e) => setPreform({ ...preform, painScale: e.target.value })}
+    style={{ width: "100%", padding: 8, marginTop: 6 }}
+  />
+</label>
 
           <label>
             TRC
@@ -737,7 +746,7 @@ const isRestricted = isReception || readOnly;
     padding: 0,
     margin: 0,
     minWidth: 0,
-    pointerEvents: isRestricted ? "none" : "auto",
+    pointerEvents: isObjectiveRestricted ? "none" : "auto",
     opacity: 1,
   }}
 >
@@ -1608,7 +1617,7 @@ const isRestricted = isReception || readOnly;
               borderTop: "1px solid #333",
             }}
           >
-            {!isRestricted && (
+            {!readOnly && (
   <button onClick={onSave} style={{ padding: "8px 12px" }}>
     Salvează fișa
   </button>

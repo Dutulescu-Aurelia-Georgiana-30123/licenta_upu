@@ -8,7 +8,11 @@ import DischargeSection from "../components/forms/DischargeSection";
 import PreformPrintView from "../components/forms/PreFormPrintView";
 import DischargePrintView from "../components/forms/DischargePrintView";
 import { exportCombinedPdf, downloadCombinedPdf } from "./formsPrintActions";
-import { buildPreformPayload, buildDischargePayload } from "./formsPayloadBuilders";
+import {
+  buildPreformPayload,
+  buildDischargePayload,
+  buildAiTriagePayload,
+} from "./formsPayloadBuilders";
 import { loadPreformIntoState, loadDischargeIntoState } from "./formsPageLoaders";
 import { loadPatientVisitsAction } from "./formsSearchActions";
 import SignaturesSection from "../components/forms/SignaturesSection";
@@ -19,6 +23,7 @@ import {
   saveDischargeData,
   updateVisitStatusData,
   loadPatientVisitsData,
+  predictAiTriageData,
 } from "./formsPageApi";
 import { useToast } from "../context/ToastContext";
 
@@ -34,6 +39,7 @@ export default function FormsPage({ selected, onSelectVisit }) {
   const [msg, setMsg] = useState("");
   const [loading, setLoading] = useState(false);
   const [patientDetails, setPatientDetails] = useState(null);
+  const [aiTriageResult, setAiTriageResult] = useState(null);
 
   const [selectedPatient, setSelectedPatient] = useState(null);
   const [patientVisits, setPatientVisits] = useState([]);
@@ -96,6 +102,7 @@ export default function FormsPage({ selected, onSelectVisit }) {
       setPatientDetails,
       setPreform,
       loadPreformData,
+      setAiTriageResult,
     });
 
     await loadDischargeIntoState({
@@ -127,6 +134,7 @@ export default function FormsPage({ selected, onSelectVisit }) {
     setPatientVisits([]);
     setCombinedPrintMode(false);
     setMsg("");
+    setAiTriageResult(null);
 
     if (!selected) {
       setPatientDetails(null);
@@ -150,6 +158,7 @@ export default function FormsPage({ selected, onSelectVisit }) {
       setPatientDetails,
       setPreform,
       loadPreformData,
+      setAiTriageResult,
     });
 
     loadDischargeIntoState({
@@ -180,6 +189,33 @@ export default function FormsPage({ selected, onSelectVisit }) {
       setLoading(false);
     }
   };
+
+  const runAiTriage = async () => {
+  if (!selected || isClosedVisit) return;
+
+  setMsg("");
+  setLoading(true);
+
+  try {
+    const payload = buildAiTriagePayload(preform);
+    const result = await predictAiTriageData(payload);
+
+    setAiTriageResult(result);
+
+setPreform((prev) => ({
+  ...prev,
+  aiTriageResult: result,
+}));
+
+showSuccess("Predicția AI a fost generată.");
+  } catch (e) {
+    console.error("Eroare AI triage:", e);
+    setMsg(`Eroare AI triage: ${e.message || e}`);
+    showError("Eroare la predicția AI");
+  } finally {
+    setLoading(false);
+  }
+};
 
  const saveDischarge = async () => {
   if (!selected || isClosedVisit) return;
@@ -438,7 +474,63 @@ export default function FormsPage({ selected, onSelectVisit }) {
         <button onClick={handlePrintCombined} style={{ padding: "8px 12px" }}>
           Printează fișele
         </button>
+
+<button
+  onClick={runAiTriage}
+  disabled={loading || isClosedVisit}
+  style={{ padding: "8px 12px" }}
+>
+  Generează triaj AI
+</button>
       </div>
+
+      {aiTriageResult && (
+  <div
+    style={{
+      marginTop: 12,
+      padding: 12,
+      border: "1px solid #333",
+      borderRadius: 10,
+      background: "#121212",
+    }}
+  >
+    <div style={{ fontWeight: 700, marginBottom: 6 }}>
+      Rezultat triaj AI
+    </div>
+
+    <div>
+      Predicție finală:{" "}
+      <strong>{aiTriageResult.predictie_finala}</strong>
+    </div>
+
+    {aiTriageResult.decizie_etapa_1 && (
+      <div>Etapa 1: {aiTriageResult.decizie_etapa_1}</div>
+    )}
+
+    {aiTriageResult.prob_urgent !== undefined && (
+      <div>Probabilitate urgent: {aiTriageResult.prob_urgent.toFixed(3)}</div>
+    )}
+
+    {aiTriageResult.prob_red !== undefined && (
+      <div>Probabilitate roșu: {aiTriageResult.prob_red.toFixed(3)}</div>
+    )}
+
+    {aiTriageResult.prob_green !== undefined && (
+      <div>Probabilitate verde: {aiTriageResult.prob_green.toFixed(3)}</div>
+    )}
+
+    {aiTriageResult.reguli_siguranta_aplicate?.length > 0 && (
+      <div style={{ marginTop: 8 }}>
+        <strong>Reguli aplicate:</strong>
+        <ul>
+          {aiTriageResult.reguli_siguranta_aplicate.map((rule, index) => (
+            <li key={index}>{rule}</li>
+          ))}
+        </ul>
+      </div>
+    )}
+  </div>
+)}
 
       {combinedPrintMode && (
         <div id="print-area">

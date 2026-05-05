@@ -1,9 +1,75 @@
 import { toIntOrNull, toFloatOrNull } from "./formsPageHelpers";
 
-export function buildPreformPayload(preform) {
+function toIsoDateOrNull(value) {
+  if (!value) return null;
+
+  const parts = String(value).split("/");
+  if (parts.length !== 3) return value;
+
+  const [day, month, year] = parts;
+
+  if (!day || !month || !year) return null;
+
+  return `${year}-${month.padStart(2, "0")}-${day.padStart(2, "0")}`;
+}
+
+export function buildAiTriagePayload(preform) {
   return {
-    ...preform,
+    varsta: Number(preform.age || 40),
+    sex: preform.sex === "F" ? 2 : 1,
+    temperatura: Number(preform.temperature || 36.8),
+    puls: Number(preform.pulse || preform.av || 80),
+    respiratie: Number(preform.respiratoryRate || 18),
+    ta_sistolica: Number(preform.systolicBp || 120),
+    ta_diastolica: Number(preform.diastolicBp || 80),
+    saturatie: Number(preform.spo2 || 98),
+    durere: Number(preform.painScale || 0),
+    ambulanta:
+      preform.broughtByCode === "13_SAJ" ||
+      preform.broughtByCode === "14_SMURD"
+        ? 1
+        : 2,
+
+    fara_puls:
+      preform.pickupStopCr ||
+      preform.pickupDeceased ||
+      preform.pickupResuscitationInProgress
+        ? 1
+        : 0,
+
+    detresa_respiratorie_severa:
+      preform.dyspnea && Number(preform.spo2 || 98) < 90 ? 1 : 0,
+
+    sangerare_majora:
+      preform.giHematemesis ||
+      preform.giMelena ||
+      preform.giRectorrhagia ||
+      preform.guVaginalBleeding
+        ? 1
+        : 0,
+
+    INJURY: preform.pickupTrauma ? 1 : 0,
+    CAD: preform.historyCardiac ? 1 : 0,
+    CHF: preform.historyCardiac ? 1 : 0,
+    COPD: preform.historyPulmonary ? 1 : 0,
+    ASTHMA: preform.historyPulmonary ? 1 : 0,
+    CKD: preform.historyRenal ? 1 : 0,
+    ESRD: preform.historyRenal ? 1 : 0,
+    DIABTYP2: preform.historyDiabetes ? 1 : 0,
+
+    motiv1: "0",
+    motiv2: "0",
+    motiv3: "0",
+  };
+}
+
+export function buildPreformPayload(preform) {
+  const { aiTriageResult, painScale, ...cleanPreform } = preform;
+
+  return {
+    ...cleanPreform,
     age: toIntOrNull(preform.age),
+    birthDate: toIsoDateOrNull(preform.birthDate),
     gcs: toIntOrNull(preform.gcs),
     gcsM: toIntOrNull(preform.gcsM),
     gcsV: toIntOrNull(preform.gcsV),
@@ -26,6 +92,8 @@ export function buildPreformPayload(preform) {
     nurseSignedAt: preform.nurseSignedAt || null,
 
     details: JSON.stringify({
+      aiTriageResult: aiTriageResult || null,
+painScale: toIntOrNull(painScale),
       objectiveGeneralState: preform.objectiveGeneralState || "",
 
       headNormal: preform.headNormal || false,

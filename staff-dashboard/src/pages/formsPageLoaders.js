@@ -151,6 +151,7 @@ export async function loadPreformIntoState({
   setMsg,
   setPatientDetails,
   setPreform,
+  setAiTriageResult,
   loadPreformData,
 }) {
   if (!selected) return;
@@ -171,6 +172,10 @@ export async function loadPreformIntoState({
     } catch {
       parsedDetails = {};
     }
+    
+    if (setAiTriageResult) {
+  setAiTriageResult(parsedDetails.aiTriageResult || null);
+}
 
     setPreform((prev) => ({
       ...prev,
