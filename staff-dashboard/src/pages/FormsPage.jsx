@@ -27,6 +27,58 @@ import {
 } from "./formsPageApi";
 import { useToast } from "../context/ToastContext";
 
+function mapAiLabelToTriageColor(label) {
+  const map = {
+    rosu: "ROSU",
+    galben: "GALBEN",
+    verde: "VERDE",
+    consult: "CONSULT",
+  };
+
+  return map[label] || "";
+}
+
+function getMissingRequiredAiFields(preform) {
+  const hasCriticalSafetyFlag =
+    preform.pickupStopCr ||
+    preform.pickupDeceased ||
+    preform.pickupResuscitationInProgress;
+
+  if (hasCriticalSafetyFlag) return [];
+
+  const missingFields = [];
+
+  if (!preform.age) missingFields.push("vârsta");
+  if (!preform.sex) missingFields.push("sexul");
+  if (!preform.temperature) missingFields.push("temperatura");
+  if (!preform.pulse && !preform.av) missingFields.push("pulsul / AV");
+  if (!preform.respiratoryRate) missingFields.push("frecvența respiratorie");
+  if (!preform.systolicBp) missingFields.push("TA sistolică");
+  if (!preform.diastolicBp) missingFields.push("TA diastolică");
+  if (!preform.spo2) missingFields.push("saturația O2");
+
+  if (
+    preform.painScale === "" ||
+    preform.painScale === null ||
+    preform.painScale === undefined
+  ) {
+    missingFields.push("scorul durerii");
+  }
+
+  return missingFields;
+}
+
+function getMissingRecommendedAiFields(preform) {
+  const missingFields = [];
+
+  if (!preform.reason) missingFields.push("motivul prezentării");
+  if (!preform.broughtByCode) missingFields.push("adus de");
+  if (!preform.patientStateCode) missingFields.push("starea pacientului");
+  if (!preform.gcs) missingFields.push("GCS");
+
+  return missingFields;
+}
+
 export default function FormsPage({ selected, onSelectVisit }) {
   const [patientsSearch, setPatientsSearch] = useState("");
   const [preformOpen, setPreformOpen] = useState(false);
@@ -292,17 +344,6 @@ if (recommendedMissingFields.length > 0) {
   } finally {
     setLoading(false);
   }
-};
-
-const mapAiLabelToTriageColor = (label) => {
-  const map = {
-    rosu: "ROSU",
-    galben: "GALBEN",
-    verde: "VERDE",
-    consult: "CONSULT",
-  };
-
-  return map[label] || "";
 };
 
 const applyAiRecommendation = () => {
@@ -635,7 +676,7 @@ const saveDischarge = async () => {
 </button>
       </div>
 
-     {aiTriageResult && (() => {
+{aiTriageResult && (() => {
   const label = aiTriageResult.predictie_finala;
 
   const colorMap = {
@@ -664,24 +705,58 @@ const saveDischarge = async () => {
         background: "#121212",
       }}
     >
-      <div style={{ fontWeight: 700, marginBottom: 10, fontSize: 16 }}>
-        Rezultat triaj AI
+      <div style={{ display: "flex", justifyContent: "space-between", gap: 12, flexWrap: "wrap" }}>
+        <div>
+          <div style={{ fontWeight: 700, fontSize: 16 }}>Recomandare AI</div>
+        </div>
+
+        <div
+          style={{
+            padding: "6px 12px",
+            borderRadius: 999,
+            background: cardColor,
+            fontWeight: 800,
+            alignSelf: "flex-start",
+          }}
+        >
+          {labelMap[label] || label}
+        </div>
       </div>
 
-      <div
-        style={{
-          display: "inline-block",
-          padding: "6px 12px",
-          borderRadius: 999,
-          background: cardColor,
-          fontWeight: 800,
-          marginBottom: 10,
-        }}
-      >
-        {labelMap[label] || label}
+      <div style={{ marginTop: 12 }}>
+        Triaj final ales: <strong>{preform.triageColor || "NEALES"}</strong>
       </div>
 
-      <div style={{ display: "flex", gap: 10, marginTop: 12, marginBottom: 12 }}>
+      <div style={{ display: "grid", gridTemplateColumns: "repeat(3, minmax(120px, 1fr))", gap: 8, marginTop: 12 }}>
+        {aiTriageResult.decizie_etapa_1 && (
+          <div>Etapa: <strong>{aiTriageResult.decizie_etapa_1}</strong></div>
+        )}
+
+        {aiTriageResult.prob_urgent !== undefined && (
+          <div>Urgent: <strong>{(aiTriageResult.prob_urgent * 100).toFixed(1)}%</strong></div>
+        )}
+
+        {aiTriageResult.prob_red !== undefined && (
+          <div>Roșu: <strong>{(aiTriageResult.prob_red * 100).toFixed(1)}%</strong></div>
+        )}
+
+        {aiTriageResult.prob_green !== undefined && (
+          <div>Verde: <strong>{(aiTriageResult.prob_green * 100).toFixed(1)}%</strong></div>
+        )}
+      </div>
+
+      {aiTriageResult.reguli_siguranta_aplicate?.length > 0 && (
+        <div style={{ marginTop: 12 }}>
+          <strong>Reguli aplicate:</strong>
+          <ul style={{ marginTop: 6, marginBottom: 0 }}>
+            {aiTriageResult.reguli_siguranta_aplicate.map((rule, index) => (
+              <li key={index}>{rule}</li>
+            ))}
+          </ul>
+        </div>
+      )}
+
+      <div style={{ display: "flex", gap: 10, marginTop: 14, flexWrap: "wrap" }}>
         <button
           onClick={applyAiRecommendation}
           disabled={isClosedVisit}
@@ -702,43 +777,7 @@ const saveDischarge = async () => {
           <option value="VERDE">Verde</option>
           <option value="CONSULT">Consult</option>
         </select>
-<div style={{ marginTop: 8 }}>
-  Triaj final ales: <strong>{preform.triageColor || "neales"}</strong>
-</div>
       </div>
-
-      {aiTriageResult.decizie_etapa_1 && (
-        <div>Etapa 1: {aiTriageResult.decizie_etapa_1}</div>
-      )}
-
-      {aiTriageResult.prob_urgent !== undefined && (
-        <div>
-          Probabilitate urgent: {(aiTriageResult.prob_urgent * 100).toFixed(1)}%
-        </div>
-      )}
-
-      {aiTriageResult.prob_red !== undefined && (
-        <div>
-          Probabilitate roșu: {(aiTriageResult.prob_red * 100).toFixed(1)}%
-        </div>
-      )}
-
-      {aiTriageResult.prob_green !== undefined && (
-        <div>
-          Probabilitate verde: {(aiTriageResult.prob_green * 100).toFixed(1)}%
-        </div>
-      )}
-
-      {aiTriageResult.reguli_siguranta_aplicate?.length > 0 && (
-        <div style={{ marginTop: 10 }}>
-          <strong>Reguli aplicate:</strong>
-          <ul style={{ marginTop: 6 }}>
-            {aiTriageResult.reguli_siguranta_aplicate.map((rule, index) => (
-              <li key={index}>{rule}</li>
-            ))}
-          </ul>
-        </div>
-      )}
     </div>
   );
 })()}

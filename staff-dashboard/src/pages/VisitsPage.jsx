@@ -51,6 +51,48 @@ function StatusBadge({ status }) {
   );
 }
 
+function TriageBadge({ triageColor }) {
+  if (!triageColor) {
+    return (
+      <span style={{ color: "#777", fontSize: 12 }}>
+        Neales
+      </span>
+    );
+  }
+
+  const stylesByColor = {
+    ROSU: { background: "#7f1d1d", color: "#fecaca", border: "#ef4444", label: "Roșu" },
+    GALBEN: { background: "#854d0e", color: "#fde68a", border: "#f59e0b", label: "Galben" },
+    VERDE: { background: "#166534", color: "#bbf7d0", border: "#22c55e", label: "Verde" },
+    CONSULT: { background: "#1e3a8a", color: "#bfdbfe", border: "#3b82f6", label: "Consult" },
+  };
+
+  const config = stylesByColor[triageColor] || {
+    background: "#222",
+    color: "#ddd",
+    border: "#444",
+    label: triageColor,
+  };
+
+  return (
+    <span
+      style={{
+        display: "inline-block",
+        padding: "5px 10px",
+        borderRadius: 999,
+        border: `1px solid ${config.border}`,
+        background: config.background,
+        color: config.color,
+        fontSize: 12,
+        fontWeight: 700,
+        whiteSpace: "nowrap",
+      }}
+    >
+      {config.label}
+    </span>
+  );
+}
+
 function DoctorBadge({ doctorEmail }) {
   const assigned = !!doctorEmail;
 
@@ -262,6 +304,9 @@ export default function VisitsPage({ selected, onSelect }) {
                 Status
               </th>
               <th style={{ border: "1px solid #333", padding: 10, textAlign: "left" }}>
+                Triaj
+              </th>
+              <th style={{ border: "1px solid #333", padding: 10, textAlign: "left" }}>
                 Creat la
               </th>
             </tr>
@@ -295,6 +340,9 @@ export default function VisitsPage({ selected, onSelect }) {
                   <StatusBadge status={v.status} />
                 </td>
                 <td style={{ border: "1px solid #333", padding: 10 }}>
+                  <TriageBadge triageColor={v.triageColor} />
+                </td>
+                <td style={{ border: "1px solid #333", padding: 10 }}>
                   {formatDateTime(v.createdAt)}
                 </td>
               </tr>
@@ -303,7 +351,7 @@ export default function VisitsPage({ selected, onSelect }) {
             {filteredVisits.length === 0 && (
               <tr>
                 <td
-                  colSpan="5"
+                  colSpan="6"
                   style={{
                     border: "1px solid #333",
                     padding: 14,

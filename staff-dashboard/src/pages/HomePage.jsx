@@ -182,11 +182,12 @@ useEffect(() => {
                 <TriageBadge color="#ff3b30" label="Roșu" value={stats.waitingByTriage?.ROSU} />
                 <TriageBadge color="#ffd60a" label="Galben" value={stats.waitingByTriage?.GALBEN} />
                 <TriageBadge color="#32d74b" label="Verde" value={stats.waitingByTriage?.VERDE} />
+                <TriageBadge color="#3b82f6" label="Consult" value={stats.waitingByTriage?.CONSULT} />
                 <TriageBadge color="#d1d1d6" label="Netriat" value={stats.waitingByTriage?.NESETAT} />
               </div>
 
               <div style={{ marginTop: 12, color: "#aaa", fontSize: 12 }}>
-                Prioritate: Roșu &gt; Galben &gt; Verde &gt; Netriat
+                Prioritate: Roșu &gt; Galben &gt; Verde &gt; Consult &gt; Netriat
               </div>
             </StatBox>
 
