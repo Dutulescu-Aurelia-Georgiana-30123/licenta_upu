@@ -1,6 +1,9 @@
 package com.licenta.backend_upu.entity;
 
 public enum TriageColor {
-    ROSU, GALBEN, VERDE, CONSULT;
+    ROSU,
+    GALBEN,
+    VERDE,
+    CONSULT
 
 }

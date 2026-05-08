@@ -14,4 +14,5 @@ private String patientLastName;
 private String status;
 private LocalDateTime createdAt;
 private String doctorEmail;
+private String triageColor;
 }
