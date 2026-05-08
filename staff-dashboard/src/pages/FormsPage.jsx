@@ -51,14 +51,17 @@ export default function FormsPage({ selected, onSelectVisit }) {
   const { showSuccess, showError, showInfo } = useToast();
 
   const lastEditAtRef = useRef(0);
+  const autosaveTimeoutRef = useRef(null);
+const hasUserEditedRef = useRef(false);
   const isClosedVisit =
   selected?.status === "DISCHARGED" ||
   selected?.status === "ADMITTED" ||
   selected?.status === "TRANSFERRED";
 
   const markEditing = () => {
-    lastEditAtRef.current = Date.now();
-  };
+  lastEditAtRef.current = Date.now();
+  hasUserEditedRef.current = true;
+};
 
   const loadAllPatients = async () => {
     setMsg("");
@@ -190,8 +193,82 @@ export default function FormsPage({ selected, onSelectVisit }) {
     }
   };
 
+  const autoSavePreform = async () => {
+  if (!selected || isClosedVisit) return;
+  if (!hasUserEditedRef.current) return;
+
+  try {
+    const payload = buildPreformPayload(preform);
+    await savePreformData(selected, payload);
+
+    lastEditAtRef.current = 0;
+    hasUserEditedRef.current = false;
+
+  } catch (e) {
+    console.error("Eroare autosave preform:", e);
+  }
+};
+
+useEffect(() => {
+  if (!selected || isClosedVisit) return;
+  if (!hasUserEditedRef.current) return;
+
+  if (autosaveTimeoutRef.current) {
+    clearTimeout(autosaveTimeoutRef.current);
+  }
+
+  autosaveTimeoutRef.current = setTimeout(() => {
+    autoSavePreform();
+  }, 3000);
+
+  return () => {
+    if (autosaveTimeoutRef.current) {
+      clearTimeout(autosaveTimeoutRef.current);
+    }
+  };
+}, [preform, selected?.id, isClosedVisit]);
+
   const runAiTriage = async () => {
   if (!selected || isClosedVisit) return;
+
+  const hasCriticalSafetyFlag =
+  preform.pickupStopCr ||
+  preform.pickupDeceased ||
+  preform.pickupResuscitationInProgress;
+
+  const missingFields = [];
+
+  if (!preform.age) missingFields.push("vârsta");
+  if (!preform.sex) missingFields.push("sexul");
+  if (!preform.temperature) missingFields.push("temperatura");
+  if (!preform.pulse && !preform.av) missingFields.push("pulsul / AV");
+  if (!preform.respiratoryRate) missingFields.push("frecvența respiratorie");
+  if (!preform.systolicBp) missingFields.push("TA sistolică");
+  if (!preform.diastolicBp) missingFields.push("TA diastolică");
+  if (!preform.spo2) missingFields.push("saturația O2");
+  if (preform.painScale === "" || preform.painScale === null || preform.painScale === undefined) {
+    missingFields.push("scorul durerii");
+  }
+
+  if (!hasCriticalSafetyFlag && missingFields.length > 0) {
+  const message = `Completează înainte de AI: ${missingFields.join(", ")}.`;
+  setMsg(message);
+  showError(message);
+  return;
+}
+
+  const recommendedMissingFields = [];
+
+if (!preform.reason) recommendedMissingFields.push("motivul prezentării");
+if (!preform.broughtByCode) recommendedMissingFields.push("adus de");
+if (!preform.patientStateCode) recommendedMissingFields.push("starea pacientului");
+if (!preform.gcs) recommendedMissingFields.push("GCS");
+
+if (recommendedMissingFields.length > 0) {
+  showInfo(
+    `Predicția rulează, dar lipsesc date recomandate: ${recommendedMissingFields.join(", ")}.`
+  );
+}
 
   setMsg("");
   setLoading(true);
@@ -202,12 +279,12 @@ export default function FormsPage({ selected, onSelectVisit }) {
 
     setAiTriageResult(result);
 
-setPreform((prev) => ({
-  ...prev,
-  aiTriageResult: result,
-}));
+    setPreform((prev) => ({
+      ...prev,
+      aiTriageResult: result,
+    }));
 
-showSuccess("Predicția AI a fost generată.");
+    showSuccess("Predicția AI a fost generată.");
   } catch (e) {
     console.error("Eroare AI triage:", e);
     setMsg(`Eroare AI triage: ${e.message || e}`);
@@ -217,7 +294,44 @@ showSuccess("Predicția AI a fost generată.");
   }
 };
 
- const saveDischarge = async () => {
+const mapAiLabelToTriageColor = (label) => {
+  const map = {
+    rosu: "ROSU",
+    galben: "GALBEN",
+    verde: "VERDE",
+    consult: "CONSULT",
+  };
+
+  return map[label] || "";
+};
+
+const applyAiRecommendation = () => {
+  if (!aiTriageResult?.predictie_finala) return;
+
+  const triageColor = mapAiLabelToTriageColor(aiTriageResult.predictie_finala);
+
+  markEditing();
+
+  setPreform((prev) => ({
+    ...prev,
+    triageColor,
+  }));
+
+  showSuccess("Recomandarea AI a fost aplicată.");
+};
+
+const changeManualTriageColor = (value) => {
+  markEditing();
+
+  setPreform((prev) => ({
+    ...prev,
+    triageColor: value,
+  }));
+
+  showInfo("Culoarea triajului a fost modificată manual.");
+};
+
+const saveDischarge = async () => {
   if (!selected || isClosedVisit) return;
     setMsg("");
     setLoading(true);
@@ -457,7 +571,39 @@ showSuccess("Predicția AI a fost generată.");
 
   return (
     <div>
-      <h2>Fișe ({selected.visitCode || `vizita ${selected.id}`})</h2>
+      <div
+  style={{
+    display: "flex",
+    alignItems: "center",
+    gap: 12,
+    marginBottom: 8,
+    flexWrap: "wrap",
+  }}
+>
+  <h2 style={{ margin: 0 }}>
+    Fișe ({selected.visitCode || `vizita ${selected.id}`})
+  </h2>
+
+  {preform.triageColor && (
+    <div
+      style={{
+        padding: "6px 12px",
+        borderRadius: 999,
+        fontWeight: 700,
+        background:
+          preform.triageColor === "ROSU"
+            ? "#7f1d1d"
+            : preform.triageColor === "GALBEN"
+            ? "#854d0e"
+            : preform.triageColor === "VERDE"
+            ? "#166534"
+            : "#1e3a8a",
+      }}
+    >
+      TRIAJ: {preform.triageColor}
+    </div>
+  )}
+</div>
 
       <PatientDetailsPanel patientDetails={patientDetails} />
 
@@ -478,59 +624,124 @@ showSuccess("Predicția AI a fost generată.");
 <button
   onClick={runAiTriage}
   disabled={loading || isClosedVisit}
-  style={{ padding: "8px 12px" }}
+  style={{
+    padding: "8px 12px",
+    opacity: loading ? 0.7 : 1,
+    cursor: loading ? "not-allowed" : "pointer",
+    minWidth: 170,
+  }}
 >
-  Generează triaj AI
+  {loading ? "Se generează..." : "Generează triaj AI"}
 </button>
       </div>
 
-      {aiTriageResult && (
-  <div
-    style={{
-      marginTop: 12,
-      padding: 12,
-      border: "1px solid #333",
-      borderRadius: 10,
-      background: "#121212",
-    }}
-  >
-    <div style={{ fontWeight: 700, marginBottom: 6 }}>
-      Rezultat triaj AI
-    </div>
+     {aiTriageResult && (() => {
+  const label = aiTriageResult.predictie_finala;
 
-    <div>
-      Predicție finală:{" "}
-      <strong>{aiTriageResult.predictie_finala}</strong>
-    </div>
+  const colorMap = {
+    rosu: "#7f1d1d",
+    galben: "#854d0e",
+    verde: "#166534",
+    consult: "#1e3a8a",
+  };
 
-    {aiTriageResult.decizie_etapa_1 && (
-      <div>Etapa 1: {aiTriageResult.decizie_etapa_1}</div>
-    )}
+  const labelMap = {
+    rosu: "ROȘU",
+    galben: "GALBEN",
+    verde: "VERDE",
+    consult: "CONSULT",
+  };
 
-    {aiTriageResult.prob_urgent !== undefined && (
-      <div>Probabilitate urgent: {aiTriageResult.prob_urgent.toFixed(3)}</div>
-    )}
+  const cardColor = colorMap[label] || "#333";
 
-    {aiTriageResult.prob_red !== undefined && (
-      <div>Probabilitate roșu: {aiTriageResult.prob_red.toFixed(3)}</div>
-    )}
-
-    {aiTriageResult.prob_green !== undefined && (
-      <div>Probabilitate verde: {aiTriageResult.prob_green.toFixed(3)}</div>
-    )}
-
-    {aiTriageResult.reguli_siguranta_aplicate?.length > 0 && (
-      <div style={{ marginTop: 8 }}>
-        <strong>Reguli aplicate:</strong>
-        <ul>
-          {aiTriageResult.reguli_siguranta_aplicate.map((rule, index) => (
-            <li key={index}>{rule}</li>
-          ))}
-        </ul>
+  return (
+    <div
+      style={{
+        marginTop: 12,
+        padding: 14,
+        border: `1px solid ${cardColor}`,
+        borderRadius: 12,
+        background: "#121212",
+      }}
+    >
+      <div style={{ fontWeight: 700, marginBottom: 10, fontSize: 16 }}>
+        Rezultat triaj AI
       </div>
-    )}
-  </div>
-)}
+
+      <div
+        style={{
+          display: "inline-block",
+          padding: "6px 12px",
+          borderRadius: 999,
+          background: cardColor,
+          fontWeight: 800,
+          marginBottom: 10,
+        }}
+      >
+        {labelMap[label] || label}
+      </div>
+
+      <div style={{ display: "flex", gap: 10, marginTop: 12, marginBottom: 12 }}>
+        <button
+          onClick={applyAiRecommendation}
+          disabled={isClosedVisit}
+          style={{ padding: "8px 12px" }}
+        >
+          Aplică recomandarea AI
+        </button>
+
+        <select
+          value={preform.triageColor || ""}
+          onChange={(e) => changeManualTriageColor(e.target.value)}
+          disabled={isClosedVisit}
+          style={{ padding: "8px 12px" }}
+        >
+          <option value="">Modifică culoarea triajului</option>
+          <option value="ROSU">Roșu</option>
+          <option value="GALBEN">Galben</option>
+          <option value="VERDE">Verde</option>
+          <option value="CONSULT">Consult</option>
+        </select>
+<div style={{ marginTop: 8 }}>
+  Triaj final ales: <strong>{preform.triageColor || "neales"}</strong>
+</div>
+      </div>
+
+      {aiTriageResult.decizie_etapa_1 && (
+        <div>Etapa 1: {aiTriageResult.decizie_etapa_1}</div>
+      )}
+
+      {aiTriageResult.prob_urgent !== undefined && (
+        <div>
+          Probabilitate urgent: {(aiTriageResult.prob_urgent * 100).toFixed(1)}%
+        </div>
+      )}
+
+      {aiTriageResult.prob_red !== undefined && (
+        <div>
+          Probabilitate roșu: {(aiTriageResult.prob_red * 100).toFixed(1)}%
+        </div>
+      )}
+
+      {aiTriageResult.prob_green !== undefined && (
+        <div>
+          Probabilitate verde: {(aiTriageResult.prob_green * 100).toFixed(1)}%
+        </div>
+      )}
+
+      {aiTriageResult.reguli_siguranta_aplicate?.length > 0 && (
+        <div style={{ marginTop: 10 }}>
+          <strong>Reguli aplicate:</strong>
+          <ul style={{ marginTop: 6 }}>
+            {aiTriageResult.reguli_siguranta_aplicate.map((rule, index) => (
+              <li key={index}>{rule}</li>
+            ))}
+          </ul>
+        </div>
+      )}
+    </div>
+  );
+})()}
 
       {combinedPrintMode && (
         <div id="print-area">
@@ -552,7 +763,7 @@ showSuccess("Predicția AI a fost generată.");
         onInputCapture={markEditing}
         onChangeCapture={markEditing}
       >
-       <FormsToolbar
+      <FormsToolbar
   loading={loading}
   exportCombined={exportCombined}
   status={status}

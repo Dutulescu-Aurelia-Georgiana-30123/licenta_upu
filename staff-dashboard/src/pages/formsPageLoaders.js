@@ -181,7 +181,7 @@ export async function loadPreformIntoState({
       ...prev,
       ...(data ? data : {}),
       ...parsedDetails,
-      triageColor: data?.triageColor || prev.triageColor,
+      triageColor: data?.triageColor || "",
       arrivalMode: data?.arrivalMode || prev.arrivalMode,
       sheetNumber: data?.sheetNumber || extractSheetNumber(selected.visitCode),
       presentationDate: data?.presentationDate || getTodayDate(),

@@ -46,7 +46,7 @@ export const initialPreformState = {
   deathHour: "",
   resuscitationNotStartedReason: "",
 
-  triageColor: "GALBEN",
+  triageColor: "",
   arrivalMode: "MIJLOACE_PROPRII",
   reason: "",
 
