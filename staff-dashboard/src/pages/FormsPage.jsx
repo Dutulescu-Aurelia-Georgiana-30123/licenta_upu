@@ -79,6 +79,83 @@ function getMissingRecommendedAiFields(preform) {
   return missingFields;
 }
 
+const cardStyle = {
+  background: "#ffffff",
+  border: "1px solid #e5eef8",
+  borderRadius: 24,
+  padding: 18,
+  boxShadow: "0 18px 45px rgba(15, 23, 42, 0.06)",
+};
+
+const primaryButtonStyle = {
+  padding: "10px 16px",
+  borderRadius: 14,
+  border: "none",
+  background: "#2563eb",
+  color: "white",
+  fontWeight: 800,
+  cursor: "pointer",
+  boxShadow: "0 12px 25px rgba(37, 99, 235, 0.18)",
+};
+
+const secondaryButtonStyle = {
+  padding: "10px 14px",
+  borderRadius: 14,
+  border: "1px solid #dbeafe",
+  background: "#eff6ff",
+  color: "#1d4ed8",
+  fontWeight: 800,
+  cursor: "pointer",
+};
+
+const inputStyle = {
+  padding: "12px 14px",
+  minWidth: 340,
+  borderRadius: 16,
+  border: "1px solid #e2e8f0",
+  background: "#f8fafc",
+  color: "#0f172a",
+  outline: "none",
+  fontWeight: 700,
+};
+
+const tableHeadCellStyle = {
+  padding: "12px 10px",
+  textAlign: "left",
+  borderBottom: "1px solid #e2e8f0",
+  color: "#64748b",
+  fontSize: 13,
+  fontWeight: 800,
+};
+
+const tableCellStyle = {
+  padding: "14px 10px",
+  borderBottom: "1px solid #edf2f7",
+  color: "#334155",
+  fontWeight: 600,
+  verticalAlign: "middle",
+};
+
+function getTriageBadgeStyle(triageColor) {
+  if (triageColor === "ROSU") {
+    return { background: "#fee2e2", color: "#991b1b" };
+  }
+
+  if (triageColor === "GALBEN") {
+    return { background: "#fef3c7", color: "#92400e" };
+  }
+
+  if (triageColor === "VERDE") {
+    return { background: "#dcfce7", color: "#166534" };
+  }
+
+  if (triageColor === "CONSULT") {
+    return { background: "#dbeafe", color: "#1d4ed8" };
+  }
+
+  return { background: "#f1f5f9", color: "#64748b" };
+}
+
 export default function FormsPage({ selected, onSelectVisit }) {
   const [patientsSearch, setPatientsSearch] = useState("");
   const [preformOpen, setPreformOpen] = useState(false);
@@ -92,6 +169,7 @@ export default function FormsPage({ selected, onSelectVisit }) {
   const [loading, setLoading] = useState(false);
   const [patientDetails, setPatientDetails] = useState(null);
   const [aiTriageResult, setAiTriageResult] = useState(null);
+  const [aiMissingFields, setAiMissingFields] = useState([]);
 
   const [selectedPatient, setSelectedPatient] = useState(null);
   const [patientVisits, setPatientVisits] = useState([]);
@@ -104,16 +182,17 @@ export default function FormsPage({ selected, onSelectVisit }) {
 
   const lastEditAtRef = useRef(0);
   const autosaveTimeoutRef = useRef(null);
-const hasUserEditedRef = useRef(false);
+  const hasUserEditedRef = useRef(false);
+
   const isClosedVisit =
-  selected?.status === "DISCHARGED" ||
-  selected?.status === "ADMITTED" ||
-  selected?.status === "TRANSFERRED";
+    selected?.status === "DISCHARGED" ||
+    selected?.status === "ADMITTED" ||
+    selected?.status === "TRANSFERRED";
 
   const markEditing = () => {
-  lastEditAtRef.current = Date.now();
-  hasUserEditedRef.current = true;
-};
+    lastEditAtRef.current = Date.now();
+    hasUserEditedRef.current = true;
+  };
 
   const loadAllPatients = async () => {
     setMsg("");
@@ -169,20 +248,20 @@ const hasUserEditedRef = useRef(false);
     });
   };
 
- useEffect(() => {
-  if (!selected) return;
+  useEffect(() => {
+    if (!selected) return;
 
-  const checkIfExported = async () => {
-    try {
-      const docs = await apiGet(`/archived-documents/visit/${selected.id}`);
-      setAlreadyExported(docs.length > 0);
-    } catch (e) {
-      console.error("Eroare verificare documente:", e);
-    }
-  };
+    const checkIfExported = async () => {
+      try {
+        const docs = await apiGet(`/archived-documents/visit/${selected.id}`);
+        setAlreadyExported(docs.length > 0);
+      } catch (e) {
+        console.error("Eroare verificare documente:", e);
+      }
+    };
 
-  checkIfExported();
-}, [selected?.id]);
+    checkIfExported();
+  }, [selected?.id]);
 
   useEffect(() => {
     setSelectedPatient(null);
@@ -225,8 +304,9 @@ const hasUserEditedRef = useRef(false);
     });
   }, [selected?.id]);
 
- const savePreform = async () => {
-  if (!selected || isClosedVisit) return;
+  const savePreform = async () => {
+    if (!selected || isClosedVisit) return;
+
     setMsg("");
     setLoading(true);
 
@@ -235,6 +315,7 @@ const hasUserEditedRef = useRef(false);
     try {
       await savePreformData(selected, payload);
       lastEditAtRef.current = 0;
+      hasUserEditedRef.current = false;
       setMsg("Fișa de pre-spitalizare a fost salvată.");
       showSuccess("Fișa de pre-spitalizare a fost salvată.");
     } catch (e) {
@@ -246,134 +327,116 @@ const hasUserEditedRef = useRef(false);
   };
 
   const autoSavePreform = async () => {
-  if (!selected || isClosedVisit) return;
-  if (!hasUserEditedRef.current) return;
+    if (!selected || isClosedVisit) return;
+    if (!hasUserEditedRef.current) return;
 
-  try {
-    const payload = buildPreformPayload(preform);
-    await savePreformData(selected, payload);
+    try {
+      const payload = buildPreformPayload(preform);
+      await savePreformData(selected, payload);
 
-    lastEditAtRef.current = 0;
-    hasUserEditedRef.current = false;
+      lastEditAtRef.current = 0;
+      hasUserEditedRef.current = false;
+    } catch (e) {
+      console.error("Eroare autosave preform:", e);
+    }
+  };
 
-  } catch (e) {
-    console.error("Eroare autosave preform:", e);
-  }
-};
+  useEffect(() => {
+    if (!selected || isClosedVisit) return;
+    if (!hasUserEditedRef.current) return;
 
-useEffect(() => {
-  if (!selected || isClosedVisit) return;
-  if (!hasUserEditedRef.current) return;
-
-  if (autosaveTimeoutRef.current) {
-    clearTimeout(autosaveTimeoutRef.current);
-  }
-
-  autosaveTimeoutRef.current = setTimeout(() => {
-    autoSavePreform();
-  }, 3000);
-
-  return () => {
     if (autosaveTimeoutRef.current) {
       clearTimeout(autosaveTimeoutRef.current);
     }
-  };
-}, [preform, selected?.id, isClosedVisit]);
+
+    autosaveTimeoutRef.current = setTimeout(() => {
+      autoSavePreform();
+    }, 3000);
+
+    return () => {
+      if (autosaveTimeoutRef.current) {
+        clearTimeout(autosaveTimeoutRef.current);
+      }
+    };
+  }, [preform, selected?.id, isClosedVisit]);
 
   const runAiTriage = async () => {
-  if (!selected || isClosedVisit) return;
+    if (!selected || isClosedVisit) return;
 
-  const hasCriticalSafetyFlag =
-  preform.pickupStopCr ||
-  preform.pickupDeceased ||
-  preform.pickupResuscitationInProgress;
+    const missingFields = getMissingRequiredAiFields(preform);
 
-  const missingFields = [];
+    if (missingFields.length > 0) {
+  setAiMissingFields(missingFields);
 
-  if (!preform.age) missingFields.push("vârsta");
-  if (!preform.sex) missingFields.push("sexul");
-  if (!preform.temperature) missingFields.push("temperatura");
-  if (!preform.pulse && !preform.av) missingFields.push("pulsul / AV");
-  if (!preform.respiratoryRate) missingFields.push("frecvența respiratorie");
-  if (!preform.systolicBp) missingFields.push("TA sistolică");
-  if (!preform.diastolicBp) missingFields.push("TA diastolică");
-  if (!preform.spo2) missingFields.push("saturația O2");
-  if (preform.painScale === "" || preform.painScale === null || preform.painScale === undefined) {
-    missingFields.push("scorul durerii");
-  }
-
-  if (!hasCriticalSafetyFlag && missingFields.length > 0) {
   const message = `Completează înainte de AI: ${missingFields.join(", ")}.`;
   setMsg(message);
   showError(message);
   return;
 }
 
-  const recommendedMissingFields = [];
+setAiMissingFields([]);
 
-if (!preform.reason) recommendedMissingFields.push("motivul prezentării");
-if (!preform.broughtByCode) recommendedMissingFields.push("adus de");
-if (!preform.patientStateCode) recommendedMissingFields.push("starea pacientului");
-if (!preform.gcs) recommendedMissingFields.push("GCS");
+    const recommendedMissingFields = getMissingRecommendedAiFields(preform);
 
-if (recommendedMissingFields.length > 0) {
-  showInfo(
-    `Predicția rulează, dar lipsesc date recomandate: ${recommendedMissingFields.join(", ")}.`
-  );
-}
+    if (recommendedMissingFields.length > 0) {
+      showInfo(
+        `Predicția rulează, dar lipsesc date recomandate: ${recommendedMissingFields.join(", ")}.`
+      );
+    }
 
-  setMsg("");
-  setLoading(true);
+    setMsg("");
+    setLoading(true);
 
-  try {
-    const payload = buildAiTriagePayload(preform);
-    const result = await predictAiTriageData(payload);
+    try {
+      const payload = buildAiTriagePayload(preform);
+      const result = await predictAiTriageData(payload);
 
-    setAiTriageResult(result);
+      setAiTriageResult(result);
+
+      setPreform((prev) => ({
+        ...prev,
+        aiTriageResult: result,
+      }));
+
+      showSuccess("Predicția AI a fost generată.");
+    } catch (e) {
+      console.error("Eroare AI triage:", e);
+      setMsg(`Eroare AI triage: ${e.message || e}`);
+      showError("Eroare la predicția AI");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const applyAiRecommendation = () => {
+    if (!aiTriageResult?.predictie_finala) return;
+
+    const triageColor = mapAiLabelToTriageColor(aiTriageResult.predictie_finala);
+
+    markEditing();
 
     setPreform((prev) => ({
       ...prev,
-      aiTriageResult: result,
+      triageColor,
     }));
 
-    showSuccess("Predicția AI a fost generată.");
-  } catch (e) {
-    console.error("Eroare AI triage:", e);
-    setMsg(`Eroare AI triage: ${e.message || e}`);
-    showError("Eroare la predicția AI");
-  } finally {
-    setLoading(false);
-  }
-};
+    showSuccess("Recomandarea AI a fost aplicată.");
+  };
 
-const applyAiRecommendation = () => {
-  if (!aiTriageResult?.predictie_finala) return;
+  const changeManualTriageColor = (value) => {
+    markEditing();
 
-  const triageColor = mapAiLabelToTriageColor(aiTriageResult.predictie_finala);
+    setPreform((prev) => ({
+      ...prev,
+      triageColor: value,
+    }));
 
-  markEditing();
+    showInfo("Culoarea triajului a fost modificată manual.");
+  };
 
-  setPreform((prev) => ({
-    ...prev,
-    triageColor,
-  }));
+  const saveDischarge = async () => {
+    if (!selected || isClosedVisit) return;
 
-  showSuccess("Recomandarea AI a fost aplicată.");
-};
-
-const changeManualTriageColor = (value) => {
-  markEditing();
-
-  setPreform((prev) => ({
-    ...prev,
-    triageColor: value,
-  }));
-
-  showInfo("Culoarea triajului a fost modificată manual.");
-};
-
-const saveDischarge = async () => {
-  if (!selected || isClosedVisit) return;
     setMsg("");
     setLoading(true);
 
@@ -393,7 +456,8 @@ const saveDischarge = async () => {
   };
 
   const updateStatus = async () => {
-  if (!selected || !status || isClosedVisit) return;
+    if (!selected || !status || isClosedVisit) return;
+
     setMsg("");
 
     try {
@@ -407,24 +471,24 @@ const saveDischarge = async () => {
   };
 
   const exportCombined = async () => {
-  if (!selected) return;
+    if (!selected) return;
 
-  setCombinedPrintMode(true);
+    setCombinedPrintMode(true);
 
-  setTimeout(async () => {
-    try {
-      const success = await exportCombinedPdf({ selected, setMsg });
+    setTimeout(async () => {
+      try {
+        const success = await exportCombinedPdf({ selected, setMsg });
 
-      if (success) {
-        showSuccess("PDF generat.");
+        if (success) {
+          showSuccess("PDF generat.");
+        }
+      } catch (e) {
+        console.error("Eroare exportCombined:", e);
+        setMsg(e.message || "Eroare export PDF");
+        showError(e.message || "Eroare export PDF");
       }
-    } catch (e) {
-      console.error("Eroare exportCombined:", e);
-      setMsg(e.message || "Eroare export PDF");
-      showError(e.message || "Eroare export PDF");
-    }
-  }, 500);
-};
+    }, 500);
+  };
 
   const handlePrintCombined = async () => {
     if (!selected) return;
@@ -457,110 +521,127 @@ const saveDischarge = async () => {
 
   if (!selected) {
     return (
-      <div>
-        <h2>Fișe pacienți</h2>
+      <div style={{ width: "100%" }}>
+        <div>
+          <h2
+            style={{
+              margin: 0,
+              fontSize: 28,
+              color: "#0f172a",
+              letterSpacing: -0.6,
+            }}
+          >
+            Fișe pacienți
+          </h2>
+          <div style={{ color: "#64748b", marginTop: 4, fontSize: 14 }}>
+            Caută pacientul și selectează vizita pentru completarea fișelor
+          </div>
+        </div>
 
-        {msg && <p style={{ color: "#ff8080" }}>{msg}</p>}
+        {msg && (
+          <div
+            style={{
+              marginTop: 14,
+              padding: 12,
+              borderRadius: 14,
+              background: msg.startsWith("Eroare") ? "#fee2e2" : "#eff6ff",
+              color: msg.startsWith("Eroare") ? "#991b1b" : "#1d4ed8",
+              fontWeight: 700,
+            }}
+          >
+            {msg}
+          </div>
+        )}
 
-        <div style={{ marginTop: 16, marginBottom: 12 }}>
+        <div style={{ marginTop: 18, ...cardStyle }}>
           <input
             type="text"
             placeholder="Caută pacient după nume sau CNP"
             value={patientsSearch}
             onChange={(e) => setPatientsSearch(e.target.value)}
-            style={{
-              padding: 10,
-              minWidth: 340,
-              borderRadius: 8,
-              border: "1px solid #333",
-              background: "#121212",
-              color: "#eaeaea",
-            }}
+            style={inputStyle}
           />
-        </div>
 
-        <div style={{ marginTop: 16, overflowX: "auto" }}>
-          <table
-            style={{
-              borderCollapse: "collapse",
-              width: "100%",
-              background: "#111",
-            }}
-          >
-            <thead>
-              <tr style={{ background: "#151515" }}>
-                <th style={{ border: "1px solid #333", padding: 10, textAlign: "left" }}>
-                  Prenume
-                </th>
-                <th style={{ border: "1px solid #333", padding: 10, textAlign: "left" }}>
-                  Nume
-                </th>
-                <th style={{ border: "1px solid #333", padding: 10, textAlign: "left" }}>
-                  CNP
-                </th>
-                <th style={{ border: "1px solid #333", padding: 10, textAlign: "left" }}>
-                  Telefon
-                </th>
-                <th style={{ border: "1px solid #333", padding: 10, textAlign: "left" }}>
-                  Email
-                </th>
-              </tr>
-            </thead>
-            <tbody>
-              {filteredPatientsList.map((p) => (
-                <tr
-                  key={p.id}
-                  onClick={() => loadPatientVisits(p)}
-                  style={{
-                    cursor: "pointer",
-                    background: selectedPatient?.id === p.id ? "#2a2a2a" : "transparent",
-                  }}
-                >
-                  <td style={{ border: "1px solid #333", padding: 10 }}>{p.firstName || "-"}</td>
-                  <td style={{ border: "1px solid #333", padding: 10 }}>{p.lastName || "-"}</td>
-                  <td style={{ border: "1px solid #333", padding: 10 }}>{p.cnp || "-"}</td>
-                  <td style={{ border: "1px solid #333", padding: 10 }}>{p.phoneNumber || "-"}</td>
-                  <td style={{ border: "1px solid #333", padding: 10 }}>{p.email || "-"}</td>
-                </tr>
-              ))}
-
-              {filteredPatientsList.length === 0 && (
+          <div style={{ marginTop: 16, overflowX: "auto" }}>
+            <table
+              style={{
+                borderCollapse: "separate",
+                borderSpacing: 0,
+                width: "100%",
+                background: "#ffffff",
+              }}
+            >
+              <thead>
                 <tr>
-                  <td
-                    colSpan="5"
+                  <th style={tableHeadCellStyle}>Prenume</th>
+                  <th style={tableHeadCellStyle}>Nume</th>
+                  <th style={tableHeadCellStyle}>CNP</th>
+                  <th style={tableHeadCellStyle}>Telefon</th>
+                  <th style={tableHeadCellStyle}>Email</th>
+                </tr>
+              </thead>
+
+              <tbody>
+                {filteredPatientsList.map((p) => (
+                  <tr
+                    key={p.id}
+                    onClick={() => loadPatientVisits(p)}
                     style={{
-                      textAlign: "center",
-                      padding: 14,
-                      color: "#aaa",
-                      border: "1px solid #333",
+                      cursor: "pointer",
+                      background: selectedPatient?.id === p.id ? "#eff6ff" : "#ffffff",
                     }}
                   >
-                    Nu există pacienți.
-                  </td>
-                </tr>
-              )}
-            </tbody>
-          </table>
+                    <td style={tableCellStyle}>{p.firstName || "-"}</td>
+                    <td style={tableCellStyle}>{p.lastName || "-"}</td>
+                    <td style={tableCellStyle}>{p.cnp || "-"}</td>
+                    <td style={tableCellStyle}>{p.phoneNumber || "-"}</td>
+                    <td style={tableCellStyle}>{p.email || "-"}</td>
+                  </tr>
+                ))}
+
+                {filteredPatientsList.length === 0 && (
+                  <tr>
+                    <td
+                      colSpan="5"
+                      style={{
+                        textAlign: "center",
+                        padding: 20,
+                        color: "#64748b",
+                        fontWeight: 700,
+                      }}
+                    >
+                      Nu există pacienți.
+                    </td>
+                  </tr>
+                )}
+              </tbody>
+            </table>
+          </div>
         </div>
 
         {selectedPatient && (
-          <div
-            style={{
-              marginTop: 18,
-              border: "1px solid #333",
-              borderRadius: 12,
-              padding: 14,
-              background: "#121212",
-            }}
-          >
-            <h3 style={{ marginTop: 0 }}>
-              Fișele pacientului: {selectedPatient.firstName} {selectedPatient.lastName}
-            </h3>
+          <div style={{ marginTop: 16, ...cardStyle }}>
+            <div style={{ marginBottom: 14 }}>
+              <div style={{ fontSize: 17, fontWeight: 900, color: "#0f172a" }}>
+                Fișele pacientului: {selectedPatient.firstName} {selectedPatient.lastName}
+              </div>
+              <div style={{ color: "#64748b", marginTop: 4, fontSize: 13 }}>
+                Selectează o vizită pentru a continua
+              </div>
+            </div>
 
             {patientVisits.length === 0 ? (
-              <div style={{ color: "#aaa" }}>Nu există vizite pentru acest pacient.</div>
+              <div style={{ color: "#64748b", fontWeight: 700 }}>
+                Nu există vizite pentru acest pacient.
+              </div>
             ) : (
-              <div style={{ border: "1px solid #333", borderRadius: 8, overflow: "hidden" }}>
+              <div
+                style={{
+                  border: "1px solid #e2e8f0",
+                  borderRadius: 18,
+                  overflow: "hidden",
+                }}
+              >
                 {patientVisits.map((visit, index) => {
                   const visitDate = visit.createdAt
                     ? new Date(visit.createdAt).toLocaleString("ro-RO", {
@@ -591,13 +672,15 @@ const saveDischarge = async () => {
                       onClick={() => onSelectVisit && onSelectVisit(visit)}
                       style={{
                         cursor: "pointer",
-                        padding: 12,
+                        padding: 14,
                         borderBottom:
-                          index !== patientVisits.length - 1 ? "1px solid #333" : "none",
-                        background: "#111",
+                          index !== patientVisits.length - 1 ? "1px solid #edf2f7" : "none",
+                        background: "#ffffff",
+                        color: "#334155",
+                        fontWeight: 700,
                       }}
                     >
-                      Vizita {visit.visitCode}, {visitDate} -{" "}
+                      Vizita {visit.visitCode}, {visitDate} —{" "}
                       {statusLabels[visit.status] || visit.status}
                     </div>
                   );
@@ -610,177 +693,245 @@ const saveDischarge = async () => {
     );
   }
 
+  const triageBadgeStyle = getTriageBadgeStyle(preform.triageColor);
+
   return (
-    <div>
+    <div style={{ width: "100%" }}>
       <div
-  style={{
-    display: "flex",
-    alignItems: "center",
-    gap: 12,
-    marginBottom: 8,
-    flexWrap: "wrap",
-  }}
->
-  <h2 style={{ margin: 0 }}>
-    Fișe ({selected.visitCode || `vizita ${selected.id}`})
-  </h2>
+        style={{
+          display: "flex",
+          alignItems: "flex-start",
+          justifyContent: "space-between",
+          gap: 12,
+          marginBottom: 14,
+          flexWrap: "wrap",
+        }}
+      >
+        <div>
+          <h2
+            style={{
+              margin: 0,
+              fontSize: 28,
+              color: "#0f172a",
+              letterSpacing: -0.6,
+            }}
+          >
+            Fișe ({selected.visitCode || `vizita ${selected.id}`})
+          </h2>
 
-  {preform.triageColor && (
-    <div
-      style={{
-        padding: "6px 12px",
-        borderRadius: 999,
-        fontWeight: 700,
-        background:
-          preform.triageColor === "ROSU"
-            ? "#7f1d1d"
-            : preform.triageColor === "GALBEN"
-            ? "#854d0e"
-            : preform.triageColor === "VERDE"
-            ? "#166534"
-            : "#1e3a8a",
-      }}
-    >
-      TRIAJ: {preform.triageColor}
-    </div>
-  )}
-</div>
+          <div style={{ color: "#64748b", marginTop: 4, fontSize: 14 }}>
+            Fișă pre-spitalizare, externare și suport AI pentru triaj
+          </div>
+        </div>
 
-      <PatientDetailsPanel patientDetails={patientDetails} />
+        {preform.triageColor && (
+          <div
+            style={{
+              padding: "8px 13px",
+              borderRadius: 999,
+              fontWeight: 900,
+              fontSize: 13,
+              background: triageBadgeStyle.background,
+              color: triageBadgeStyle.color,
+            }}
+          >
+            TRIAJ: {preform.triageColor}
+          </div>
+        )}
+      </div>
 
-      <div style={{ display: "flex", gap: 10, marginTop: 12, flexWrap: "wrap" }}>
+      <div style={cardStyle}>
+        <PatientDetailsPanel patientDetails={patientDetails} />
+      </div>
+
+      <div
+        style={{
+          marginTop: 14,
+          display: "flex",
+          gap: 10,
+          flexWrap: "wrap",
+          alignItems: "center",
+        }}
+      >
         <button
           onClick={() => setCombinedPrintMode((prev) => !prev)}
-          style={{ padding: "8px 12px" }}
+          style={secondaryButtonStyle}
         >
           {combinedPrintMode
             ? "Ascunde previzualizarea fișelor"
             : "Arată previzualizarea fișelor"}
         </button>
 
-        <button onClick={handlePrintCombined} style={{ padding: "8px 12px" }}>
+        <button onClick={handlePrintCombined} style={secondaryButtonStyle}>
           Printează fișele
         </button>
 
-<button
-  onClick={runAiTriage}
-  disabled={loading || isClosedVisit}
-  style={{
-    padding: "8px 12px",
-    opacity: loading ? 0.7 : 1,
-    cursor: loading ? "not-allowed" : "pointer",
-    minWidth: 170,
-  }}
->
-  {loading ? "Se generează..." : "Generează triaj AI"}
-</button>
-      </div>
-
-{aiTriageResult && (() => {
-  const label = aiTriageResult.predictie_finala;
-
-  const colorMap = {
-    rosu: "#7f1d1d",
-    galben: "#854d0e",
-    verde: "#166534",
-    consult: "#1e3a8a",
-  };
-
-  const labelMap = {
-    rosu: "ROȘU",
-    galben: "GALBEN",
-    verde: "VERDE",
-    consult: "CONSULT",
-  };
-
-  const cardColor = colorMap[label] || "#333";
-
-  return (
-    <div
-      style={{
-        marginTop: 12,
-        padding: 14,
-        border: `1px solid ${cardColor}`,
-        borderRadius: 12,
-        background: "#121212",
-      }}
-    >
-      <div style={{ display: "flex", justifyContent: "space-between", gap: 12, flexWrap: "wrap" }}>
-        <div>
-          <div style={{ fontWeight: 700, fontSize: 16 }}>Recomandare AI</div>
-        </div>
-
-        <div
+        <button
+          onClick={runAiTriage}
+          disabled={loading || isClosedVisit}
           style={{
-            padding: "6px 12px",
-            borderRadius: 999,
-            background: cardColor,
-            fontWeight: 800,
-            alignSelf: "flex-start",
+            ...primaryButtonStyle,
+            opacity: loading ? 0.7 : 1,
+            cursor: loading ? "not-allowed" : "pointer",
+            minWidth: 170,
           }}
         >
-          {labelMap[label] || label}
-        </div>
-      </div>
-
-      <div style={{ marginTop: 12 }}>
-        Triaj final ales: <strong>{preform.triageColor || "NEALES"}</strong>
-      </div>
-
-      <div style={{ display: "grid", gridTemplateColumns: "repeat(3, minmax(120px, 1fr))", gap: 8, marginTop: 12 }}>
-        {aiTriageResult.decizie_etapa_1 && (
-          <div>Etapa: <strong>{aiTriageResult.decizie_etapa_1}</strong></div>
-        )}
-
-        {aiTriageResult.prob_urgent !== undefined && (
-          <div>Urgent: <strong>{(aiTriageResult.prob_urgent * 100).toFixed(1)}%</strong></div>
-        )}
-
-        {aiTriageResult.prob_red !== undefined && (
-          <div>Roșu: <strong>{(aiTriageResult.prob_red * 100).toFixed(1)}%</strong></div>
-        )}
-
-        {aiTriageResult.prob_green !== undefined && (
-          <div>Verde: <strong>{(aiTriageResult.prob_green * 100).toFixed(1)}%</strong></div>
-        )}
-      </div>
-
-      {aiTriageResult.reguli_siguranta_aplicate?.length > 0 && (
-        <div style={{ marginTop: 12 }}>
-          <strong>Reguli aplicate:</strong>
-          <ul style={{ marginTop: 6, marginBottom: 0 }}>
-            {aiTriageResult.reguli_siguranta_aplicate.map((rule, index) => (
-              <li key={index}>{rule}</li>
-            ))}
-          </ul>
-        </div>
-      )}
-
-      <div style={{ display: "flex", gap: 10, marginTop: 14, flexWrap: "wrap" }}>
-        <button
-          onClick={applyAiRecommendation}
-          disabled={isClosedVisit}
-          style={{ padding: "8px 12px" }}
-        >
-          Aplică recomandarea AI
+          {loading ? "Se generează..." : "Generează triaj AI"}
         </button>
-
-        <select
-          value={preform.triageColor || ""}
-          onChange={(e) => changeManualTriageColor(e.target.value)}
-          disabled={isClosedVisit}
-          style={{ padding: "8px 12px" }}
-        >
-          <option value="">Modifică culoarea triajului</option>
-          <option value="ROSU">Roșu</option>
-          <option value="GALBEN">Galben</option>
-          <option value="VERDE">Verde</option>
-          <option value="CONSULT">Consult</option>
-        </select>
       </div>
-    </div>
-  );
-})()}
+
+      {aiTriageResult &&
+        (() => {
+          const label = aiTriageResult.predictie_finala;
+
+          const colorMap = {
+            rosu: { bg: "#fee2e2", text: "#991b1b", border: "#fecaca" },
+            galben: { bg: "#fef3c7", text: "#92400e", border: "#fde68a" },
+            verde: { bg: "#dcfce7", text: "#166534", border: "#bbf7d0" },
+            consult: { bg: "#dbeafe", text: "#1d4ed8", border: "#bfdbfe" },
+          };
+
+          const labelMap = {
+            rosu: "ROȘU",
+            galben: "GALBEN",
+            verde: "VERDE",
+            consult: "CONSULT",
+          };
+
+          const colors = colorMap[label] || {
+            bg: "#f1f5f9",
+            text: "#475569",
+            border: "#e2e8f0",
+          };
+
+          return (
+            <div
+              style={{
+                marginTop: 14,
+                padding: 18,
+                border: `1px solid ${colors.border}`,
+                borderRadius: 24,
+                background: "#ffffff",
+                boxShadow: "0 18px 45px rgba(15, 23, 42, 0.06)",
+                color: "#0f172a",
+              }}
+            >
+              <div
+                style={{
+                  display: "flex",
+                  justifyContent: "space-between",
+                  gap: 12,
+                  flexWrap: "wrap",
+                  alignItems: "flex-start",
+                }}
+              >
+                <div>
+                  <div style={{ fontWeight: 900, fontSize: 17 }}>
+                    Recomandare AI
+                  </div>
+                  <div style={{ color: "#64748b", marginTop: 4, fontSize: 13 }}>
+                    Rezultat generat pe baza datelor clinice introduse
+                  </div>
+                </div>
+
+                <div
+                  style={{
+                    padding: "8px 13px",
+                    borderRadius: 999,
+                    background: colors.bg,
+                    color: colors.text,
+                    fontWeight: 900,
+                    alignSelf: "flex-start",
+                    fontSize: 13,
+                  }}
+                >
+                  {labelMap[label] || label}
+                </div>
+              </div>
+
+              <div style={{ marginTop: 14, color: "#334155", fontWeight: 700 }}>
+                Triaj final ales:{" "}
+                <strong style={{ color: "#0f172a" }}>
+                  {preform.triageColor || "NEALES"}
+                </strong>
+              </div>
+
+              <div
+                style={{
+                  display: "grid",
+                  gridTemplateColumns: "repeat(auto-fit, minmax(130px, 1fr))",
+                  gap: 10,
+                  marginTop: 14,
+                }}
+              >
+                {aiTriageResult.decizie_etapa_1 && (
+                  <div style={{ color: "#334155" }}>
+                    Etapa: <strong>{aiTriageResult.decizie_etapa_1}</strong>
+                  </div>
+                )}
+
+                {aiTriageResult.prob_urgent !== undefined && (
+                  <div style={{ color: "#334155" }}>
+                    Urgent:{" "}
+                    <strong>{(aiTriageResult.prob_urgent * 100).toFixed(1)}%</strong>
+                  </div>
+                )}
+
+                {aiTriageResult.prob_red !== undefined && (
+                  <div style={{ color: "#334155" }}>
+                    Roșu:{" "}
+                    <strong>{(aiTriageResult.prob_red * 100).toFixed(1)}%</strong>
+                  </div>
+                )}
+
+                {aiTriageResult.prob_green !== undefined && (
+                  <div style={{ color: "#334155" }}>
+                    Verde:{" "}
+                    <strong>{(aiTriageResult.prob_green * 100).toFixed(1)}%</strong>
+                  </div>
+                )}
+              </div>
+
+              {aiTriageResult.reguli_siguranta_aplicate?.length > 0 && (
+                <div style={{ marginTop: 14, color: "#334155" }}>
+                  <strong>Reguli aplicate:</strong>
+                  <ul style={{ marginTop: 6, marginBottom: 0 }}>
+                    {aiTriageResult.reguli_siguranta_aplicate.map((rule, index) => (
+                      <li key={index}>{rule}</li>
+                    ))}
+                  </ul>
+                </div>
+              )}
+
+              <div style={{ display: "flex", gap: 10, marginTop: 16, flexWrap: "wrap" }}>
+                <button
+                  onClick={applyAiRecommendation}
+                  disabled={isClosedVisit}
+                  style={primaryButtonStyle}
+                >
+                  Aplică recomandarea AI
+                </button>
+
+                <select
+                  value={preform.triageColor || ""}
+                  onChange={(e) => changeManualTriageColor(e.target.value)}
+                  disabled={isClosedVisit}
+                  style={{
+                    ...inputStyle,
+                    minWidth: 240,
+                    cursor: isClosedVisit ? "not-allowed" : "pointer",
+                  }}
+                >
+                  <option value="">Modifică culoarea triajului</option>
+                  <option value="ROSU">Roșu</option>
+                  <option value="GALBEN">Galben</option>
+                  <option value="VERDE">Verde</option>
+                  <option value="CONSULT">Consult</option>
+                </select>
+              </div>
+            </div>
+          );
+        })()}
 
       {combinedPrintMode && (
         <div id="print-area">
@@ -789,48 +940,42 @@ const saveDischarge = async () => {
         </div>
       )}
 
-      <SignaturesSection
-  preform={preform}
-  setPreform={setPreform}
-  discharge={discharge}
-  setDischarge={setDischarge}
-  readOnly={isClosedVisit}
-/>
-
       <div
         style={{ display: "grid", gap: 14, marginTop: 14 }}
         onInputCapture={markEditing}
         onChangeCapture={markEditing}
       >
-      <FormsToolbar
-  loading={loading}
-  exportCombined={exportCombined}
-  status={status}
-  setStatus={setStatus}
-  updateStatus={updateStatus}
-  msg={msg}
-  readOnly={isClosedVisit}
-  
-/>
+        <div style={cardStyle}>
+          <FormsToolbar
+            loading={loading}
+            exportCombined={exportCombined}
+            status={status}
+            setStatus={setStatus}
+            updateStatus={updateStatus}
+            msg={msg}
+            readOnly={isClosedVisit}
+          />
+        </div>
 
         <PreformSection
-  preformOpen={preformOpen}
-  setPreformOpen={setPreformOpen}
-  preform={preform}
-  setPreform={setPreform}
-  onSave={savePreform}
-  readOnly={isClosedVisit}
-/>
+          preformOpen={preformOpen}
+          setPreformOpen={setPreformOpen}
+          preform={preform}
+          setPreform={setPreform}
+          onSave={savePreform}
+          readOnly={isClosedVisit}
+          aiMissingFields={aiMissingFields}
+        />
 
-      <DischargeSection
-  dischargeOpen={dischargeOpen}
-  setDischargeOpen={setDischargeOpen}
-  discharge={discharge}
-  setDischarge={setDischarge}
-  preform={preform}
-  onSave={saveDischarge}
-  readOnly={isClosedVisit}
-/>
+        <DischargeSection
+          dischargeOpen={dischargeOpen}
+          setDischargeOpen={setDischargeOpen}
+          discharge={discharge}
+          setDischarge={setDischarge}
+          preform={preform}
+          onSave={saveDischarge}
+          readOnly={isClosedVisit}
+        />
       </div>
     </div>
   );

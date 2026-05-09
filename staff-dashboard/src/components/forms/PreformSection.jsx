@@ -2,6 +2,7 @@ import SectionCard from "./SectionCard";
 import CheckboxField from "./CheckboxField";
 import TextField from "./TextField";
 import LrCheckboxRow from "./LrCheckboxRow";
+import "./PreformSection.css";
 
 function formatBirthDateInput(value) {
   const digits = value.replace(/\D/g, "").slice(0, 8);
@@ -46,11 +47,23 @@ export default function PreformSection({
   setPreform,
   onSave,
   readOnly=false,
+  aiMissingFields = [],
 }) {
   const user = JSON.parse(localStorage.getItem("user"));
 const isReception = user?.role === "RECEPTION";
 const isFormLocked = readOnly;
 const isObjectiveRestricted = isReception || readOnly;
+
+const isAiMissing = (field) => aiMissingFields.includes(field);
+
+const aiFieldStyle = (field) => ({
+  border: isAiMissing(field)
+    ? "2px solid #dc2626"
+    : "1px solid #dbe3ec",
+  background: isAiMissing(field)
+    ? "#fef2f2"
+    : "#ffffff",
+});
 
   return (
     <SectionCard
@@ -60,11 +73,10 @@ const isObjectiveRestricted = isReception || readOnly;
       hideTopButtonWhenOpen={true}
     >
       <div
+  className="preform-modern"
   style={{
-    display: "grid",
-    gap: 16,
     pointerEvents: isFormLocked ? "none" : "auto",
-opacity: isFormLocked ? 0.6 : 1,
+    opacity: isFormLocked ? 0.6 : 1,
   }}
 >
         <div style={{ fontWeight: 700, fontSize: 18, textAlign: "center" }}>
@@ -289,11 +301,17 @@ opacity: isFormLocked ? 0.6 : 1,
         <label>
           Motivul prezentării
           <textarea
-            value={preform.reason}
-            onChange={(e) => setPreform({ ...preform, reason: e.target.value })}
-            rows={3}
-            style={{ width: "100%", padding: 8, marginTop: 6 }}
-          />
+  value={preform.reason}
+  onChange={(e) => setPreform({ ...preform, reason: e.target.value })}
+  rows={3}
+  style={{
+    width: "100%",
+    padding: 8,
+    marginTop: 6,
+    borderRadius: 12,
+    ...aiFieldStyle("reason"),
+  }}
+/>
         </label>
 
         <div style={{ display: "grid", gridTemplateColumns: "repeat(5, 1fr)", gap: 12 }}>
@@ -752,11 +770,11 @@ opacity: isFormLocked ? 0.6 : 1,
 >
         <div
           style={{
-            border: "1px solid #333",
-            borderRadius: 10,
-            padding: 14,
-            background: "#0f0f0f",
-          }}
+  border: "1px solid #e2e8f0",
+  borderRadius: 24,
+  padding: 18,
+  background: "#f8fafc",
+}}
         >
           <div style={{ fontWeight: 700, fontSize: 18, marginBottom: 14 }}>EXAMEN OBIECTIV</div>
 
@@ -1056,7 +1074,13 @@ opacity: isFormLocked ? 0.6 : 1,
             </div>
           </div>
         </div>
-               <div style={{ border: "1px solid #333", borderRadius: 10, padding: 14 }}>
+            <div style={{
+  border: "1px solid #e2e8f0",
+  borderRadius: 18,
+  padding: 14,
+  background: "#ffffff",
+  boxSizing: "border-box",
+}}>
           <div style={{ fontWeight: 700, marginBottom: 10 }}>ABDOMEN</div>
 
           <div style={{ fontWeight: 600, marginBottom: 8 }}>NORMAL</div>
@@ -1086,7 +1110,13 @@ opacity: isFormLocked ? 0.6 : 1,
             />
           </div>
         </div>
-                        <div style={{ border: "1px solid #333", borderRadius: 10, padding: 14 }}>
+                        <div style={{
+  border: "1px solid #e2e8f0",
+  borderRadius: 18,
+  padding: 14,
+  background: "#ffffff",
+  boxSizing: "border-box",
+}}>
           <div style={{ fontWeight: 700, marginBottom: 10 }}>TEGUMENT</div>
 
           <div style={{ display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: 10 }}>
@@ -1116,7 +1146,13 @@ opacity: isFormLocked ? 0.6 : 1,
           </div>
         </div>
 
-                <div style={{ border: "1px solid #333", borderRadius: 10, padding: 14 }}>
+                <div style={{
+  border: "1px solid #e2e8f0",
+  borderRadius: 18,
+  padding: 14,
+  background: "#ffffff",
+  boxSizing: "border-box",
+}}>
           <div style={{ fontWeight: 700, marginBottom: 10 }}>GENITO URINAR</div>
 
           <div style={{ fontWeight: 600, marginBottom: 8 }}>NORMAL</div>
@@ -1191,7 +1227,13 @@ opacity: isFormLocked ? 0.6 : 1,
           </div>
         </div>
 
-                <div style={{ border: "1px solid #333", borderRadius: 10, padding: 14 }}>
+                <div style={{
+  border: "1px solid #e2e8f0",
+  borderRadius: 18,
+  padding: 14,
+  background: "#ffffff",
+  boxSizing: "border-box",
+}}>
           <div style={{ fontWeight: 700, marginBottom: 10 }}>AP. LOCOMOTOR</div>
 
           <div style={{ fontWeight: 600, marginBottom: 8 }}>NORMAL</div>
@@ -1266,7 +1308,13 @@ opacity: isFormLocked ? 0.6 : 1,
             />
           </div>
         </div>
-                <div style={{ border: "1px solid #333", borderRadius: 10, padding: 14 }}>
+                <div style={{
+  border: "1px solid #e2e8f0",
+  borderRadius: 18,
+  padding: 14,
+  background: "#ffffff",
+  boxSizing: "border-box",
+}}>
           <div style={{ fontWeight: 700, marginBottom: 10 }}>NEURO PSIHIATRIC</div>
 
           <div style={{ fontWeight: 600, marginBottom: 8 }}>NORMAL</div>
@@ -1338,7 +1386,13 @@ opacity: isFormLocked ? 0.6 : 1,
             />
           </div>
         </div>
-                <div style={{ border: "1px solid #333", borderRadius: 10, padding: 14 }}>
+                <div style={{
+  border: "1px solid #e2e8f0",
+  borderRadius: 18,
+  padding: 14,
+  background: "#ffffff",
+  boxSizing: "border-box",
+}}>
           <div style={{ fontWeight: 700, marginBottom: 10 }}>MANEVRE / PROCEDURI</div>
 
           <div style={{ display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: 16 }}>

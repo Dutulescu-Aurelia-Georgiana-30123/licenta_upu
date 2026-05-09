@@ -1,4 +1,5 @@
 import { useEffect, useRef, useState } from "react";
+import { theme } from "../../styles/theme";
 
 export default function SignaturePad({
   title,
@@ -23,7 +24,7 @@ export default function SignaturePad({
     ctx.lineCap = "round";
     ctx.lineJoin = "round";
     ctx.lineWidth = 2;
-    ctx.strokeStyle = "#000000";
+    ctx.strokeStyle = "#0f172a";
   };
 
   const resizeCanvas = () => {
@@ -127,29 +128,45 @@ export default function SignaturePad({
   return (
     <div
       style={{
-        border: "1px solid #333",
-        borderRadius: 12,
-        padding: 14,
-        background: "#121212",
+        background: "#f8fafc",
+        border: `1px solid ${theme.colors.border}`,
+        borderRadius: theme.radius.xl,
+        padding: 16,
       }}
     >
-      <h4 style={{ marginTop: 0, marginBottom: 12 }}>{title}</h4>
+      <h4
+        style={{
+          marginTop: 0,
+          marginBottom: 14,
+          color: theme.colors.text,
+          fontSize: 16,
+          fontWeight: 900,
+        }}
+      >
+        {title}
+      </h4>
 
       <label style={{ display: "block", marginBottom: 12 }}>
-        <div style={{ marginBottom: 6 }}>Nume</div>
+        <div
+          style={{
+            marginBottom: 6,
+            color: theme.colors.muted,
+            fontSize: 13,
+            fontWeight: 800,
+          }}
+        >
+          Nume
+        </div>
+
         <input
           value={nameValue}
           onChange={(e) => onNameChange(e.target.value)}
           placeholder="Introdu numele complet"
           disabled={readOnly}
           style={{
+            ...theme.input.base,
             width: "100%",
-            padding: 10,
-            borderRadius: 8,
-            border: "1px solid #333",
-            background: "#111",
-            color: "#eaeaea",
-            boxSizing: "border-box",
+            opacity: readOnly ? 0.75 : 1,
           }}
         />
       </label>
@@ -160,8 +177,8 @@ export default function SignaturePad({
           style={{
             width: "100%",
             height: 160,
-            border: "1px dashed #555",
-            borderRadius: 8,
+            border: "1px dashed #cbd5e1",
+            borderRadius: theme.radius.lg,
             background: "#ffffff",
             touchAction: "none",
             cursor: readOnly ? "default" : "crosshair",
@@ -178,13 +195,20 @@ export default function SignaturePad({
 
       {!readOnly && (
         <div style={{ display: "flex", gap: 10, marginTop: 12, flexWrap: "wrap" }}>
-          <button type="button" onClick={clearSignature} style={{ padding: "8px 12px" }}>
+          <button type="button" onClick={clearSignature} style={theme.button.secondary}>
             Șterge semnătura
           </button>
         </div>
       )}
 
-      <div style={{ marginTop: 10, color: "#aaa", fontSize: 13 }}>
+      <div
+        style={{
+          marginTop: 10,
+          color: signedAtValue ? theme.colors.successText : theme.colors.muted,
+          fontSize: 13,
+          fontWeight: 700,
+        }}
+      >
         {signedAtValue
           ? `Semnat la: ${new Date(signedAtValue).toLocaleString("ro-RO")}`
           : "Semnătura nu a fost aplicată încă."}

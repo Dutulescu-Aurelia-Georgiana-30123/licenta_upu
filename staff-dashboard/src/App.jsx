@@ -11,30 +11,43 @@ import MedicalPage from "./pages/MedicalPage";
 import PatientPortal from "./pages/PatientPortal";
 
 export default function App() {
-  const [activePage, setActivePage] = useState("home");
+  const [activePage, setActivePage] = useState(() => {
+    return localStorage.getItem("activePage") || "home";
+  });
+
   const [selectedVisit, setSelectedVisit] = useState(null);
 
   const user = JSON.parse(localStorage.getItem("user"));
-const role = user?.role;
+  const role = user?.role;
+
+  const changePage = (page) => {
+    setActivePage(page);
+    localStorage.setItem("activePage", page);
+
+    if (page !== "forms") {
+      setSelectedVisit(null);
+    }
+  };
 
   if (!user) {
     return <LoginPage />;
   }
-  if (role === "DOCTOR" || role === "NURSE") {
-  return (
-    <ToastProvider>
-      <MedicalPage />
-    </ToastProvider>
-  );
-}
 
-if (role === "PATIENT") {
-  return (
-    <ToastProvider>
-      <PatientPortal />
-    </ToastProvider>
-  );
-}
+  if (role === "DOCTOR" || role === "NURSE") {
+    return (
+      <ToastProvider>
+        <MedicalPage />
+      </ToastProvider>
+    );
+  }
+
+  if (role === "PATIENT") {
+    return (
+      <ToastProvider>
+        <PatientPortal />
+      </ToastProvider>
+    );
+  }
 
   const content = useMemo(() => {
     if (activePage === "home") return <HomePage />;
@@ -44,7 +57,7 @@ if (role === "PATIENT") {
         <PatientsPage
           onVisitCreated={(visit) => {
             setSelectedVisit(visit);
-            setActivePage("forms");
+            changePage("forms");
           }}
         />
       );
@@ -56,7 +69,7 @@ if (role === "PATIENT") {
           selected={selectedVisit}
           onSelect={(visit) => {
             setSelectedVisit(visit);
-            setActivePage("forms");
+            changePage("forms");
           }}
         />
       );
@@ -75,45 +88,50 @@ if (role === "PATIENT") {
       return <ArchivePage selected={selectedVisit} />;
     }
 
-    return null;
+    return <HomePage />;
   }, [activePage, selectedVisit]);
 
   return (
     <ToastProvider>
       <div
-        style={{
-          minHeight: "100vh",
-          width: "100%",
-          color: "#eaeaea",
-          background: "#111",
-          display: "flex",
-          flexDirection: "column",
-        }}
-      >
-        <TopNav
-          active={activePage}
-          selected={selectedVisit}
-          onChange={(page) => {
-            setActivePage(page);
-            if (page !== "forms") {
-              setSelectedVisit(null);
-            }
-          }}
-        />
+  style={{
+    minHeight: "100vh",
+    width: "100%",
+    color: "#0f172a",
+    background: "linear-gradient(135deg, #eef6ff 0%, #f8fbff 45%, #eef2ff 100%)",
+    display: "flex",
+  }}
+>
+  <TopNav
+    active={activePage}
+    selected={selectedVisit}
+    onChange={changePage}
+  />
 
-        <main
-          style={{
-            flex: 1,
-            width: "100%",
-            boxSizing: "border-box",
-            overflowX: "hidden",
-            overflowY: "auto",
-            padding: 16,
-          }}
-        >
-          {content}
-        </main>
-      </div>
+  <main
+    style={{
+      flex: 1,
+      boxSizing: "border-box",
+      overflowX: "hidden",
+      overflowY: "auto",
+      padding: 28,
+    }}
+  >
+    <div
+      style={{
+        maxWidth: 1500,
+        margin: "0 auto",
+        background: "rgba(255,255,255,0.82)",
+        borderRadius: 28,
+        padding: 24,
+        boxShadow: "0 24px 70px rgba(15, 23, 42, 0.10)",
+        minHeight: "calc(100vh - 56px)",
+      }}
+    >
+      {content}
+    </div>
+  </main>
+</div>
     </ToastProvider>
   );
 }

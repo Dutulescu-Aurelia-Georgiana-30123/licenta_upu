@@ -1,67 +1,92 @@
-import { API_BASE } from "../api/api";
-
-export default function TopNav({ active, onChange, selected }) {
+export default function TopNav({ active, onChange }) {
   const items = [
-    { key: "home", label: "Home" },
-    { key: "patients", label: "Pacienți" },
-    { key: "visits", label: "Vizite" },
-    { key: "forms", label: "Fișe" },
-    { key: "archive", label: "Arhivă" },
-
+    { key: "home", label: "Dashboard", icon: "▦" },
+    { key: "patients", label: "Pacienți", icon: "👥" },
+    { key: "visits", label: "Vizite", icon: "📋" },
+    { key: "forms", label: "Fișe", icon: "📝" },
+    { key: "archive", label: "Arhivă", icon: "🗂" },
   ];
+
   const handleLogout = () => {
-  localStorage.removeItem("user");
-  window.location.reload();
-};
+    localStorage.removeItem("user");
+    localStorage.removeItem("activePage");
+    window.location.reload();
+  };
 
   return (
-    <div style={{ borderBottom: "1px solid #333", background: "#0f0f0f" }}>
-      <div
-        style={{
-          display: "flex",
-          alignItems: "center",
-          gap: 10,
-          padding: "8px 12px",
-        }}
-      >
-        <div style={{ fontWeight: 800, fontSize: 16 }}>UPU Dashboard</div>
+    <aside
+      style={{
+        width: 250,
+        minHeight: "100vh",
+        background: "linear-gradient(180deg, #2563eb 0%, #1e40af 100%)",
+        color: "white",
+        padding: 22,
+        boxSizing: "border-box",
+        display: "flex",
+        flexDirection: "column",
+        boxShadow: "12px 0 30px rgba(37, 99, 235, 0.18)",
+      }}
+    >
+      <div style={{ marginBottom: 34 }}>
+        <div style={{ fontSize: 24, fontWeight: 900, letterSpacing: -0.5 }}>
+          UPU
+        </div>
+        <div style={{ fontSize: 13, opacity: 0.8, marginTop: 4 }}>
+          Medical Dashboard
+        </div>
+      </div>
 
-        <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
-          {items.map((it) => (
+      <nav style={{ display: "grid", gap: 8 }}>
+        {items.map((it) => {
+          const isActive = active === it.key;
+
+          return (
             <button
               key={it.key}
               onClick={() => onChange(it.key)}
               style={{
-                padding: "6px 10px",
-                borderRadius: 10,
+                width: "100%",
+                display: "flex",
+                alignItems: "center",
+                gap: 12,
+                padding: "12px 14px",
+                borderRadius: 16,
+                border: "none",
                 cursor: "pointer",
-                border: active === it.key ? "1px solid #3a3a3a" : "1px solid #222",
-                background: active === it.key ? "#2a2a2a" : "#151515",
-                color: "#eaeaea",
-                fontSize: 13,
+                background: isActive ? "rgba(255,255,255,0.22)" : "transparent",
+                color: "white",
+                fontSize: 15,
+                fontWeight: isActive ? 800 : 600,
+                textAlign: "left",
+                boxShadow: isActive ? "0 10px 22px rgba(0,0,0,0.12)" : "none",
               }}
             >
+              <span style={{ width: 22, textAlign: "center" }}>{it.icon}</span>
               {it.label}
             </button>
-          ))}
-        </div>
+          );
+        })}
+      </nav>
 
-        <div style={{ flex: 1 }} />
-        <button
-  onClick={handleLogout}
-  style={{
-    padding: "6px 10px",
-    borderRadius: 10,
-    cursor: "pointer",
-    border: "1px solid #222",
-    background: "#151515",
-    color: "#eaeaea",
-    fontSize: 13,
-  }}
->
-  Logout
-</button>
-      </div>
-    </div>
+      <div style={{ flex: 1 }} />
+
+      <button
+        onClick={handleLogout}
+        style={{
+          display: "flex",
+          alignItems: "center",
+          gap: 10,
+          padding: "12px 14px",
+          borderRadius: 16,
+          border: "1px solid rgba(255,255,255,0.22)",
+          background: "rgba(255,255,255,0.12)",
+          color: "white",
+          cursor: "pointer",
+          fontWeight: 700,
+        }}
+      >
+        ⏻ Logout
+      </button>
+    </aside>
   );
 }

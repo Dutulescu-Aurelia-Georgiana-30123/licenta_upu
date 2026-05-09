@@ -12,84 +12,73 @@ function formatDateTime(value) {
   return d.toLocaleString("ro-RO");
 }
 
-function StatusBadge({ status }) {
-  const stylesByStatus = {
-    REGISTERED: { background: "#3a2f1a", color: "#ffd166", border: "#6b5621" },
-    WAITING_TRIAGE: { background: "#2f2f2f", color: "#d1d5db", border: "#4b5563" },
-    TRIAGE_DONE: { background: "#1f3a5f", color: "#93c5fd", border: "#3b82f6" },
-    WAITING_CONSULT: { background: "#4a3410", color: "#fcd34d", border: "#b45309" },
-    IN_CONSULT: { background: "#0f3d2e", color: "#6ee7b7", border: "#10b981" },
-    IN_INVESTIGATION: { background: "#312e81", color: "#c4b5fd", border: "#8b5cf6" },
-    OBSERVATION: { background: "#3f1d5c", color: "#e9d5ff", border: "#a855f7" },
-    DISCHARGED: { background: "#16351f", color: "#86efac", border: "#22c55e" },
-    ADMITTED: { background: "#0f2f46", color: "#7dd3fc", border: "#0ea5e9" },
-    TRANSFERRED: { background: "#4a1d1d", color: "#fca5a5", border: "#ef4444" },
-  };
-
-  const config = stylesByStatus[status] || {
-    background: "#222",
-    color: "#ddd",
-    border: "#444",
-  };
-
+function Badge({ label, background, color }) {
   return (
     <span
       style={{
         display: "inline-block",
-        padding: "5px 10px",
+        padding: "6px 10px",
         borderRadius: 999,
-        border: `1px solid ${config.border}`,
-        background: config.background,
-        color: config.color,
+        background,
+        color,
         fontSize: 12,
-        fontWeight: 700,
+        fontWeight: 800,
         whiteSpace: "nowrap",
       }}
     >
-      {getStatusLabel(status)}
+      {label}
     </span>
   );
 }
 
-function TriageBadge({ triageColor }) {
-  if (!triageColor) {
-    return (
-      <span style={{ color: "#777", fontSize: 12 }}>
-        Neales
-      </span>
-    );
-  }
-
-  const stylesByColor = {
-    ROSU: { background: "#7f1d1d", color: "#fecaca", border: "#ef4444", label: "Roșu" },
-    GALBEN: { background: "#854d0e", color: "#fde68a", border: "#f59e0b", label: "Galben" },
-    VERDE: { background: "#166534", color: "#bbf7d0", border: "#22c55e", label: "Verde" },
-    CONSULT: { background: "#1e3a8a", color: "#bfdbfe", border: "#3b82f6", label: "Consult" },
+function StatusBadge({ status }) {
+  const stylesByStatus = {
+    REGISTERED: { background: "#fef3c7", color: "#92400e" },
+    WAITING_TRIAGE: { background: "#f1f5f9", color: "#475569" },
+    TRIAGE_DONE: { background: "#dbeafe", color: "#1d4ed8" },
+    WAITING_CONSULT: { background: "#ffedd5", color: "#9a3412" },
+    IN_CONSULT: { background: "#ccfbf1", color: "#0f766e" },
+    IN_INVESTIGATION: { background: "#ede9fe", color: "#6d28d9" },
+    OBSERVATION: { background: "#f3e8ff", color: "#7e22ce" },
+    DISCHARGED: { background: "#dcfce7", color: "#166534" },
+    ADMITTED: { background: "#e0f2fe", color: "#0369a1" },
+    TRANSFERRED: { background: "#fee2e2", color: "#991b1b" },
   };
 
-  const config = stylesByColor[triageColor] || {
-    background: "#222",
-    color: "#ddd",
-    border: "#444",
-    label: triageColor,
+  const config = stylesByStatus[status] || {
+    background: "#f1f5f9",
+    color: "#475569",
   };
 
   return (
-    <span
-      style={{
-        display: "inline-block",
-        padding: "5px 10px",
-        borderRadius: 999,
-        border: `1px solid ${config.border}`,
-        background: config.background,
-        color: config.color,
-        fontSize: 12,
-        fontWeight: 700,
-        whiteSpace: "nowrap",
-      }}
-    >
-      {config.label}
-    </span>
+    <Badge
+      label={getStatusLabel(status)}
+      background={config.background}
+      color={config.color}
+    />
+  );
+}
+
+function TriageBadge({ triageColor }) {
+  const stylesByColor = {
+    ROSU: { background: "#fee2e2", color: "#991b1b", label: "Roșu" },
+    GALBEN: { background: "#fef3c7", color: "#92400e", label: "Galben" },
+    VERDE: { background: "#dcfce7", color: "#166534", label: "Verde" },
+    CONSULT: { background: "#dbeafe", color: "#1d4ed8", label: "Consult" },
+  };
+
+  const config = stylesByColor[triageColor] || {
+    background: "#f1f5f9",
+    color: "#64748b",
+    label: "Neales",
+  };
+
+  return (
+    <Badge
+      label={config.label}
+      background={config.background}
+      color={config.color}
+    />
   );
 }
 
@@ -97,21 +86,26 @@ function DoctorBadge({ doctorEmail }) {
   const assigned = !!doctorEmail;
 
   return (
-    <span
+    <Badge
+      label={assigned ? `Preluat: ${doctorEmail}` : "Neasignat"}
+      background={assigned ? "#ccfbf1" : "#fef3c7"}
+      color={assigned ? "#0f766e" : "#92400e"}
+    />
+  );
+}
+
+function FieldControl({ children }) {
+  return (
+    <div
       style={{
-        display: "inline-block",
-        padding: "5px 10px",
-        borderRadius: 999,
-        border: assigned ? "1px solid #1f6f4a" : "1px solid #6b5621",
-        background: assigned ? "#0f3d2e" : "#3a2f1a",
-        color: assigned ? "#6ee7b7" : "#ffd166",
-        fontSize: 12,
-        fontWeight: 700,
-        whiteSpace: "nowrap",
+        background: "#f8fafc",
+        border: "1px solid #e2e8f0",
+        borderRadius: 16,
+        padding: "4px 10px",
       }}
     >
-      {assigned ? `Preluat: ${doctorEmail}` : "Neasignat"}
-    </span>
+      {children}
+    </div>
   );
 }
 
@@ -189,187 +183,251 @@ export default function VisitsPage({ selected, onSelect }) {
   }, [visits, search, statusFilter, assignmentFilter, sortOrder]);
 
   return (
-    <div>
+    <div style={{ width: "100%" }}>
       <div
         style={{
           display: "flex",
           justifyContent: "space-between",
-          alignItems: "center",
+          alignItems: "flex-start",
           gap: 12,
           flexWrap: "wrap",
         }}
       >
-        <h2 style={{ margin: 0 }}>Vizite ({filteredVisits.length})</h2>
+        <div>
+          <h2
+            style={{
+              margin: 0,
+              fontSize: 28,
+              color: "#0f172a",
+              letterSpacing: -0.6,
+            }}
+          >
+            Vizite
+          </h2>
+          <div style={{ color: "#64748b", marginTop: 4, fontSize: 14 }}>
+            {filteredVisits.length} vizite afișate
+          </div>
+        </div>
       </div>
 
-      {error && <p style={{ color: "red" }}>Eroare /visits: {error}</p>}
+      {error && (
+        <div
+          style={{
+            marginTop: 14,
+            padding: 12,
+            borderRadius: 14,
+            background: "#fee2e2",
+            color: "#991b1b",
+            fontWeight: 700,
+          }}
+        >
+          Eroare /visits: {error}
+        </div>
+      )}
 
       <div
         style={{
-          marginTop: 12,
-          display: "flex",
-          gap: 12,
-          flexWrap: "wrap",
-          alignItems: "center",
+          marginTop: 18,
+          background: "#ffffff",
+          border: "1px solid #e5eef8",
+          borderRadius: 24,
+          padding: 16,
+          boxShadow: "0 18px 45px rgba(15, 23, 42, 0.06)",
         }}
       >
-        <input
-          type="text"
-          placeholder="Caută după pacient sau cod vizită"
-          value={search}
-          onChange={(e) => setSearch(e.target.value)}
+        <div
           style={{
-            padding: 10,
-            minWidth: 280,
-            borderRadius: 8,
-            border: "1px solid #333",
-            background: "#121212",
-            color: "#eaeaea",
-          }}
-        />
-
-        <select
-          value={statusFilter}
-          onChange={(e) => setStatusFilter(e.target.value)}
-          style={{
-            padding: 10,
-            minWidth: 220,
-            borderRadius: 8,
-            border: "1px solid #333",
-            background: "#121212",
-            color: "#eaeaea",
+            display: "flex",
+            gap: 12,
+            flexWrap: "wrap",
+            alignItems: "center",
+            marginBottom: 16,
           }}
         >
-          {statuses.map((status) => (
-            <option key={status} value={status}>
-              {status === "ALL" ? "Toate statusurile" : getStatusLabel(status)}
-            </option>
-          ))}
-        </select>
+          <FieldControl>
+            <input
+              type="text"
+              placeholder="Caută după pacient sau cod vizită"
+              value={search}
+              onChange={(e) => setSearch(e.target.value)}
+              style={{
+                padding: 10,
+                minWidth: 300,
+                border: "none",
+                outline: "none",
+                background: "transparent",
+                color: "#0f172a",
+                fontWeight: 600,
+              }}
+            />
+          </FieldControl>
 
-        <select
-          value={assignmentFilter}
-          onChange={(e) => setAssignmentFilter(e.target.value)}
-          style={{
-            padding: 10,
-            minWidth: 200,
-            borderRadius: 8,
-            border: "1px solid #333",
-            background: "#121212",
-            color: "#eaeaea",
-          }}
-        >
-          <option value="ALL">Toți pacienții</option>
-          <option value="UNASSIGNED">Neasignați</option>
-          <option value="ASSIGNED">Asignați</option>
-        </select>
+          <FieldControl>
+            <select
+              value={statusFilter}
+              onChange={(e) => setStatusFilter(e.target.value)}
+              style={{
+                padding: 10,
+                minWidth: 220,
+                border: "none",
+                outline: "none",
+                background: "transparent",
+                color: "#0f172a",
+                fontWeight: 700,
+              }}
+            >
+              {statuses.map((status) => (
+                <option key={status} value={status}>
+                  {status === "ALL" ? "Toate statusurile" : getStatusLabel(status)}
+                </option>
+              ))}
+            </select>
+          </FieldControl>
 
-        <select
-          value={sortOrder}
-          onChange={(e) => setSortOrder(e.target.value)}
-          style={{
-            padding: 10,
-            minWidth: 200,
-            borderRadius: 8,
-            border: "1px solid #333",
-            background: "#121212",
-            color: "#eaeaea",
-          }}
-        >
-          <option value="desc">Cele mai noi primele</option>
-          <option value="asc">Cele mai vechi primele</option>
-        </select>
-      </div>
+          <FieldControl>
+            <select
+              value={assignmentFilter}
+              onChange={(e) => setAssignmentFilter(e.target.value)}
+              style={{
+                padding: 10,
+                minWidth: 190,
+                border: "none",
+                outline: "none",
+                background: "transparent",
+                color: "#0f172a",
+                fontWeight: 700,
+              }}
+            >
+              <option value="ALL">Toți pacienții</option>
+              <option value="UNASSIGNED">Neasignați</option>
+              <option value="ASSIGNED">Asignați</option>
+            </select>
+          </FieldControl>
 
-      <div style={{ marginTop: 12, overflowX: "auto" }}>
-        <table
-          style={{
-            borderCollapse: "collapse",
-            width: "100%",
-            background: "#111",
-          }}
-        >
-          <thead>
-            <tr style={{ background: "#151515" }}>
-              <th style={{ border: "1px solid #333", padding: 10, textAlign: "left" }}>
-                Cod vizită
-              </th>
-              <th style={{ border: "1px solid #333", padding: 10, textAlign: "left" }}>
-                Pacient
-              </th>
-              <th style={{ border: "1px solid #333", padding: 10, textAlign: "left" }}>
-                Asignare
-              </th>
-              <th style={{ border: "1px solid #333", padding: 10, textAlign: "left" }}>
-                Status
-              </th>
-              <th style={{ border: "1px solid #333", padding: 10, textAlign: "left" }}>
-                Triaj
-              </th>
-              <th style={{ border: "1px solid #333", padding: 10, textAlign: "left" }}>
-                Creat la
-              </th>
-            </tr>
-          </thead>
-          <tbody>
-            {filteredVisits.map((v) => (
-              <tr
-                key={v.id}
-                onClick={() => {
-                  onSelect(v);
-                  showInfo(`Vizită selectată: ${v.visitCode}`);
-                }}
-                style={{
-  cursor: "pointer",
-  background:
-    selected?.id === v.id
-      ? "#2a2a2a"
-      : !v.doctorEmail
-      ? "#1f170a"
-      : "transparent",
-}}
-              >
-                <td style={{ border: "1px solid #333", padding: 10 }}>{v.visitCode}</td>
-                <td style={{ border: "1px solid #333", padding: 10 }}>
-                  {v.patientFirstName} {v.patientLastName}
-                </td>
-                <td style={{ border: "1px solid #333", padding: 10 }}>
-                  <DoctorBadge doctorEmail={v.doctorEmail} />
-                </td>
-                <td style={{ border: "1px solid #333", padding: 10 }}>
-                  <StatusBadge status={v.status} />
-                </td>
-                <td style={{ border: "1px solid #333", padding: 10 }}>
-                  <TriageBadge triageColor={v.triageColor} />
-                </td>
-                <td style={{ border: "1px solid #333", padding: 10 }}>
-                  {formatDateTime(v.createdAt)}
-                </td>
+          <FieldControl>
+            <select
+              value={sortOrder}
+              onChange={(e) => setSortOrder(e.target.value)}
+              style={{
+                padding: 10,
+                minWidth: 190,
+                border: "none",
+                outline: "none",
+                background: "transparent",
+                color: "#0f172a",
+                fontWeight: 700,
+              }}
+            >
+              <option value="desc">Cele mai noi primele</option>
+              <option value="asc">Cele mai vechi primele</option>
+            </select>
+          </FieldControl>
+        </div>
+
+        <div style={{ overflowX: "auto" }}>
+          <table
+            style={{
+              borderCollapse: "separate",
+              borderSpacing: 0,
+              width: "100%",
+              background: "#ffffff",
+            }}
+          >
+            <thead>
+              <tr style={{ color: "#64748b", fontSize: 13 }}>
+                <th style={{ padding: "12px 10px", textAlign: "left", borderBottom: "1px solid #e2e8f0" }}>
+                  Cod vizită
+                </th>
+                <th style={{ padding: "12px 10px", textAlign: "left", borderBottom: "1px solid #e2e8f0" }}>
+                  Pacient
+                </th>
+                <th style={{ padding: "12px 10px", textAlign: "left", borderBottom: "1px solid #e2e8f0" }}>
+                  Asignare
+                </th>
+                <th style={{ padding: "12px 10px", textAlign: "left", borderBottom: "1px solid #e2e8f0" }}>
+                  Status
+                </th>
+                <th style={{ padding: "12px 10px", textAlign: "left", borderBottom: "1px solid #e2e8f0" }}>
+                  Triaj
+                </th>
+                <th style={{ padding: "12px 10px", textAlign: "left", borderBottom: "1px solid #e2e8f0" }}>
+                  Creat la
+                </th>
               </tr>
-            ))}
+            </thead>
 
-            {filteredVisits.length === 0 && (
-              <tr>
-                <td
-                  colSpan="6"
-                  style={{
-                    border: "1px solid #333",
-                    padding: 14,
-                    textAlign: "center",
-                    color: "#aaa",
-                  }}
-                >
-                  Nu există vizite pentru filtrarea curentă.
-                </td>
-              </tr>
-            )}
-          </tbody>
-        </table>
+            <tbody>
+              {filteredVisits.map((v) => {
+                const isSelected = selected?.id === v.id;
+                const isUnassigned = !v.doctorEmail;
+
+                return (
+                  <tr
+                    key={v.id}
+                    onClick={() => {
+                      onSelect(v);
+                      showInfo(`Vizită selectată: ${v.visitCode}`);
+                    }}
+                    style={{
+                      cursor: "pointer",
+                      background: isSelected
+                        ? "#eff6ff"
+                        : isUnassigned
+                        ? "#fffbeb"
+                        : "#ffffff",
+                    }}
+                  >
+                    <td style={cellStyle}>{v.visitCode}</td>
+                    <td style={cellStyle}>
+                      <div style={{ fontWeight: 800, color: "#0f172a" }}>
+                        {v.patientFirstName} {v.patientLastName}
+                      </div>
+                    </td>
+                    <td style={cellStyle}>
+                      <DoctorBadge doctorEmail={v.doctorEmail} />
+                    </td>
+                    <td style={cellStyle}>
+                      <StatusBadge status={v.status} />
+                    </td>
+                    <td style={cellStyle}>
+                      <TriageBadge triageColor={v.triageColor} />
+                    </td>
+                    <td style={cellStyle}>{formatDateTime(v.createdAt)}</td>
+                  </tr>
+                );
+              })}
+
+              {filteredVisits.length === 0 && (
+                <tr>
+                  <td
+                    colSpan="6"
+                    style={{
+                      padding: 20,
+                      textAlign: "center",
+                      color: "#64748b",
+                      fontWeight: 700,
+                    }}
+                  >
+                    Nu există vizite pentru filtrarea curentă.
+                  </td>
+                </tr>
+              )}
+            </tbody>
+          </table>
+        </div>
+
+        <p style={{ color: "#94a3b8", marginTop: 14, marginBottom: 0, fontSize: 13 }}>
+          Click pe o vizită ca să o selectezi.
+        </p>
       </div>
-
-      <p style={{ color: "#aaa", marginTop: 10 }}>
-        Click pe o vizită ca să o selectezi.
-      </p>
     </div>
   );
 }
+
+const cellStyle = {
+  padding: "14px 10px",
+  borderBottom: "1px solid #edf2f7",
+  color: "#334155",
+  fontWeight: 600,
+  verticalAlign: "middle",
+};

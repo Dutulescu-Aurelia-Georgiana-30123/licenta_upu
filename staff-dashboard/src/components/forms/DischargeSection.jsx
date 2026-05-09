@@ -1,4 +1,5 @@
 import SectionCard from "./SectionCard";
+import "./DischargeSection.css";
 
 export default function DischargeSection({
   dischargeOpen,
@@ -20,21 +21,18 @@ const isRestricted = isReception || readOnly;
       hideTopButtonWhenOpen={true}
     >
       <div
+  className="discharge-modern"
   style={{
-    display: "grid",
-    gap: 16,
     pointerEvents: isRestricted ? "none" : "auto",
-    opacity: isRestricted ? 0.6 : 1,
   }}
 >
-       <fieldset
+      <fieldset
   style={{
     border: "none",
     padding: 0,
     margin: 0,
     minWidth: 0,
     pointerEvents: isRestricted ? "none" : "auto",
-    opacity: 1,
   }}
 >
         <div style={{ fontWeight: 700, fontSize: 18, textAlign: "center" }}>
