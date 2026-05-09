@@ -1,18 +1,19 @@
 package com.licenta.backend_upu.controller;
 
+import com.licenta.backend_upu.dto.AssignDoctorRequest;
 import com.licenta.backend_upu.dto.VisitCreateRequest;
 import com.licenta.backend_upu.dto.VisitResponse;
 import com.licenta.backend_upu.dto.VisitStatusUpdateRequest;
 import com.licenta.backend_upu.entity.Visit;
-import com.licenta.backend_upu.entity.VisitStatus;
 import com.licenta.backend_upu.mapper.VisitMapper;
+import com.licenta.backend_upu.repository.PreHospitalizationFormRepository;
 import com.licenta.backend_upu.service.VisitService;
-import com.licenta.backend_upu.dto.AssignDoctorRequest;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.*;
-import com.licenta.backend_upu.repository.PreHospitalizationFormRepository;
 
 import java.util.List;
+import java.util.Map;
+import java.util.stream.Collectors;
 
 @RestController
 @RequestMapping("/visits")
@@ -30,55 +31,64 @@ public class VisitController {
 
     @GetMapping
     public List<VisitResponse> getAllVisits() {
-        return visitService.getAllVisits()
-                .stream()
-                .map(this::toResponseWithTriage)
-                .toList();
+        return toResponsesWithTriage(visitService.getAllVisits());
     }
 
     @PutMapping("/{id}/status")
-    public VisitResponse updateVisitStatus(@PathVariable Long id,
-                                           @RequestBody VisitStatusUpdateRequest request) {
+    public VisitResponse updateVisitStatus(
+            @PathVariable Long id,
+            @RequestBody VisitStatusUpdateRequest request
+    ) {
         Visit updated = visitService.updateVisistStatus(id, request.getStatus());
         return visitMapper.toResponse(updated);
     }
+
     @GetMapping("/patient/{patientId}")
     public List<VisitResponse> getVisitsByPatient(@PathVariable Long patientId) {
-        return visitService.getVisitByPatient(patientId)
-                .stream()
-                .map(this::toResponseWithTriage)
-                .toList();
+        return toResponsesWithTriage(visitService.getVisitByPatient(patientId));
     }
+
     @PutMapping("/{id}/assign-doctor")
-    public VisitResponse assignDoctorToVisit(@PathVariable Long id,
-                                             @RequestBody AssignDoctorRequest request) {
+    public VisitResponse assignDoctorToVisit(
+            @PathVariable Long id,
+            @RequestBody AssignDoctorRequest request
+    ) {
         Visit updated = visitService.assignDoctorToVisit(id, request.getDoctorId());
         return visitMapper.toResponse(updated);
     }
+
     @GetMapping("/doctor/{doctorId}")
     public List<VisitResponse> getVisitsByDoctor(@PathVariable Long doctorId) {
-        return visitService.getVisitsByDoctor(doctorId)
-                .stream()
-                .map(this::toResponseWithTriage)
-                .toList();
+        return toResponsesWithTriage(visitService.getVisitsByDoctor(doctorId));
     }
+
     @ExceptionHandler(IllegalStateException.class)
     public org.springframework.http.ResponseEntity<String> handleIllegalState(IllegalStateException e) {
         return org.springframework.http.ResponseEntity.badRequest().body(e.getMessage());
     }
-    private VisitResponse toResponseWithTriage(Visit visit) {
-        VisitResponse response = visitMapper.toResponse(visit);
 
-        preformRepository.findByVisitId(visit.getId())
-                .ifPresent(preform ->
-                        response.setTriageColor(
-                                preform.getTriageColor() != null
-                                        ? preform.getTriageColor().name()
-                                        : null
-                        )
-                );
+    private List<VisitResponse> toResponsesWithTriage(List<Visit> visits) {
+        if (visits == null || visits.isEmpty()) {
+            return List.of();
+        }
 
-        return response;
+        List<Long> visitIds = visits.stream()
+                .map(Visit::getId)
+                .toList();
+
+        Map<Long, String> triageByVisitId = preformRepository.findTriageColorsByVisitIds(visitIds)
+                .stream()
+                .collect(Collectors.toMap(
+                        PreHospitalizationFormRepository.VisitTriageRow::getVisit_id,
+                        PreHospitalizationFormRepository.VisitTriageRow::getTriage_color
+                ));
+
+        return visits.stream()
+                .map(visit -> {
+                    VisitResponse response = visitMapper.toResponse(visit);
+                    response.setTriageColor(triageByVisitId.get(visit.getId()));
+                    return response;
+                })
+                .toList();
     }
-
 }
