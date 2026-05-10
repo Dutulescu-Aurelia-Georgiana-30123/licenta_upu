@@ -6,6 +6,7 @@ import com.licenta.backend_upu.dto.UpdateAvailabilityRequest;
 import com.licenta.backend_upu.service.AuthService;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import com.licenta.backend_upu.dto.RegisterPatientRequest;
 
 @RestController
 @RequestMapping("/auth")
@@ -34,5 +35,12 @@ public class AuthController {
     ) {
         authService.updateAvailability(id, request);
         return ResponseEntity.ok("Status actualizat");
+    }
+
+    @PostMapping("/register-patient")
+    public ResponseEntity<LoginResponse> registerPatient(
+            @RequestBody RegisterPatientRequest request
+    ) {
+        return ResponseEntity.ok(authService.registerPatient(request));
     }
 }

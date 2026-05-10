@@ -8,6 +8,7 @@ import com.licenta.backend_upu.entity.Role;
 import com.licenta.backend_upu.entity.User;
 import com.licenta.backend_upu.repository.UserRepository;
 import org.springframework.stereotype.Service;
+import com.licenta.backend_upu.dto.RegisterPatientRequest;
 
 @Service
 public class AuthService {
@@ -49,5 +50,28 @@ public class AuthService {
 
         user.setAvailabilityStatus(request.getAvailabilityStatus());
         userRepository.save(user);
+    }
+
+    public LoginResponse registerPatient(RegisterPatientRequest request) {
+
+        if (userRepository.existsByEmail(request.getEmail())) {
+            throw new RuntimeException("Email deja folosit");
+        }
+
+        User user = new User();
+
+        user.setEmail(request.getEmail());
+        user.setPassword(request.getPassword());
+        user.setRole(Role.PATIENT);
+        user.setIsActive(true);
+        user.setAvailabilityStatus(AvailabilityStatus.AVAILABLE);
+
+        User saved = userRepository.save(user);
+
+        return new LoginResponse(
+                saved.getId(),
+                saved.getEmail(),
+                saved.getRole()
+        );
     }
 }
