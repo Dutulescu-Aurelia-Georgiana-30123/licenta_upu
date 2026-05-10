@@ -1,7 +1,11 @@
 import { useState } from "react";
 import axios from "axios";
+import { theme } from "../styles/theme";
+import { useAuth } from "../context/AuthContext";
 
 export default function LoginPage() {
+  const { login } = useAuth();
+
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
@@ -18,7 +22,7 @@ export default function LoginPage() {
       });
 
       const user = res.data;
-      localStorage.setItem("user", JSON.stringify(user));
+      login(user);
 
       if (user.role === "RECEPTION") {
         window.location.href = "/";
@@ -72,7 +76,7 @@ export default function LoginPage() {
             position: "relative",
             padding: 56,
             background:
-              "linear-gradient(145deg, #2563eb 0%, #0ea5e9 55%, #14b8a6 100%)",
+              "linear-gradient(145deg, #08b8b3 0%, #069a96 60%, #14b8a6 100%)",
             color: "white",
             overflow: "hidden",
           }}
@@ -192,8 +196,8 @@ export default function LoginPage() {
                 display: "inline-flex",
                 padding: "8px 12px",
                 borderRadius: 999,
-                background: "#eff6ff",
-                color: "#1d4ed8",
+                background: theme.colors.primarySoft,
+                color: theme.colors.primaryDark,
                 fontWeight: 900,
                 fontSize: 13,
                 marginBottom: 18,
@@ -283,17 +287,35 @@ export default function LoginPage() {
               padding: "14px 16px",
               borderRadius: 16,
               border: "none",
-              background: "#2563eb",
+              background: "linear-gradient(135deg, #08b8b3, #069a96)",
               color: "white",
               fontWeight: 900,
               fontSize: 15,
               cursor: loading ? "not-allowed" : "pointer",
-              boxShadow: "0 14px 30px rgba(37, 99, 235, 0.28)",
+              boxShadow: theme.shadow.teal,
               opacity: loading ? 0.7 : 1,
             }}
           >
             {loading ? "Se autentifică..." : "Login"}
           </button>
+
+          <button
+  type="button"
+  onClick={() => alert("Înregistrarea pacienților va fi disponibilă în etapa următoare.")}
+  style={{
+    marginTop: 12,
+    width: "100%",
+    padding: "12px 16px",
+    borderRadius: 16,
+    border: "1px solid rgba(8,184,179,0.25)",
+    background: "#e6fffd",
+    color: "#069a96",
+    fontWeight: 900,
+    cursor: "pointer",
+  }}
+>
+  Creează cont pacient
+</button>
 
           <div
             style={{
@@ -319,7 +341,7 @@ const inputStyle = {
   borderRadius: 16,
   border: "1px solid #e2e8f0",
   background: "#ffffff",
-  color: "#0f172a",
+  color: "#102033",
   outline: "none",
   fontWeight: 700,
   fontSize: 14,

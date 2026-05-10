@@ -1,7 +1,7 @@
 .preform-modern {
   display: grid;
   gap: 18px;
-  color: #0f172a;
+  color: #102033;
 }
 
 .preform-modern input,
@@ -9,14 +9,21 @@
 .preform-modern textarea {
   width: 100%;
   box-sizing: border-box;
-  padding: 11px 12px !important;
+  padding: 12px 14px !important;
   margin-top: 6px;
-  border-radius: 14px;
+  border-radius: 16px;
   border: 1px solid #e2e8f0 !important;
   background: #f8fafc !important;
-  color: #0f172a !important;
+  color: #102033 !important;
   outline: none;
-  font-weight: 600;
+  font-weight: 800;
+}
+
+.preform-modern input:focus,
+.preform-modern select:focus,
+.preform-modern textarea:focus {
+  border-color: #08b8b3 !important;
+  box-shadow: 0 0 0 4px rgba(8, 184, 179, 0.12);
 }
 
 .preform-modern textarea {
@@ -25,7 +32,7 @@
 
 .preform-modern label {
   color: #334155;
-  font-weight: 700;
+  font-weight: 800;
   font-size: 13px;
 }
 
@@ -33,39 +40,56 @@
 .preform-modern input[type="radio"] {
   width: auto;
   margin-top: 0;
-  accent-color: #2563eb;
+  accent-color: #08b8b3;
 }
 
 .preform-modern button {
-  padding: 10px 14px !important;
-  border-radius: 14px !important;
-  border: 1px solid #dbeafe !important;
-  background: #eff6ff !important;
-  color: #1d4ed8 !important;
-  font-weight: 800 !important;
+  padding: 11px 15px !important;
+  border-radius: 16px !important;
+  border: 1px solid rgba(8, 184, 179, 0.25) !important;
+  background: #e6fffd !important;
+  color: #069a96 !important;
+  font-weight: 900 !important;
   cursor: pointer;
 }
 
 .preform-modern > div {
-  color: #0f172a;
+  color: #102033;
 }
 
 .preform-modern div[style*="font-weight: 700"] {
-  color: #0f172a;
+  color: #102033;
 }
 
+/* Cardurile vechi din examen obiectiv */
 .preform-modern div[style*="border: 1px solid #333"] {
   border: 1px solid #e2e8f0 !important;
-  background: #f8fafc !important;
+  background: #ffffff !important;
   border-radius: 18px !important;
+  box-sizing: border-box;
 }
 
+/* Container examen obiectiv */
 .preform-modern div[style*="background: #0f0f0f"] {
   background: #f8fafc !important;
   border: 1px solid #e2e8f0 !important;
   border-radius: 24px !important;
 }
 
+/* Container deja trecut pe #f8fafc */
+.preform-modern div[style*="background: #f8fafc"] {
+  border-color: #e2e8f0 !important;
+}
+
+/* Buton bottom / separator */
 .preform-modern div[style*="borderTop: 1px solid #333"] {
   border-top: 1px solid #e2e8f0 !important;
+}
+
+/* Câmpuri evidențiate pentru AI - păstrează roșul peste tema globală */
+.preform-modern input[style*="2px solid #dc2626"],
+.preform-modern textarea[style*="2px solid #dc2626"],
+.preform-modern select[style*="2px solid #dc2626"] {
+  border: 2px solid #dc2626 !important;
+  background: #fef2f2 !important;
 }

@@ -10,7 +10,7 @@ export default function FormsToolbar({
   alreadyExported,
 }) {
   return (
-    <div style={theme.card.base}>
+    <div>
       <div
         style={{
           display: "flex",

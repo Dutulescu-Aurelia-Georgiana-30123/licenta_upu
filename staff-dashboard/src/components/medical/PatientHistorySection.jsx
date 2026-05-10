@@ -1,3 +1,23 @@
+import { theme } from "../../styles/theme";
+
+function StatusBadge({ status }) {
+  return (
+    <span
+      style={{
+        display: "inline-flex",
+        padding: "6px 10px",
+        borderRadius: 999,
+        background: "#f1f5f9",
+        color: theme.colors.muted,
+        fontSize: 12,
+        fontWeight: 900,
+      }}
+    >
+      {status || "-"}
+    </span>
+  );
+}
+
 export default function PatientHistorySection({
   currentVisit,
   historyVisits,
@@ -8,30 +28,74 @@ export default function PatientHistorySection({
   const previousVisits = historyVisits.filter((v) => v.id !== currentVisit.id);
 
   return (
-    <div style={{ marginTop: 20 }}>
-      <h3>Fișe trecute</h3>
+    <div style={theme.card.base}>
+      <div style={{ marginBottom: 16 }}>
+        <div style={{ fontSize: 18, fontWeight: 950, color: theme.colors.text }}>
+          Fișe trecute
+        </div>
+        <div style={{ color: theme.colors.muted, marginTop: 4, fontSize: 13, fontWeight: 700 }}>
+          Istoricul vizitelor pentru pacientul curent
+        </div>
+      </div>
 
       {previousVisits.length === 0 ? (
-        <p style={{ color: "#aaa", marginTop: 10 }}>
+        <div
+          style={{
+            padding: 22,
+            borderRadius: 22,
+            background: "#f8fafc",
+            border: `1px dashed ${theme.colors.border}`,
+            color: theme.colors.muted,
+            fontWeight: 800,
+            textAlign: "center",
+          }}
+        >
           Nu există fișe anterioare pentru acest pacient.
-        </p>
+        </div>
       ) : (
-        previousVisits.map((v) => (
-          <div
-            key={v.id}
-            style={{
-              border: "1px solid #333",
-              padding: 10,
-              marginTop: 10,
-              cursor: "pointer",
-            }}
-            onClick={() => onOpenVisit(v)}
-          >
-            <div><b>Cod:</b> {v.visitCode}</div>
-            <div><b>Pacient:</b> {v.patientFirstName} {v.patientLastName}</div>
-            <div><b>Status:</b> {v.status}</div>
-          </div>
-        ))
+        <div style={{ display: "grid", gap: 12 }}>
+          {previousVisits.map((v) => (
+            <div
+              key={v.id}
+              onClick={() => onOpenVisit(v)}
+              style={{
+                cursor: "pointer",
+                padding: 16,
+                borderRadius: 22,
+                background: "#f8fafc",
+                border: `1px solid ${theme.colors.border}`,
+              }}
+            >
+              <div
+                style={{
+                  display: "flex",
+                  justifyContent: "space-between",
+                  gap: 12,
+                  alignItems: "center",
+                  flexWrap: "wrap",
+                }}
+              >
+                <div>
+                  <div style={{ fontWeight: 950, color: theme.colors.text }}>
+                    {v.patientFirstName} {v.patientLastName}
+                  </div>
+                  <div
+                    style={{
+                      color: theme.colors.muted,
+                      fontSize: 13,
+                      marginTop: 4,
+                      fontWeight: 700,
+                    }}
+                  >
+                    Cod vizită: {v.visitCode || "-"}
+                  </div>
+                </div>
+
+                <StatusBadge status={v.status} />
+              </div>
+            </div>
+          ))}
+        </div>
       )}
     </div>
   );

@@ -2,15 +2,20 @@ import { useEffect, useMemo, useState } from "react";
 import { apiGet, apiPost, apiPut } from "../api/api";
 import { useToast } from "../context/ToastContext";
 
-function Card({ children }) {
+const teal = "#08b8b3";
+const tealDark = "#069a96";
+
+function Card({ children, style = {} }) {
   return (
     <div
       style={{
-        background: "#ffffff",
+        background: "rgba(255,255,255,0.92)",
         border: "1px solid #e5eef8",
-        borderRadius: 24,
-        padding: 18,
-        boxShadow: "0 18px 45px rgba(15, 23, 42, 0.06)",
+        borderRadius: 28,
+        padding: 22,
+        boxShadow: "0 22px 55px rgba(15, 47, 95, 0.08)",
+        backdropFilter: "blur(14px)",
+        ...style,
       }}
     >
       {children}
@@ -23,14 +28,14 @@ function PrimaryButton({ children, onClick }) {
     <button
       onClick={onClick}
       style={{
-        padding: "10px 16px",
-        borderRadius: 14,
+        padding: "12px 16px",
+        borderRadius: 16,
         border: "none",
-        background: "#2563eb",
+        background: `linear-gradient(135deg, ${teal}, ${tealDark})`,
         color: "white",
-        fontWeight: 800,
+        fontWeight: 950,
         cursor: "pointer",
-        boxShadow: "0 12px 25px rgba(37, 99, 235, 0.22)",
+        boxShadow: "0 14px 30px rgba(8,184,179,0.24)",
       }}
     >
       {children}
@@ -45,10 +50,10 @@ function SecondaryButton({ children, onClick }) {
       style={{
         padding: "10px 14px",
         borderRadius: 14,
-        border: "1px solid #dbeafe",
-        background: "#eff6ff",
-        color: "#1d4ed8",
-        fontWeight: 800,
+        border: "1px solid rgba(8,184,179,0.25)",
+        background: "#e6fffd",
+        color: tealDark,
+        fontWeight: 900,
         cursor: "pointer",
       }}
     >
@@ -62,12 +67,12 @@ function GhostButton({ children, onClick }) {
     <button
       onClick={onClick}
       style={{
-        padding: "9px 12px",
-        borderRadius: 12,
+        padding: "10px 13px",
+        borderRadius: 14,
         border: "1px solid #e2e8f0",
         background: "#ffffff",
         color: "#334155",
-        fontWeight: 800,
+        fontWeight: 900,
         cursor: "pointer",
       }}
     >
@@ -79,12 +84,21 @@ function GhostButton({ children, onClick }) {
 function Field({ label, children, error }) {
   return (
     <label style={{ display: "block" }}>
-      <div style={{ fontSize: 13, fontWeight: 800, color: "#334155", marginBottom: 6 }}>
+      <div
+        style={{
+          fontSize: 13,
+          fontWeight: 900,
+          color: "#334155",
+          marginBottom: 7,
+        }}
+      >
         {label}
       </div>
+
       {children}
+
       {error && (
-        <div style={{ color: "#dc2626", fontSize: 12, marginTop: 5, fontWeight: 700 }}>
+        <div style={{ color: "#dc2626", fontSize: 12, marginTop: 5, fontWeight: 800 }}>
           {error}
         </div>
       )}
@@ -92,25 +106,66 @@ function Field({ label, children, error }) {
   );
 }
 
+function MiniStat({ label, value, icon }) {
+  return (
+    <div
+      style={{
+        background: "rgba(255,255,255,0.92)",
+        border: "1px solid #e5eef8",
+        borderRadius: 22,
+        padding: 16,
+        boxShadow: "0 18px 45px rgba(15,47,95,0.07)",
+      }}
+    >
+      <div style={{ display: "flex", justifyContent: "space-between", gap: 12 }}>
+        <div>
+          <div style={{ color: "#667085", fontSize: 12, fontWeight: 800 }}>
+            {label}
+          </div>
+          <div
+            style={{
+              marginTop: 6,
+              color: "#102033",
+              fontSize: 28,
+              fontWeight: 950,
+              letterSpacing: -0.8,
+            }}
+          >
+            {value ?? 0}
+          </div>
+        </div>
+
+        <div
+          style={{
+            width: 42,
+            height: 42,
+            borderRadius: 16,
+            background: "#e6fffd",
+            color: tealDark,
+            display: "grid",
+            placeItems: "center",
+            fontWeight: 950,
+          }}
+        >
+          {icon}
+        </div>
+      </div>
+    </div>
+  );
+}
+
 const inputStyle = {
   width: "100%",
   boxSizing: "border-box",
-  padding: "11px 12px",
-  borderRadius: 14,
+  padding: "12px 13px",
+  borderRadius: 16,
   border: "1px solid #e2e8f0",
   background: "#f8fafc",
-  color: "#0f172a",
+  color: "#102033",
   outline: "none",
-  fontWeight: 600,
+  fontWeight: 700,
 };
 
-const cellStyle = {
-  padding: "14px 10px",
-  borderBottom: "1px solid #edf2f7",
-  color: "#334155",
-  fontWeight: 600,
-  verticalAlign: "middle",
-};
 
 export default function PatientsPage({ onVisitCreated }) {
   const [patients, setPatients] = useState([]);
@@ -144,7 +199,7 @@ export default function PatientsPage({ onVisitCreated }) {
     setError("");
     try {
       const data = await apiGet("/patients");
-      setPatients(data);
+      setPatients(data || []);
     } catch (e) {
       const msg = String(e);
       setError(msg);
@@ -197,7 +252,6 @@ export default function PatientsPage({ onVisitCreated }) {
 
     try {
       const createdVisit = await apiPost("/visits", { patientId });
-
       showSuccess("Vizită creată");
 
       if (onVisitCreated) {
@@ -228,80 +282,154 @@ export default function PatientsPage({ onVisitCreated }) {
     <div style={{ width: "100%" }}>
       <div
         style={{
-          display: "flex",
-          justifyContent: "space-between",
-          alignItems: "flex-start",
-          gap: 12,
-          flexWrap: "wrap",
+          position: "relative",
+          overflow: "hidden",
+          borderRadius: 32,
+          padding: 26,
+          background:
+            "linear-gradient(135deg, rgba(8,184,179,0.96), rgba(6,154,150,0.86))",
+          color: "white",
+          boxShadow: "0 28px 80px rgba(8, 184, 179, 0.20)",
         }}
       >
-        <div>
+        <div
+          style={{
+            position: "absolute",
+            width: 220,
+            height: 220,
+            borderRadius: "50%",
+            background: "rgba(255,255,255,0.16)",
+            right: -60,
+            top: -80,
+          }}
+        />
+
+        <div style={{ position: "relative", zIndex: 1 }}>
+          <div
+            style={{
+              display: "inline-flex",
+              alignItems: "center",
+              gap: 9,
+              padding: "8px 13px",
+              borderRadius: 999,
+              background: "rgba(255,255,255,0.18)",
+              fontWeight: 900,
+              marginBottom: 16,
+            }}
+          >
+            👥 Registru pacienți
+          </div>
+
           <h2
             style={{
               margin: 0,
-              fontSize: 28,
-              color: "#0f172a",
-              letterSpacing: -0.6,
+              fontSize: 34,
+              letterSpacing: -1.1,
+              lineHeight: 1.1,
             }}
           >
-            Pacienți
+            Management pacienți
           </h2>
-          <div style={{ color: "#64748b", marginTop: 4, fontSize: 14 }}>
-            {filteredPatients.length} pacienți afișați
+
+          <p
+            style={{
+              marginTop: 12,
+              marginBottom: 0,
+              maxWidth: 720,
+              lineHeight: 1.65,
+              opacity: 0.92,
+              fontWeight: 600,
+            }}
+          >
+            Caută, înregistrează sau actualizează rapid datele pacienților și
+            creează vizite noi pentru fluxul UPU.
+          </p>
+
+          <div style={{ marginTop: 22 }}>
+            <button
+              onClick={() => {
+                const next = !showCreate;
+                setShowCreate(next);
+
+                if (!next) {
+                  resetForm();
+                }
+              }}
+              style={{
+                border: "none",
+                background: "white",
+                color: tealDark,
+                padding: "12px 16px",
+                borderRadius: 16,
+                fontWeight: 950,
+                cursor: "pointer",
+                boxShadow: "0 16px 32px rgba(0,0,0,0.12)",
+              }}
+            >
+              {showCreate ? "Închide formularul" : "+ Adaugă pacient"}
+            </button>
           </div>
         </div>
+      </div>
 
-        <PrimaryButton
-          onClick={() => {
-            const next = !showCreate;
-            setShowCreate(next);
-
-            if (!next) {
-              resetForm();
-            }
-          }}
-        >
-          {showCreate ? "Închide formularul" : "Adaugă pacient"}
-        </PrimaryButton>
+      <div
+        style={{
+          display: "grid",
+          gridTemplateColumns: "repeat(auto-fit, minmax(190px, 1fr))",
+          gap: 14,
+          marginTop: 16,
+        }}
+      >
+        <MiniStat label="Pacienți total" value={patients.length} icon="👥" />
+        <MiniStat label="Pacienți afișați" value={filteredPatients.length} icon="▦" />
+        <MiniStat label="Formular" value={showCreate ? 1 : 0} icon="＋" />
       </div>
 
       {error && (
         <div
           style={{
-            marginTop: 14,
-            padding: 12,
-            borderRadius: 14,
+            marginTop: 16,
+            padding: 13,
+            borderRadius: 16,
             background: "#fee2e2",
             color: "#991b1b",
-            fontWeight: 700,
+            fontWeight: 800,
           }}
         >
           {error}
         </div>
       )}
 
-      <Card>
-        <input
-          type="text"
-          placeholder="Caută după nume sau CNP"
-          value={search}
-          onChange={(e) => setSearch(e.target.value)}
-          style={{
-            ...inputStyle,
-            marginTop: 0,
-            maxWidth: 420,
-          }}
-        />
-      </Card>
+      <div style={{ marginTop: 16 }}>
+        <Card>
+          <input
+            type="text"
+            placeholder="Caută după nume sau CNP"
+            value={search}
+            onChange={(e) => setSearch(e.target.value)}
+            style={{
+              ...inputStyle,
+              maxWidth: 440,
+            }}
+          />
+        </Card>
+      </div>
 
       {showCreate && (
         <div style={{ marginTop: 16 }}>
           <Card>
-            <div style={{ marginBottom: 16 }}>
-              <h3 style={{ margin: 0, color: "#0f172a", fontSize: 20 }}>
+            <div style={{ marginBottom: 18 }}>
+              <h3
+                style={{
+                  margin: 0,
+                  color: "#102033",
+                  fontSize: 22,
+                  letterSpacing: -0.4,
+                }}
+              >
                 {editingPatientId ? "Editare pacient" : "Creare pacient"}
               </h3>
-              <div style={{ color: "#64748b", marginTop: 4, fontSize: 13 }}>
+              <div style={{ color: "#667085", marginTop: 5, fontSize: 13, fontWeight: 700 }}>
                 Completează datele principale ale pacientului
               </div>
             </div>
@@ -368,7 +496,7 @@ export default function PatientsPage({ onVisitCreated }) {
               </Field>
             </div>
 
-            <div style={{ marginTop: 18, display: "flex", gap: 10, flexWrap: "wrap" }}>
+            <div style={{ marginTop: 20, display: "flex", gap: 10, flexWrap: "wrap" }}>
               <PrimaryButton onClick={createPatient}>
                 {editingPatientId ? "Salvează modificările" : "Salvează pacient"}
               </PrimaryButton>
@@ -395,10 +523,12 @@ export default function PatientsPage({ onVisitCreated }) {
                 borderSpacing: 0,
                 width: "100%",
                 background: "#ffffff",
+                borderRadius: 22,
+                overflow: "hidden",
               }}
             >
               <thead>
-                <tr style={{ color: "#64748b", fontSize: 13 }}>
+                <tr style={{ color: "#667085", fontSize: 13, background: "#f8fafc" }}>
                   <th style={headCellStyle}>Prenume</th>
                   <th style={headCellStyle}>Nume</th>
                   <th style={headCellStyle}>CNP</th>
@@ -418,7 +548,14 @@ export default function PatientsPage({ onVisitCreated }) {
                     <td style={cellStyle}>{p.email || "-"}</td>
 
                     <td style={{ ...cellStyle, textAlign: "center" }}>
-                      <div style={{ display: "flex", gap: 8, justifyContent: "center", flexWrap: "wrap" }}>
+                      <div
+                        style={{
+                          display: "flex",
+                          gap: 8,
+                          justifyContent: "center",
+                          flexWrap: "wrap",
+                        }}
+                      >
                         <SecondaryButton onClick={() => createVisit(p.id)}>
                           Creează vizită
                         </SecondaryButton>
@@ -450,9 +587,9 @@ export default function PatientsPage({ onVisitCreated }) {
                       colSpan="6"
                       style={{
                         textAlign: "center",
-                        padding: 20,
-                        color: "#64748b",
-                        fontWeight: 700,
+                        padding: 22,
+                        color: "#667085",
+                        fontWeight: 800,
                       }}
                     >
                       Nu există pacienți.
@@ -469,8 +606,16 @@ export default function PatientsPage({ onVisitCreated }) {
 }
 
 const headCellStyle = {
-  padding: "12px 10px",
+  padding: "14px 12px",
   textAlign: "left",
   borderBottom: "1px solid #e2e8f0",
-  fontWeight: 800,
+  fontWeight: 900,
+};
+
+const cellStyle = {
+  padding: "15px 12px",
+  borderBottom: "1px solid #edf2f7",
+  color: "#334155",
+  fontWeight: 700,
+  verticalAlign: "middle",
 };

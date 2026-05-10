@@ -1,81 +1,121 @@
 export const theme = {
-    colors: {
-    pageBg: "#f4f7fb",
-    card: "#ffffff",
-    border: "#e2e8f0",
-    borderSoft: "#e5eef8",
-    text: "#0f172a",
-    muted: "#64748b",
-    mutedLight: "#94a3b8",
-    primary: "#2563eb",
-    primarySoft: "#eff6ff",
-    primaryText: "#1d4ed8",
-    dangerSoft: "#fee2e2",
-    dangerText: "#991b1b",
-    warningSoft: "#fef3c7",
-    warningText: "#92400e",
-    successSoft: "#dcfce7",
-    successText: "#166534",
-    consultSoft: "#dbeafe",
-    consultText: "#1d4ed8",
-    },
+  colors: {
+    primary: "#08b8b3",
+    primaryDark: "#069a96",
+    primarySoft: "#e6fffd",
 
-    radius: {
-    sm: 12,
+    text: "#102033",
+    muted: "#667085",
+    border: "#e5eef8",
+    surface: "#ffffff",
+    input: "#f8fafc",
+
+    danger: "#dc2626",
+    dangerSoft: "#fee2e2",
+
+    successText: "#166534",
+    successSoft: "#dcfce7",
+  },
+
+  radius: {
+    sm: 10,
     md: 14,
     lg: 18,
     xl: 24,
-    pill: 999,
+    xxl: 28,
+    hero: 34,
+  },
+
+  shadow: {
+    sm: "0 6px 16px rgba(15, 47, 95, 0.06)",
+    md: "0 14px 30px rgba(15, 47, 95, 0.08)",
+    lg: "0 22px 55px rgba(15, 47, 95, 0.08)",
+    teal: "0 14px 30px rgba(8, 184, 179, 0.24)",
+  },
+
+  spacing: {
+    xs: 4,
+    sm: 8,
+    md: 12,
+    lg: 16,
+    xl: 24,
+    xxl: 32,
+  },
+
+  typography: {
+    pageTitle: {
+      margin: 0,
+      fontSize: 34,
+      letterSpacing: -1.1,
+      lineHeight: 1.1,
+      fontWeight: 950,
     },
 
-    shadow: {
-    card: "0 18px 45px rgba(15, 23, 42, 0.06)",
-    button: "0 12px 25px rgba(37, 99, 235, 0.18)",
-    layout: "0 24px 70px rgba(15, 23, 42, 0.10)",
+    sectionTitle: {
+      fontSize: 18,
+      fontWeight: 950,
     },
 
-    button: {
+    label: {
+      fontSize: 13,
+      fontWeight: 800,
+    },
+  },
+
+  card: {
+    base: {
+      background: "rgba(255,255,255,0.92)",
+      border: "1px solid #e5eef8",
+      borderRadius: 28,
+      padding: 22,
+      boxShadow: "0 22px 55px rgba(15, 47, 95, 0.08)",
+      backdropFilter: "blur(14px)",
+    },
+  },
+
+  button: {
     primary: {
-        padding: "10px 16px",
-        borderRadius: 14,
-        border: "none",
-        background: "#2563eb",
-        color: "white",
-        fontWeight: 800,
-        cursor: "pointer",
-        boxShadow: "0 12px 25px rgba(37, 99, 235, 0.18)",
+      padding: "12px 16px",
+      borderRadius: 16,
+      border: "none",
+      background: "linear-gradient(135deg, #08b8b3, #069a96)",
+      color: "white",
+      fontWeight: 950,
+      cursor: "pointer",
+      boxShadow: "0 14px 30px rgba(8,184,179,0.24)",
     },
+
     secondary: {
-        padding: "10px 14px",
-        borderRadius: 14,
-        border: "1px solid #dbeafe",
-        background: "#eff6ff",
-        color: "#1d4ed8",
-        fontWeight: 800,
-        cursor: "pointer",
-    },
-    },
-
-    input: {
-    base: {
-        padding: "11px 12px",
-        borderRadius: 14,
-        border: "1px solid #e2e8f0",
-        background: "#f8fafc",
-        color: "#0f172a",
-        outline: "none",
-        fontWeight: 600,
-        boxSizing: "border-box",
-    },
+      padding: "11px 15px",
+      borderRadius: 16,
+      border: "1px solid rgba(8,184,179,0.25)",
+      background: "#e6fffd",
+      color: "#069a96",
+      fontWeight: 900,
+      cursor: "pointer",
     },
 
-    card: {
+    ghost: {
+      padding: "10px 13px",
+      borderRadius: 14,
+      border: "1px solid #e2e8f0",
+      background: "#ffffff",
+      color: "#334155",
+      fontWeight: 900,
+      cursor: "pointer",
+    },
+  },
+
+  input: {
     base: {
-        background: "#ffffff",
-        border: "1px solid #e5eef8",
-        borderRadius: 24,
-        padding: 18,
-        boxShadow: "0 18px 45px rgba(15, 23, 42, 0.06)",
+      boxSizing: "border-box",
+      padding: "12px 14px",
+      borderRadius: 16,
+      border: "1px solid #e2e8f0",
+      background: "#f8fafc",
+      color: "#102033",
+      outline: "none",
+      fontWeight: 800,
     },
-    },
+  },
 };

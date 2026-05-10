@@ -27,6 +27,9 @@ import {
 } from "./formsPageApi";
 import { useToast } from "../context/ToastContext";
 
+const teal = "#08b8b3";
+const tealDark = "#069a96";
+
 function mapAiLabelToTriageColor(label) {
   const map = {
     rosu: "ROSU",
@@ -80,31 +83,32 @@ function getMissingRecommendedAiFields(preform) {
 }
 
 const cardStyle = {
-  background: "#ffffff",
+  background: "rgba(255,255,255,0.92)",
   border: "1px solid #e5eef8",
-  borderRadius: 24,
-  padding: 18,
-  boxShadow: "0 18px 45px rgba(15, 23, 42, 0.06)",
+  borderRadius: 28,
+  padding: 22,
+  boxShadow: "0 22px 55px rgba(15, 47, 95, 0.08)",
+  backdropFilter: "blur(14px)",
 };
 
 const primaryButtonStyle = {
-  padding: "10px 16px",
-  borderRadius: 14,
+  padding: "12px 16px",
+  borderRadius: 16,
   border: "none",
-  background: "#2563eb",
+  background: `linear-gradient(135deg, ${teal}, ${tealDark})`,
   color: "white",
-  fontWeight: 800,
+  fontWeight: 950,
   cursor: "pointer",
-  boxShadow: "0 12px 25px rgba(37, 99, 235, 0.18)",
+  boxShadow: "0 14px 30px rgba(8,184,179,0.24)",
 };
 
 const secondaryButtonStyle = {
-  padding: "10px 14px",
-  borderRadius: 14,
-  border: "1px solid #dbeafe",
-  background: "#eff6ff",
-  color: "#1d4ed8",
-  fontWeight: 800,
+  padding: "11px 15px",
+  borderRadius: 16,
+  border: "1px solid rgba(8,184,179,0.25)",
+  background: "#e6fffd",
+  color: tealDark,
+  fontWeight: 900,
   cursor: "pointer",
 };
 
@@ -114,9 +118,9 @@ const inputStyle = {
   borderRadius: 16,
   border: "1px solid #e2e8f0",
   background: "#f8fafc",
-  color: "#0f172a",
+  color: "#102033",
   outline: "none",
-  fontWeight: 700,
+  fontWeight: 800,
 };
 
 const tableHeadCellStyle = {
@@ -150,8 +154,8 @@ function getTriageBadgeStyle(triageColor) {
   }
 
   if (triageColor === "CONSULT") {
-    return { background: "#dbeafe", color: "#1d4ed8" };
-  }
+  return { background: "#e6fffd", color: tealDark };
+}
 
   return { background: "#f1f5f9", color: "#64748b" };
 }
@@ -788,7 +792,7 @@ setAiMissingFields([]);
             rosu: { bg: "#fee2e2", text: "#991b1b", border: "#fecaca" },
             galben: { bg: "#fef3c7", text: "#92400e", border: "#fde68a" },
             verde: { bg: "#dcfce7", text: "#166534", border: "#bbf7d0" },
-            consult: { bg: "#dbeafe", text: "#1d4ed8", border: "#bfdbfe" },
+            consult: { bg: "#e6fffd", text: tealDark, border: "#b8f3ef" },
           };
 
           const labelMap = {
@@ -954,6 +958,7 @@ setAiMissingFields([]);
             updateStatus={updateStatus}
             msg={msg}
             readOnly={isClosedVisit}
+            alreadyExported={alreadyExported}
           />
         </div>
 
