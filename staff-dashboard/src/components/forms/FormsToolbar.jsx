@@ -46,15 +46,10 @@ export default function FormsToolbar({
         >
           <option value="">Selectează status</option>
           <option value="REGISTERED">Înregistrat</option>
-          <option value="TRIAGE_DONE">Triaj efectuat</option>
           <option value="WAITING_CONSULT">
             În așteptare consult
           </option>
           <option value="IN_CONSULT">În consult</option>
-          <option value="IN_INVESTIGATION">
-            În investigații
-          </option>
-          <option value="OBSERVATION">În observație</option>
           <option value="DISCHARGED">Externat</option>
           <option value="ADMITTED">Internat</option>
           <option value="TRANSFERRED">Transferat</option>

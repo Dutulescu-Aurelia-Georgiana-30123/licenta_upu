@@ -6,57 +6,52 @@ function getRoleLabel(role) {
   return role || "-";
 }
 
-export default function MedicalHeader({ user, onLogout }) {
+export default function MedicalHeader({
+  user,
+  onLogout,
+  availabilityStatus,
+  onAvailabilityChange,
+}) {
   return (
     <div
       style={{
-        ...theme.card.base,
+        width: "100%",
         display: "flex",
         justifyContent: "space-between",
         alignItems: "center",
         gap: 18,
         flexWrap: "wrap",
+        background: "rgba(255,255,255,0.82)",
+        backdropFilter: "blur(18px)",
+        border: "1px solid rgba(255,255,255,0.7)",
+        borderRadius: 26,
+        padding: "18px 24px",
+        boxShadow: "0 12px 40px rgba(15, 23, 42, 0.06)",
+        boxSizing: "border-box",
       }}
     >
       <div>
         <div
           style={{
-            display: "inline-flex",
-            alignItems: "center",
-            gap: 9,
-            padding: "8px 13px",
-            borderRadius: 999,
-            background: theme.colors.primarySoft,
-            color: theme.colors.primaryDark,
+            fontSize: 26,
             fontWeight: 900,
-            fontSize: 13,
-            marginBottom: 14,
+            color: "#102033",
+            letterSpacing: -0.7,
           }}
         >
-          🩺 Interfață medicală
+          Interfață medicală
         </div>
 
-        <h2
+        <div
           style={{
-            margin: 0,
-            fontSize: 32,
-            color: theme.colors.text,
-            letterSpacing: -1,
+            marginTop: 4,
+            color: "#6b7280",
+            fontSize: 14,
+            fontWeight: 600,
           }}
         >
-          Workspace medic/asistent
-        </h2>
-
-        <p
-          style={{
-            marginTop: 8,
-            marginBottom: 0,
-            color: theme.colors.muted,
-            fontWeight: 700,
-          }}
-        >
-          Gestionare pacienți activi, fișe medicale și istoric clinic.
-        </p>
+          Workspace pentru pacienți activi, fișe medicale și istoric clinic
+        </div>
       </div>
 
       <div
@@ -71,11 +66,12 @@ export default function MedicalHeader({ user, onLogout }) {
           style={{
             display: "flex",
             alignItems: "center",
-            gap: 12,
-            padding: "12px 15px",
-            borderRadius: 22,
-            background: "#f8fafc",
-            border: `1px solid ${theme.colors.border}`,
+            gap: 14,
+            background:
+              "linear-gradient(135deg, rgba(8,184,179,0.12), rgba(8,184,179,0.03))",
+            border: "1px solid rgba(8,184,179,0.14)",
+            padding: "12px 18px",
+            borderRadius: 20,
           }}
         >
           <div
@@ -84,11 +80,12 @@ export default function MedicalHeader({ user, onLogout }) {
               height: 44,
               borderRadius: "50%",
               background: "linear-gradient(135deg, #08b8b3, #069a96)",
-              color: "white",
               display: "grid",
               placeItems: "center",
-              fontWeight: 950,
-              boxShadow: theme.shadow.teal,
+              color: "white",
+              fontWeight: 900,
+              fontSize: 18,
+              boxShadow: "0 10px 24px rgba(8,184,179,0.22)",
             }}
           >
             {user?.email?.[0]?.toUpperCase() || "U"}
@@ -97,8 +94,8 @@ export default function MedicalHeader({ user, onLogout }) {
           <div>
             <div
               style={{
-                color: theme.colors.text,
-                fontWeight: 900,
+                fontWeight: 800,
+                color: "#102033",
                 fontSize: 14,
               }}
             >
@@ -107,16 +104,43 @@ export default function MedicalHeader({ user, onLogout }) {
 
             <div
               style={{
-                color: theme.colors.primaryDark,
-                fontWeight: 900,
                 fontSize: 12,
-                marginTop: 3,
+                color: "#069a96",
+                fontWeight: 700,
+                marginTop: 2,
               }}
             >
               {getRoleLabel(user?.role)}
             </div>
           </div>
         </div>
+
+<button
+  type="button"
+  onClick={() =>
+    onAvailabilityChange(
+      availabilityStatus === "AVAILABLE" ? "BUSY" : "AVAILABLE"
+    )
+  }
+  style={{
+    padding: "12px 15px",
+    borderRadius: 16,
+    border:
+      availabilityStatus === "AVAILABLE"
+        ? "1px solid #bbf7d0"
+        : "1px solid #fecaca",
+    background:
+      availabilityStatus === "AVAILABLE" ? "#dcfce7" : "#fee2e2",
+    color:
+      availabilityStatus === "AVAILABLE" ? "#166534" : "#991b1b",
+    fontWeight: 900,
+    cursor: "pointer",
+  }}
+>
+  {availabilityStatus === "AVAILABLE"
+    ? "Disponibil"
+    : "Indisponibil"}
+</button>
 
         <button
           onClick={onLogout}

@@ -18,12 +18,8 @@ function getDocumentTypeLabel(type) {
 function getStatusLabel(status) {
   const labels = {
     REGISTERED: "Înregistrat",
-    WAITING_TRIAGE: "În așteptare triaj",
-    TRIAGE_DONE: "Triaj efectuat",
     WAITING_CONSULT: "În așteptare consult",
     IN_CONSULT: "În consult",
-    IN_INVESTIGATION: "În investigații",
-    OBSERVATION: "În observație",
     DISCHARGED: "Externat",
     ADMITTED: "Internat",
     TRANSFERRED: "Transferat",
@@ -77,12 +73,8 @@ function SectionTitle({ title, subtitle }) {
 function StatusBadge({ status }) {
   const styles = {
     REGISTERED: { background: "#fef3c7", color: "#92400e" },
-    WAITING_TRIAGE: { background: "#f1f5f9", color: "#475569" },
-    TRIAGE_DONE: { background: "#e6fffd", color: tealDark },
     WAITING_CONSULT: { background: "#ffedd5", color: "#9a3412" },
     IN_CONSULT: { background: "#ccfbf1", color: "#0f766e" },
-    IN_INVESTIGATION: { background: "#ede9fe", color: "#6d28d9" },
-    OBSERVATION: { background: "#f3e8ff", color: "#7e22ce" },
     DISCHARGED: { background: "#dcfce7", color: "#166534" },
     ADMITTED: { background: "#e0f2fe", color: "#0369a1" },
     TRANSFERRED: { background: "#fee2e2", color: "#991b1b" },

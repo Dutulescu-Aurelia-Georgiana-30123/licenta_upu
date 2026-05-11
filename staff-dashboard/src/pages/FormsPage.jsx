@@ -160,7 +160,8 @@ function getTriageBadgeStyle(triageColor) {
   return { background: "#f1f5f9", color: "#64748b" };
 }
 
-export default function FormsPage({ selected, onSelectVisit }) {
+export default function FormsPage({ selected, onSelectVisit, previewOnly = false }) {
+  const user = JSON.parse(localStorage.getItem("user"));
   const [patientsSearch, setPatientsSearch] = useState("");
   const [preformOpen, setPreformOpen] = useState(false);
   const [dischargeOpen, setDischargeOpen] = useState(false);
@@ -309,26 +310,31 @@ export default function FormsPage({ selected, onSelectVisit }) {
   }, [selected?.id]);
 
   const savePreform = async () => {
-    if (!selected || isClosedVisit) return;
+  if (!selected || isClosedVisit) return;
 
-    setMsg("");
-    setLoading(true);
+  setMsg("");
+  setLoading(true);
 
-    const payload = buildPreformPayload(preform);
+  const payload = buildPreformPayload(preform);
 
-    try {
-      await savePreformData(selected, payload);
-      lastEditAtRef.current = 0;
-      hasUserEditedRef.current = false;
-      setMsg("Fișa de pre-spitalizare a fost salvată.");
-      showSuccess("Fișa de pre-spitalizare a fost salvată.");
-    } catch (e) {
-      setMsg(`Eroare salvare preform: ${e}`);
-      showError("Eroare salvare preform");
-    } finally {
-      setLoading(false);
-    }
-  };
+  try {
+    await savePreformData(selected, payload);
+
+    await updateVisitStatusData(selected, "WAITING_CONSULT");
+    setStatus("WAITING_CONSULT");
+
+    lastEditAtRef.current = 0;
+    hasUserEditedRef.current = false;
+
+    setMsg("Fișa de pre-spitalizare a fost salvată. Pacientul este în așteptare consult.");
+    showSuccess("Fișa salvată. Pacientul este în așteptare consult.");
+  } catch (e) {
+    setMsg(`Eroare salvare preform: ${e}`);
+    showError("Eroare salvare preform");
+  } finally {
+    setLoading(false);
+  }
+};
 
   const autoSavePreform = async () => {
     if (!selected || isClosedVisit) return;
@@ -699,6 +705,41 @@ setAiMissingFields([]);
 
   const triageBadgeStyle = getTriageBadgeStyle(preform.triageColor);
 
+if (previewOnly && selected) {
+  return (
+    <div
+      style={{
+        width: "100%",
+        background: "#ffffff",
+        borderRadius: 24,
+        padding: 20,
+        border: "1px solid #e5eef8",
+      }}
+    >
+      <div style={{ marginBottom: 16 }}>
+        <h2 style={{ margin: 0, color: "#0f172a" }}>
+          Previzualizare vizită veche
+        </h2>
+
+        <div style={{ color: "#64748b", marginTop: 4 }}>
+          {selected.visitCode || `Vizita ${selected.id}`}
+        </div>
+      </div>
+
+      <div id="print-area">
+        <PreformPrintView preform={preform} />
+
+        <div style={{ height: 24 }} />
+
+        <DischargePrintView
+          discharge={discharge}
+          preform={preform}
+        />
+      </div>
+    </div>
+  );
+}
+  
   return (
     <div style={{ width: "100%" }}>
       <div
@@ -770,18 +811,20 @@ setAiMissingFields([]);
           Printează fișele
         </button>
 
-        <button
-          onClick={runAiTriage}
-          disabled={loading || isClosedVisit}
-          style={{
-            ...primaryButtonStyle,
-            opacity: loading ? 0.7 : 1,
-            cursor: loading ? "not-allowed" : "pointer",
-            minWidth: 170,
-          }}
-        >
-          {loading ? "Se generează..." : "Generează triaj AI"}
-        </button>
+        {user?.role === "RECEPTION" && (
+  <button
+    onClick={runAiTriage}
+    disabled={loading || isClosedVisit}
+    style={{
+      ...primaryButtonStyle,
+      opacity: loading ? 0.7 : 1,
+      cursor: loading ? "not-allowed" : "pointer",
+      minWidth: 170,
+    }}
+  >
+    {loading ? "Se generează..." : "Generează triaj AI"}
+  </button>
+)}
       </div>
 
       {aiTriageResult &&
