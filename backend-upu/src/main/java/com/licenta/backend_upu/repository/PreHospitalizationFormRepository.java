@@ -15,13 +15,15 @@ public interface PreHospitalizationFormRepository extends JpaRepository<PreHospi
     interface VisitTriageRow {
         Long getVisit_id();
         String getTriage_color();
+        String getReason();
     }
 
     @Query(value = """
-        SELECT p.visit_id AS visit_id,
-               p.triage_color AS triage_color
-        FROM pre_hospitalization_forms p
-        WHERE p.visit_id IN (:visitIds)
-        """, nativeQuery = true)
+    SELECT p.visit_id AS visit_id,
+           p.triage_color AS triage_color,
+           p.reason AS reason
+    FROM pre_hospitalization_forms p
+    WHERE p.visit_id IN (:visitIds)
+    """, nativeQuery = true)
     List<VisitTriageRow> findTriageColorsByVisitIds(@Param("visitIds") List<Long> visitIds);
 }

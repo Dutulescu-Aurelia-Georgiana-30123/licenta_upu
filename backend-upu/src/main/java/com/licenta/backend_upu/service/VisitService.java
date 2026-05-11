@@ -54,7 +54,6 @@ public class VisitService {
             VisitStatus newStatus = VisitStatus.valueOf(status.toUpperCase());
             visit.setStatus(newStatus);
 
-            // salvează întâi statusul nou
             Visit savedVisit = visitRepository.save(visit);
 
             if (savedVisit.getDoctor() != null &&

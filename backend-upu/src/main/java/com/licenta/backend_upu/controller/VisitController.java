@@ -76,17 +76,26 @@ public class VisitController {
                 .map(Visit::getId)
                 .toList();
 
-        Map<Long, String> triageByVisitId = preformRepository.findTriageColorsByVisitIds(visitIds)
-                .stream()
-                .collect(Collectors.toMap(
-                        PreHospitalizationFormRepository.VisitTriageRow::getVisit_id,
-                        PreHospitalizationFormRepository.VisitTriageRow::getTriage_color
-                ));
+        Map<Long, PreHospitalizationFormRepository.VisitTriageRow> preformByVisitId =
+                preformRepository.findTriageColorsByVisitIds(visitIds)
+                        .stream()
+                        .collect(Collectors.toMap(
+                                PreHospitalizationFormRepository.VisitTriageRow::getVisit_id,
+                                row -> row
+                        ));
 
         return visits.stream()
                 .map(visit -> {
                     VisitResponse response = visitMapper.toResponse(visit);
-                    response.setTriageColor(triageByVisitId.get(visit.getId()));
+
+                    PreHospitalizationFormRepository.VisitTriageRow row =
+                            preformByVisitId.get(visit.getId());
+
+                    if (row != null) {
+                        response.setTriageColor(row.getTriage_color());
+                        response.setPresentationReason(row.getReason());
+                    }
+
                     return response;
                 })
                 .toList();
