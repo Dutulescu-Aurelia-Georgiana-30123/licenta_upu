@@ -1,69 +1,100 @@
-import SignaturePad from "./SignaturePad";
+import { useAuth } from "../../context/AuthContext";
+import { useToast } from "../../context/ToastContext";
+import { theme } from "../../styles/theme";
 
 export default function SignaturesSection({
-  preform,
   setPreform,
-  discharge,
   setDischarge,
   readOnly = false,
 }) {
+  const { user } = useAuth();
+  const { showSuccess, showError } = useToast();
+
+  const profileName =
+    `${user?.firstName || ""} ${user?.lastName || ""}`.trim() ||
+    user?.email ||
+    "";
+
+  const applyProfileSignature = (type) => {
+    if (readOnly) return;
+
+    if (!user?.profileSignature) {
+      showError("Nu ai o semnătură salvată în profil.");
+      return;
+    }
+
+    const signedAt = new Date().toISOString();
+
+    if (type === "doctor") {
+      setPreform((prev) => ({
+        ...prev,
+        doctorName: profileName,
+        doctorSignature: user.profileSignature,
+        doctorSignedAt: signedAt,
+      }));
+
+      setDischarge((prev) => ({
+        ...prev,
+        doctorName: profileName,
+        doctorSignature: user.profileSignature,
+        doctorSignedAt: signedAt,
+      }));
+
+      showSuccess("Semnătura medicului a fost aplicată.");
+      return;
+    }
+
+    setPreform((prev) => ({
+      ...prev,
+      nurseName: profileName,
+      nurseSignature: user.profileSignature,
+      nurseSignedAt: signedAt,
+    }));
+
+    setDischarge((prev) => ({
+      ...prev,
+      nurseName: profileName,
+      nurseSignature: user.profileSignature,
+      nurseSignedAt: signedAt,
+    }));
+
+    showSuccess("Semnătura asistentului a fost aplicată.");
+  };
+
+  if (readOnly) return null;
+
   return (
     <div>
       <div style={{ marginBottom: 12 }}>
         <div style={{ fontSize: 17, fontWeight: 900, color: "#0f172a" }}>
           Semnături medicale
         </div>
+
         <div style={{ color: "#64748b", fontSize: 13, marginTop: 4 }}>
-          Completate de medic și asistent(ă)
+          Inserează automat semnătura salvată în profil.
         </div>
       </div>
 
-      <div
-        style={{
-          display: "grid",
-          gridTemplateColumns: "repeat(auto-fit, minmax(320px, 1fr))",
-          gap: 14,
-        }}
-      >
-        <SignaturePad
-          title="Semnătura asistent(ă)"
-          nameValue={preform.nurseName || discharge.nurseName || ""}
-          onNameChange={(value) => {
-            setPreform((prev) => ({ ...prev, nurseName: value }));
-            setDischarge((prev) => ({ ...prev, nurseName: value }));
-          }}
-          signatureValue={preform.nurseSignature || discharge.nurseSignature || ""}
-          onSignatureChange={(value) => {
-            setPreform((prev) => ({ ...prev, nurseSignature: value }));
-            setDischarge((prev) => ({ ...prev, nurseSignature: value }));
-          }}
-          signedAtValue={preform.nurseSignedAt || discharge.nurseSignedAt || null}
-          onSignedAtChange={(value) => {
-            setPreform((prev) => ({ ...prev, nurseSignedAt: value }));
-            setDischarge((prev) => ({ ...prev, nurseSignedAt: value }));
-          }}
-          readOnly={readOnly}
-        />
+      <div style={{ display: "flex", gap: 10, flexWrap: "wrap" }}>
+        {user?.role === "NURSE" && (
+          <button
+            type="button"
+            onClick={() => applyProfileSignature("nurse")}
+            style={theme.button.primary}
+          >
+            Semnează ca asistent(ă)
+          </button>
+        )}
 
-        <SignaturePad
-          title="Semnătura medic"
-          nameValue={preform.doctorName || discharge.doctorName || ""}
-          onNameChange={(value) => {
-            setPreform((prev) => ({ ...prev, doctorName: value }));
-            setDischarge((prev) => ({ ...prev, doctorName: value }));
-          }}
-          signatureValue={preform.doctorSignature || discharge.doctorSignature || ""}
-          onSignatureChange={(value) => {
-            setPreform((prev) => ({ ...prev, doctorSignature: value }));
-            setDischarge((prev) => ({ ...prev, doctorSignature: value }));
-          }}
-          signedAtValue={preform.doctorSignedAt || discharge.doctorSignedAt || null}
-          onSignedAtChange={(value) => {
-            setPreform((prev) => ({ ...prev, doctorSignedAt: value }));
-            setDischarge((prev) => ({ ...prev, doctorSignedAt: value }));
-          }}
-          readOnly={readOnly}
-        />
+        {user?.role === "DOCTOR" && (
+          <button
+            type="button"
+            onClick={() => applyProfileSignature("doctor")}
+            style={theme.button.primary}
+          >
+            Semnează ca medic
+          </button>
+        )}
       </div>
     </div>
   );

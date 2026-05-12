@@ -169,7 +169,6 @@ export default function FormsPage({ selected, onSelectVisit, previewOnly = false
   const [preform, setPreform] = useState(initialPreformState);
   const [discharge, setDischarge] = useState(initialDischargeState);
 
-  const [status, setStatus] = useState("");
   const [msg, setMsg] = useState("");
   const [loading, setLoading] = useState(false);
   const [patientDetails, setPatientDetails] = useState(null);
@@ -279,14 +278,12 @@ export default function FormsPage({ selected, onSelectVisit, previewOnly = false
       setPatientDetails(null);
       setPreform(initialPreformState);
       setDischarge(initialDischargeState);
-      setStatus("");
       setPreformOpen(false);
       setDischargeOpen(false);
       loadAllPatients();
       return;
     }
 
-    setStatus(selected.status || "");
     setPreformOpen(false);
     setDischargeOpen(false);
 
@@ -321,7 +318,6 @@ export default function FormsPage({ selected, onSelectVisit, previewOnly = false
     await savePreformData(selected, payload);
 
     await updateVisitStatusData(selected, "WAITING_CONSULT");
-    setStatus("WAITING_CONSULT");
 
     lastEditAtRef.current = 0;
     hasUserEditedRef.current = false;
@@ -465,20 +461,6 @@ setAiMissingFields([]);
     }
   };
 
-  const updateStatus = async () => {
-    if (!selected || !status || isClosedVisit) return;
-
-    setMsg("");
-
-    try {
-      await updateVisitStatusData(selected, status);
-      setMsg("Status actualizat.");
-      showSuccess("Status actualizat.");
-    } catch (e) {
-      setMsg(`Eroare status: ${e}`);
-      showError("Eroare actualizare status");
-    }
-  };
 
   const exportCombined = async () => {
     if (!selected) return;
@@ -807,6 +789,21 @@ if (previewOnly && selected) {
             : "Arată previzualizarea fișelor"}
         </button>
 
+        <button
+  onClick={exportCombined}
+  disabled={loading || alreadyExported}
+  style={{
+    ...primaryButtonStyle,
+    opacity: loading || alreadyExported ? 0.65 : 1,
+    cursor:
+      loading || alreadyExported ? "not-allowed" : "pointer",
+  }}
+>
+  {alreadyExported
+    ? "Fișa deja exportată"
+    : "Export PDF combinat"}
+</button>
+
         <button onClick={handlePrintCombined} style={secondaryButtonStyle}>
           Printează fișele
         </button>
@@ -992,18 +989,6 @@ if (previewOnly && selected) {
         onInputCapture={markEditing}
         onChangeCapture={markEditing}
       >
-        <div style={cardStyle}>
-          <FormsToolbar
-            loading={loading}
-            exportCombined={exportCombined}
-            status={status}
-            setStatus={setStatus}
-            updateStatus={updateStatus}
-            msg={msg}
-            readOnly={isClosedVisit}
-            alreadyExported={alreadyExported}
-          />
-        </div>
 
         <PreformSection
           preformOpen={preformOpen}
@@ -1024,6 +1009,13 @@ if (previewOnly && selected) {
           onSave={saveDischarge}
           readOnly={isClosedVisit}
         />
+        <SignaturesSection
+  preform={preform}
+  setPreform={setPreform}
+  discharge={discharge}
+  setDischarge={setDischarge}
+  readOnly={isClosedVisit}
+/>
       </div>
     </div>
   );

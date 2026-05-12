@@ -1,57 +1,8 @@
 import { useState } from "react";
 import { theme } from "../../styles/theme";
+import { StatusBadge, TriageBadge } from "./MedicalBadges";
 
 const LIMIT = 4;
-
-function StatusBadge({ status }) {
-  return (
-    <span
-      style={{
-        display: "inline-flex",
-        padding: "6px 10px",
-        borderRadius: 999,
-        background: theme.colors.primarySoft,
-        color: theme.colors.primaryDark,
-        fontSize: 12,
-        fontWeight: 900,
-        whiteSpace: "nowrap",
-      }}
-    >
-      {status || "-"}
-    </span>
-  );
-}
-
-function TriageBadge({ triageColor }) {
-  const config = {
-    ROSU: { label: "Roșu", bg: "#fee2e2", color: "#991b1b" },
-    GALBEN: { label: "Galben", bg: "#fef3c7", color: "#92400e" },
-    VERDE: { label: "Verde", bg: "#dcfce7", color: "#166534" },
-    CONSULT: { label: "Consult", bg: "#dbeafe", color: "#1d4ed8" },
-  };
-
-  const item = config[triageColor] || {
-    label: "Netriat",
-    bg: "#f1f5f9",
-    color: "#64748b",
-  };
-
-  return (
-    <span
-      style={{
-        padding: "6px 10px",
-        borderRadius: 999,
-        background: item.bg,
-        color: item.color,
-        fontSize: 12,
-        fontWeight: 900,
-        whiteSpace: "nowrap",
-      }}
-    >
-      {item.label}
-    </span>
-  );
-}
 
 export default function MyPatientsSection({ myVisits }) {
   const [expanded, setExpanded] = useState(false);

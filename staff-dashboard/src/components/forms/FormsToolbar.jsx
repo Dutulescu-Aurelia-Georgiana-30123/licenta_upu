@@ -3,71 +3,59 @@ import { theme } from "../../styles/theme";
 export default function FormsToolbar({
   loading,
   exportCombined,
-  status,
-  setStatus,
-  updateStatus,
   readOnly = false,
   alreadyExported,
 }) {
   return (
-    <div>
-      <div
+    <div
+      style={{
+        display: "flex",
+        justifyContent: "space-between",
+        alignItems: "center",
+        gap: 14,
+        flexWrap: "wrap",
+      }}
+    >
+      <div>
+        <div
+          style={{
+            fontSize: 18,
+            fontWeight: 900,
+            color: theme.colors.text,
+          }}
+        >
+          Acțiuni fișe
+        </div>
+
+        <div
+          style={{
+            marginTop: 4,
+            color: theme.colors.muted,
+            fontSize: 13,
+            fontWeight: 600,
+          }}
+        >
+          Export și gestionare documente medicale
+        </div>
+      </div>
+
+      <button
+        onClick={exportCombined}
+        disabled={loading || alreadyExported || readOnly}
         style={{
-          display: "flex",
-          gap: 12,
-          flexWrap: "wrap",
-          alignItems: "center",
+          ...theme.button.primary,
+          opacity:
+            loading || alreadyExported || readOnly ? 0.65 : 1,
+          cursor:
+            loading || alreadyExported || readOnly
+              ? "not-allowed"
+              : "pointer",
         }}
       >
-        <button
-          onClick={exportCombined}
-          disabled={loading || alreadyExported}
-          style={{
-            ...theme.button.secondary,
-            opacity: loading || alreadyExported ? 0.65 : 1,
-            cursor:
-              loading || alreadyExported ? "not-allowed" : "pointer",
-          }}
-        >
-          {alreadyExported
-            ? "Fișa deja exportată"
-            : "Export PDF combinat"}
-        </button>
-
-        <select
-          value={status}
-          onChange={(e) => setStatus(e.target.value)}
-          disabled={readOnly}
-          style={{
-            ...theme.input.base,
-            minWidth: 240,
-            cursor: readOnly ? "not-allowed" : "pointer",
-          }}
-        >
-          <option value="">Selectează status</option>
-          <option value="REGISTERED">Înregistrat</option>
-          <option value="WAITING_CONSULT">
-            În așteptare consult
-          </option>
-          <option value="IN_CONSULT">În consult</option>
-          <option value="DISCHARGED">Externat</option>
-          <option value="ADMITTED">Internat</option>
-          <option value="TRANSFERRED">Transferat</option>
-        </select>
-
-        <button
-          onClick={updateStatus}
-          disabled={loading || readOnly}
-          style={{
-            ...theme.button.primary,
-            opacity: loading || readOnly ? 0.65 : 1,
-            cursor:
-              loading || readOnly ? "not-allowed" : "pointer",
-          }}
-        >
-          Actualizează statusul
-        </button>
-      </div>
+        {alreadyExported
+          ? "Fișa deja exportată"
+          : "Export PDF combinat"}
+      </button>
     </div>
   );
 }

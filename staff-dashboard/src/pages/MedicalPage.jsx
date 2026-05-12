@@ -6,6 +6,7 @@ import CurrentPatientSection from "../components/medical/CurrentPatientSection";
 import WaitingPatientsSection from "../components/medical/WaitingPatientsSection";
 import MyPatientsSection from "../components/medical/MyPatientsSection";
 import { useAuth } from "../context/AuthContext";
+import MedicalProfilePage from "./MedicalProfilePage";
 
 export default function MedicalPage() {
   const { user, isDoctor, logout } = useAuth();
@@ -17,6 +18,7 @@ export default function MedicalPage() {
   const [selectedVisitForForms, setSelectedVisitForForms] = useState(null);
   const [finalStatus, setFinalStatus] = useState("");
   const [previewOnly, setPreviewOnly] = useState(false);
+  const [showProfile, setShowProfile] = useState(false);
 
   const [availabilityStatus, setAvailabilityStatus] = useState(
     user?.availabilityStatus || "AVAILABLE"
@@ -150,92 +152,123 @@ export default function MedicalPage() {
   }
 
   return (
+  <div
+    style={{
+      minHeight: "100vh",
+      padding: 28,
+      boxSizing: "border-box",
+      background:
+        "radial-gradient(circle at top left, rgba(8,184,179,0.18), transparent 28%), radial-gradient(circle at bottom right, rgba(37,99,235,0.10), transparent 32%), linear-gradient(135deg, #eefdfa 0%, #f8fbff 45%, #e6fffd 100%)",
+      color: "#102033",
+    }}
+  >
     <div
       style={{
-        minHeight: "100vh",
-        padding: 28,
-        boxSizing: "border-box",
-        background:
-          "radial-gradient(circle at top left, rgba(8,184,179,0.18), transparent 28%), radial-gradient(circle at bottom right, rgba(37,99,235,0.10), transparent 32%), linear-gradient(135deg, #eefdfa 0%, #f8fbff 45%, #e6fffd 100%)",
-        color: "#102033",
+        maxWidth: 1600,
+        margin: "0 auto",
+        display: "grid",
+        gap: 18,
+        overflow: "visible",
       }}
     >
-      <div
-        style={{
-          maxWidth: 1600,
-          margin: "0 auto",
-          display: "grid",
-          gap: 18,
-        }}
-      >
-        <MedicalHeader
-          user={user}
-          onLogout={logout}
-          availabilityStatus={availabilityStatus}
-          onAvailabilityChange={updateAvailability}
-        />
+      <MedicalHeader
+        user={user}
+        onLogout={logout}
+        availabilityStatus={availabilityStatus}
+        onAvailabilityChange={updateAvailability}
+        onOpenProfile={() => setShowProfile(true)}
+      />
 
-        <CurrentPatientSection
-          currentVisit={currentVisit}
-          showForms={showForms && !previewOnly}
-          onToggleForms={() => {
-            if (!currentVisit) return;
-
-            setSelectedVisitForForms(currentVisit);
-            setPreviewOnly(false);
-            setShowForms((prev) => {
-              if (previewOnly) return true;
-              return !prev;
-            });
-          }}
-          onFinishPatient={finishCurrentPatient}
-          canFinish={isDoctor}
-          finalStatus={finalStatus}
-          setFinalStatus={setFinalStatus}
-          historyVisits={historyVisits}
-          onOpenPreviousVisit={(visit) => {
-            setSelectedVisitForForms(visit);
-            setPreviewOnly(true);
-            setShowForms(true);
-          }}
-        />
-
-        {showForms && selectedVisitForForms && (
-          <div
-            style={{
-              background: "rgba(255,255,255,0.76)",
-              border: "1px solid rgba(255,255,255,0.8)",
-              borderRadius: 34,
-              padding: 24,
-              boxShadow: "0 24px 80px rgba(15, 23, 42, 0.08)",
-              backdropFilter: "blur(20px)",
-            }}
-          >
-            <FormsPage
-              selected={selectedVisitForForms}
-              onSelectVisit={setSelectedVisitForForms}
-              previewOnly={previewOnly}
-            />
-          </div>
-        )}
+      {showProfile ? (
+  <MedicalProfilePage
+    user={user}
+    onBack={() => setShowProfile(false)}
+  />
+) : showForms && selectedVisitForForms ? (
 
         <div
           style={{
-            display: "grid",
-            gridTemplateColumns: "1.15fr 0.85fr",
-            gap: 18,
-            alignItems: "start",
+            background: "rgba(255,255,255,0.76)",
+            border: "1px solid rgba(255,255,255,0.8)",
+            borderRadius: 34,
+            padding: 24,
+            boxShadow: "0 24px 80px rgba(15, 23, 42, 0.08)",
+            backdropFilter: "blur(20px)",
           }}
         >
-          <div style={{ display: "grid", gap: 18 }}>
-            <WaitingPatientsSection visits={visits} onTakePatient={takePatient} />
-          </div>
+          <button
+            type="button"
+            onClick={() => {
+              setShowForms(false);
+              setPreviewOnly(false);
+              setSelectedVisitForForms(null);
+            }}
+            style={{
+              marginBottom: 18,
+              padding: "11px 15px",
+              borderRadius: 16,
+              border: "1px solid rgba(8,184,179,0.25)",
+              background: "#e6fffd",
+              color: "#069a96",
+              fontWeight: 900,
+              cursor: "pointer",
+            }}
+          >
+            ← Înapoi la pacienți
+          </button>
 
-          <div style={{ display: "grid", gap: 18 }}>
-            <MyPatientsSection myVisits={myVisits} />
-          </div>
+          <FormsPage
+            selected={selectedVisitForForms}
+            onSelectVisit={setSelectedVisitForForms}
+            previewOnly={previewOnly}
+          />
         </div>
-      </div>
+      ) : (
+        <>
+          <CurrentPatientSection
+            currentVisit={currentVisit}
+            showForms={false}
+            onToggleForms={() => {
+              if (!currentVisit) return;
+
+              setSelectedVisitForForms(currentVisit);
+              setPreviewOnly(false);
+              setShowForms(true);
+            }}
+            onFinishPatient={finishCurrentPatient}
+            canFinish={isDoctor}
+            finalStatus={finalStatus}
+            setFinalStatus={setFinalStatus}
+            historyVisits={historyVisits}
+            onOpenPreviousVisit={(visit) => {
+              setSelectedVisitForForms(visit);
+              setPreviewOnly(true);
+              setShowForms(true);
+            }}
+          />
+
+          <div
+            style={{
+              display: "grid",
+              gridTemplateColumns: "1.15fr 0.85fr",
+              gap: 18,
+              alignItems: "start",
+            }}
+          >
+            <div style={{ display: "grid", gap: 18 }}>
+              <WaitingPatientsSection
+                visits={visits}
+                onTakePatient={takePatient}
+              />
+            </div>
+
+            <div style={{ display: "grid", gap: 18 }}>
+              <MyPatientsSection myVisits={myVisits} />
+            </div>
+          </div>
+        </>
+      )}
     </div>
-  );
+  </div>
+);
 }

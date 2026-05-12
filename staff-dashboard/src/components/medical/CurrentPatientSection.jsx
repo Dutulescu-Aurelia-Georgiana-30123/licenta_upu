@@ -1,23 +1,8 @@
 import { useState } from "react";
 import { theme } from "../../styles/theme";
-
-function StatusBadge({ status }) {
-  return (
-    <span
-      style={{
-        display: "inline-flex",
-        padding: "7px 11px",
-        borderRadius: 999,
-        background: theme.colors.primarySoft,
-        color: theme.colors.primaryDark,
-        fontSize: 12,
-        fontWeight: 900,
-      }}
-    >
-      {status || "-"}
-    </span>
-  );
-}
+import { StatusBadge, TriageBadge } from "./MedicalBadges";
+import { getStatusLabel } from "../../utils/visitStatus";
+import { getTriageLabel } from "../../utils/triage";
 
 function InfoBox({ label, value }) {
   return (
@@ -134,6 +119,7 @@ export default function CurrentPatientSection({
           )}
 
           {currentVisit && <StatusBadge status={currentVisit.status} />}
+          {currentVisit && <TriageBadge triageColor={currentVisit.triageColor} />}
         </div>
       </div>
 
@@ -169,12 +155,12 @@ export default function CurrentPatientSection({
               }`}
             />
 
-            <InfoBox label="Status" value={currentVisit.status} />
+            <InfoBox label="Status" value={getStatusLabel(currentVisit.status)} />
 
             <InfoBox
-              label="Triaj"
-              value={currentVisit.triageColor || "Neales"}
-            />
+  label="Triaj"
+  value={getTriageLabel(currentVisit.triageColor)}
+/>
           </div>
 
           {showHistory && previousVisits.length > 0 && (
@@ -238,7 +224,7 @@ export default function CurrentPatientSection({
                             fontWeight: 700,
                           }}
                         >
-                          Status: {visit.status || "-"}
+                          Status: {getStatusLabel(visit.status)}
                         </div>
                       </div>
 
