@@ -9,6 +9,7 @@ import com.licenta.backend_upu.entity.User;
 import com.licenta.backend_upu.repository.UserRepository;
 import org.springframework.stereotype.Service;
 import com.licenta.backend_upu.dto.RegisterPatientRequest;
+import com.licenta.backend_upu.dto.UpdateMedicalProfileRequest;
 
 @Service
 public class AuthService {
@@ -31,11 +32,7 @@ public class AuthService {
             throw new RuntimeException("Cont inactiv");
         }
 
-        return new LoginResponse(
-                user.getId(),
-                user.getEmail(),
-                user.getRole()
-        );
+        return toLoginResponse(user);
 
     }
     public long countAvailableDoctors() {
@@ -68,10 +65,42 @@ public class AuthService {
 
         User saved = userRepository.save(user);
 
-        return new LoginResponse(
-                saved.getId(),
-                saved.getEmail(),
-                saved.getRole()
-        );
+        return toLoginResponse(saved);
     }
+    private LoginResponse toLoginResponse(User user) {
+        return new LoginResponse(
+                user.getId(),
+                user.getEmail(),
+                user.getRole(),
+                user.getFirstName(),
+                user.getLastName(),
+                user.getPhoneNumber(),
+                user.getProfileImage(),
+                user.getSpecialization(),
+                user.getProfessionalGrade(),
+                user.getAvailabilityStatus() != null ? user.getAvailabilityStatus().name() : null,
+                user.getProfileSignature(),
+                user.getProfileSignedAt()
+
+        );
+
+    }
+    public LoginResponse updateMedicalProfile(Long userId, UpdateMedicalProfileRequest request) {
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new RuntimeException("Utilizatorul nu exista"));
+
+        user.setFirstName(request.getFirstName());
+        user.setLastName(request.getLastName());
+        user.setPhoneNumber(request.getPhoneNumber());
+        user.setProfileImage(request.getProfileImage());
+        user.setSpecialization(request.getSpecialization());
+        user.setProfessionalGrade(request.getProfessionalGrade());
+        user.setProfileSignature(request.getProfileSignature());
+        user.setProfileSignedAt(request.getProfileSignedAt());
+
+        User saved = userRepository.save(user);
+
+        return toLoginResponse(saved);
+    }
+
 }

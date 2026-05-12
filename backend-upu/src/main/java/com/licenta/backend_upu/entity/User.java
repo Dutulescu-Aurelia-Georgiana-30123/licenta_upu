@@ -26,6 +26,30 @@ public class User {
     @Column(nullable = false)
     private Role role;
 
+    @Column
+    private String firstName;
+
+    @Column
+    private String lastName;
+
+    @Column
+    private String phoneNumber;
+
+    @Column(columnDefinition = "TEXT")
+    private String profileImage;
+
+    @Column
+    private String specialization;
+
+    @Column
+    private String professionalGrade;
+
+    @Column(columnDefinition = "TEXT")
+    private String profileSignature;
+
+    @Column
+    private String profileSignedAt;
+
     @Column(nullable = false)
     private Boolean isActive = true;
 

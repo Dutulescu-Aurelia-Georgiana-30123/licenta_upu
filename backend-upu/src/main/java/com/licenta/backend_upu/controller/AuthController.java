@@ -7,6 +7,7 @@ import com.licenta.backend_upu.service.AuthService;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import com.licenta.backend_upu.dto.RegisterPatientRequest;
+import com.licenta.backend_upu.dto.UpdateMedicalProfileRequest;
 
 @RestController
 @RequestMapping("/auth")
@@ -42,5 +43,13 @@ public class AuthController {
             @RequestBody RegisterPatientRequest request
     ) {
         return ResponseEntity.ok(authService.registerPatient(request));
+    }
+
+    @PutMapping("/users/{id}/profile")
+    public ResponseEntity<LoginResponse> updateMedicalProfile(
+            @PathVariable Long id,
+            @RequestBody UpdateMedicalProfileRequest request
+    ) {
+        return ResponseEntity.ok(authService.updateMedicalProfile(id, request));
     }
 }
