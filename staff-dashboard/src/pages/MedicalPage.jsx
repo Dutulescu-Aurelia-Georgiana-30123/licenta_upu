@@ -7,6 +7,7 @@ import WaitingPatientsSection from "../components/medical/WaitingPatientsSection
 import MyPatientsSection from "../components/medical/MyPatientsSection";
 import { useAuth } from "../context/AuthContext";
 import MedicalProfilePage from "./MedicalProfilePage";
+import QuestionsSection from "../components/medical/QuestionsSection";
 
 export default function MedicalPage() {
   const { user, isDoctor, logout } = useAuth();
@@ -264,6 +265,7 @@ export default function MedicalPage() {
 
             <div style={{ display: "grid", gap: 18 }}>
               <MyPatientsSection myVisits={myVisits} />
+              <QuestionsSection />
             </div>
           </div>
         </>
