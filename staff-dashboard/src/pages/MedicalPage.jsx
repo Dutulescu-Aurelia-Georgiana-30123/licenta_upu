@@ -60,10 +60,18 @@ export default function MedicalPage() {
   };
 
   useEffect(() => {
-    if (user?.id) {
+  if (!user?.id) return;
+
+  load();
+
+  const interval = setInterval(() => {
+    if (!showForms && !showProfile) {
       load();
     }
-  }, [user?.id]);
+  }, 7000);
+
+  return () => clearInterval(interval);
+}, [user?.id, showForms, showProfile]);
 
   const updateAvailability = async (nextStatus) => {
     if (!user?.id) return;

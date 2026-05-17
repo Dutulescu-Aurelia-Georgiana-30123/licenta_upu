@@ -208,8 +208,14 @@ export default function PatientsPage({ onVisitCreated }) {
   };
 
   useEffect(() => {
+  load(true);
+
+  const interval = setInterval(() => {
     load(true);
-  }, []);
+  }, 7000);
+
+  return () => clearInterval(interval);
+}, []);
 
   const filteredPatients = useMemo(() => {
     const q = search.trim().toLowerCase();

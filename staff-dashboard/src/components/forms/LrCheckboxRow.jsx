@@ -8,23 +8,52 @@ export default function LrCheckboxRow({
   return (
     <div
       style={{
-        display: "grid",
-        gridTemplateColumns: "56px 1fr 56px",
+        display: "flex",
         alignItems: "center",
-        gap: 8,
+        gap: 10,
       }}
     >
-      <label style={{ display: "flex", justifyContent: "center", alignItems: "center", gap: 4 }}>
-        <span>Stg</span>
-        <input type="checkbox" checked={!!leftChecked} onChange={(e) => onLeftChange(e.target.checked)} />
+      <label
+        style={{
+          display: "flex",
+          alignItems: "center",
+          gap: 4,
+          fontWeight: 700,
+          minWidth: 42,
+        }}
+      >
+        Stg
+        <input
+          type="checkbox"
+          checked={leftChecked}
+          onChange={(e) => onLeftChange(e.target.checked)}
+        />
       </label>
 
-      <div>{label}</div>
+      <div
+        style={{
+          flex: "0 1 auto",
+        }}
+      >
+        {label}
+      </div>
 
-      <label style={{ display: "flex", justifyContent: "center", alignItems: "center", gap: 4 }}>
-        <span>Dr</span>
-        <input type="checkbox" checked={!!rightChecked} onChange={(e) => onRightChange(e.target.checked)} />
-      </label>
+      <label
+  style={{
+    display: "flex",
+    alignItems: "center",
+    gap: 4,
+    fontWeight: 700,
+    minWidth: 42,
+  }}
+>
+  <input
+    type="checkbox"
+    checked={rightChecked}
+    onChange={(e) => onRightChange(e.target.checked)}
+  />
+  Dr
+</label>
     </div>
   );
 }

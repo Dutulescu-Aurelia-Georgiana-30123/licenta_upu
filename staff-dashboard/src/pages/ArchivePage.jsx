@@ -213,12 +213,26 @@ export default function ArchivePage() {
   };
 
   useEffect(() => {
-    const timeout = setTimeout(() => {
-      searchPatients(search);
-    }, 250);
+  const interval = setInterval(async () => {
+    try {
+      if (selectedPatient) {
+        const visits = await apiGet(`/visits/patient/${selectedPatient.id}`);
+        setPatientVisits(visits || []);
+      }
 
-    return () => clearTimeout(timeout);
-  }, [search]);
+      if (selectedVisit) {
+        const docs = await apiGet(
+          `/archived-documents/visit/${selectedVisit.id}`
+        );
+        setDocuments(docs || []);
+      }
+    } catch (e) {
+      console.error(e);
+    }
+  }, 7000);
+
+  return () => clearInterval(interval);
+}, [selectedPatient, selectedVisit]);
 
   const loadPatientVisits = async (patient) => {
     setSelectedPatient(patient);

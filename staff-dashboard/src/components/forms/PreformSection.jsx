@@ -40,6 +40,17 @@ function calculateAgeFromBirthDate(value) {
   return age >= 0 ? String(age) : "";
 }
 
+
+function calculateGcsValue(data) {
+  const m = Number(data.gcsM || 0);
+  const v = Number(data.gcsV || 0);
+  const o = Number(data.gcsO || 0);
+
+  if (!m && !v && !o) return "";
+
+  return String(m + v + o);
+}
+
 export default function PreformSection({
   preformOpen,
   setPreformOpen,
@@ -64,6 +75,18 @@ const aiFieldStyle = (field) => ({
     ? "#fef2f2"
     : "#ffffff",
 });
+
+const updateGcsPart = (field, value) => {
+  const nextPreform = {
+    ...preform,
+    [field]: value,
+  };
+
+  nextPreform.gcs = calculateGcsValue(nextPreform);
+
+  setPreform(nextPreform);
+};
+
 
   return (
     <SectionCard
@@ -318,56 +341,64 @@ const aiFieldStyle = (field) => ({
           <label>
             Ora GCS
             <input
-  value={preform.gcsHour}
-  onChange={(e) =>
-    setPreform({ ...preform, gcsHour: e.target.value })
-  }
-  onFocus={() => {
-    if (!preform.gcsHour) {
-      const currentTime = new Date().toLocaleTimeString("ro-RO", {
-        hour: "2-digit",
-        minute: "2-digit",
-      });
+              value={preform.gcsHour}
+              onChange={(e) => setPreform({ ...preform, gcsHour: e.target.value })}
+              onFocus={() => {
+                if (!preform.gcsHour) {
+                  const currentTime = new Date().toLocaleTimeString("ro-RO", {
+                    hour: "2-digit",
+                    minute: "2-digit",
+                  });
 
-      setPreform((prev) => ({
-        ...prev,
-        gcsHour: currentTime,
-      }));
-    }
-  }}
-  style={{ width: "100%", padding: 8, marginTop: 6 }}
-/>
+                  setPreform((prev) => ({
+                    ...prev,
+                    gcsHour: currentTime,
+                  }));
+                }
+              }}
+              style={{ width: "100%", padding: 8, marginTop: 6 }}
+            />
           </label>
+
           <label>
             M
             <input
               value={preform.gcsM}
-              onChange={(e) => setPreform({ ...preform, gcsM: e.target.value })}
+              onChange={(e) => updateGcsPart("gcsM", e.target.value)}
               style={{ width: "100%", padding: 8, marginTop: 6 }}
             />
           </label>
+
           <label>
             V
             <input
               value={preform.gcsV}
-              onChange={(e) => setPreform({ ...preform, gcsV: e.target.value })}
+              onChange={(e) => updateGcsPart("gcsV", e.target.value)}
               style={{ width: "100%", padding: 8, marginTop: 6 }}
             />
           </label>
+
           <label>
             O
             <input
               value={preform.gcsO}
-              onChange={(e) => setPreform({ ...preform, gcsO: e.target.value })}
+              onChange={(e) => updateGcsPart("gcsO", e.target.value)}
               style={{ width: "100%", padding: 8, marginTop: 6 }}
             />
           </label>
+
           <label>
             GCS
             <input
-              value={preform.gcs}
-              onChange={(e) => setPreform({ ...preform, gcs: e.target.value })}
-              style={{ width: "100%", padding: 8, marginTop: 6 }}
+              value={calculateGcsValue(preform)}
+              readOnly
+              style={{
+                width: "100%",
+                padding: 8,
+                marginTop: 6,
+                background: "#f8fafc",
+                fontWeight: 700,
+              }}
             />
           </label>
         </div>
@@ -453,45 +484,77 @@ const aiFieldStyle = (field) => ({
               onChange={(value) => setPreform({ ...preform, pickupTrauma: value })}
             />
 
-            <label>
-              39 - Resuscitare la ora
-              <input
-                value={preform.resuscitationHour}
-                onChange={(e) => setPreform({ ...preform, resuscitationHour: e.target.value })}
-                style={{ width: "100%", padding: 8, marginTop: 6 }}
-              />
-            </label>
+            <div
+  style={{
+    gridColumn: "1 / -1",
+    display: "grid",
+    gridTemplateColumns: "220px auto auto 180px",
+    gap: 12,
+    alignItems: "center",
+  }}
+>
+  <label>
+    39 - Resuscitare la ora
+    <input
+      value={preform.resuscitationHour}
+      onChange={(e) =>
+        setPreform({ ...preform, resuscitationHour: e.target.value })
+      }
+      style={{
+        width: 120,
+        padding: 8,
+        marginTop: 6,
+      }}
+    />
+  </label>
 
-            <CheckboxField
-              label="40 - Reușit"
-              checked={preform.resuscitationSuccessful}
-              onChange={(value) => setPreform({ ...preform, resuscitationSuccessful: value })}
-            />
+  <CheckboxField
+    label="40 - Reușit"
+    checked={preform.resuscitationSuccessful}
+    onChange={(value) =>
+      setPreform({ ...preform, resuscitationSuccessful: value })
+    }
+  />
 
-            <div>
-              <CheckboxField
-                label="41 - Nereușit"
-                checked={preform.resuscitationFailed}
-                onChange={(value) => setPreform({ ...preform, resuscitationFailed: value })}
-              />
-              <input
-                placeholder="Ora deces"
-                value={preform.deathHour}
-                onChange={(e) => setPreform({ ...preform, deathHour: e.target.value })}
-                style={{ width: "100%", padding: 8, marginTop: 6 }}
-              />
-            </div>
+  <CheckboxField
+    label="41 - Nereușit"
+    checked={preform.resuscitationFailed}
+    onChange={(value) =>
+      setPreform({ ...preform, resuscitationFailed: value })
+    }
+  />
 
-            <label>
-              42 - Motivul neînceperii resuscitării
-              <input
-                value={preform.resuscitationNotStartedReason}
-                onChange={(e) =>
-                  setPreform({ ...preform, resuscitationNotStartedReason: e.target.value })
-                }
-                style={{ width: "100%", padding: 8, marginTop: 6 }}
-              />
-            </label>
+  <input
+    placeholder="Ora deces"
+    value={preform.deathHour}
+    onChange={(e) =>
+      setPreform({ ...preform, deathHour: e.target.value })
+    }
+    style={{
+      width: "100%",
+      padding: 8,
+      marginTop: 22,
+    }}
+  />
+</div>
+
+<label style={{ gridColumn: "1 / -1" }}>
+  42 - Motivul neînceperii resuscitării
+  <input
+    value={preform.resuscitationNotStartedReason}
+    onChange={(e) =>
+      setPreform({
+        ...preform,
+        resuscitationNotStartedReason: e.target.value,
+      })
+    }
+    style={{
+      width: "100%",
+      padding: 8,
+      marginTop: 6,
+    }}
+  />
+</label>
           </div>
         </div>
 
@@ -562,13 +625,28 @@ const aiFieldStyle = (field) => ({
             />
           </label>
           <label>
-  Scor durere 0-10
-  <input
-    value={preform.painScale}
-    onChange={(e) => setPreform({ ...preform, painScale: e.target.value })}
-    style={{ width: "100%", padding: 8, marginTop: 6 }}
-  />
-</label>
+            Scor durere 1-10
+            <div style={{ marginTop: 8 }}>
+              <input
+                type="range"
+                min="1"
+                max="10"
+                value={preform.painScale || 1}
+                onChange={(e) => setPreform({ ...preform, painScale: e.target.value })}
+                style={{ width: "100%" }}
+              />
+
+              <div
+                style={{
+                  marginTop: 6,
+                  fontWeight: 700,
+                  textAlign: "center",
+                }}
+              >
+                {preform.painScale || 1}
+              </div>
+            </div>
+          </label>
 
           <label>
             TRC
@@ -800,7 +878,7 @@ const aiFieldStyle = (field) => ({
             </div>
           </div>
 
-          <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 16 }}>
+          <div style={{ display: "grid", gridTemplateColumns: "repeat(2, minmax(0, 1fr))", gap: 16 }}>
             <div style={{ border: "1px solid #333", borderRadius: 8, padding: 12 }}>
               <div style={{ fontWeight: 700, marginBottom: 8 }}>CAP</div>
               <div style={{ display: "grid", gap: 8 }}>
@@ -824,14 +902,30 @@ const aiFieldStyle = (field) => ({
             <div style={{ border: "1px solid #333", borderRadius: 8, padding: 12 }}>
               <div style={{ fontWeight: 700, marginBottom: 8 }}>NAS</div>
 
-              <div style={{ fontWeight: 600, marginBottom: 6 }}>NORMAL</div>
+              <CheckboxField
+                label="NORMAL"
+                checked={preform.noseNostrilsNormal && preform.noseMucosaNormal}
+                onChange={(v) =>
+                  setPreform({
+                    ...preform,
+                    noseNostrilsNormal: v,
+                    noseMucosaNormal: v,
+                  })
+                }
+              />
               <div style={{ display: "grid", gap: 8, marginBottom: 10 }}>
                 <CheckboxField label="38 - Nări" checked={preform.noseNostrilsNormal} onChange={(v) => setPreform({ ...preform, noseNostrilsNormal: v })} />
                 <CheckboxField label="39 - Mucoasa nazală" checked={preform.noseMucosaNormal} onChange={(v) => setPreform({ ...preform, noseMucosaNormal: v })} />
                 <TextField label="Alte" value={preform.noseOther} onChange={(v) => setPreform({ ...preform, noseOther: v })} />
               </div>
 
-              <div style={{ display: "grid", gap: 8 }}>
+              <div
+                style={{
+                  display: "grid",
+                  gap: 10,
+                  width: "100%",
+                }}
+              >
                 <LrCheckboxRow
                   label="40 - Epistaxis - 41"
                   leftChecked={preform.noseEpistaxisLeft}
@@ -859,7 +953,22 @@ const aiFieldStyle = (field) => ({
             <div style={{ border: "1px solid #333", borderRadius: 8, padding: 12 }}>
               <div style={{ fontWeight: 700, marginBottom: 8 }}>APARAT AUDITIV</div>
 
-              <div style={{ fontWeight: 600, marginBottom: 6 }}>NORMAL</div>
+              <CheckboxField
+                label="NORMAL"
+                checked={
+                  preform.earTympanicMembraneNormal &&
+                  preform.earExternalCanalsNormal &&
+                  preform.earAuricleNormal
+                }
+                onChange={(v) =>
+                  setPreform({
+                    ...preform,
+                    earTympanicMembraneNormal: v,
+                    earExternalCanalsNormal: v,
+                    earAuricleNormal: v,
+                  })
+                }
+              />
               <div style={{ display: "grid", gap: 8, marginBottom: 10 }}>
                 <CheckboxField label="45 - Membrana timpanică" checked={preform.earTympanicMembraneNormal} onChange={(v) => setPreform({ ...preform, earTympanicMembraneNormal: v })} />
                 <CheckboxField label="46 - Căi auditive externe" checked={preform.earExternalCanalsNormal} onChange={(v) => setPreform({ ...preform, earExternalCanalsNormal: v })} />
@@ -867,7 +976,13 @@ const aiFieldStyle = (field) => ({
                 <TextField label="Alte" value={preform.earOther} onChange={(v) => setPreform({ ...preform, earOther: v })} />
               </div>
 
-              <div style={{ display: "grid", gap: 8 }}>
+              <div
+                style={{
+                  display: "grid",
+                  gap: 10,
+                  width: "100%",
+                }}
+              >
                 <LrCheckboxRow
                   label="48 - Otoragie - 49"
                   leftChecked={preform.earOtorrhagiaLeft}
@@ -902,14 +1017,30 @@ const aiFieldStyle = (field) => ({
             <div style={{ border: "1px solid #333", borderRadius: 8, padding: 12 }}>
               <div style={{ fontWeight: 700, marginBottom: 8 }}>OCHI</div>
 
-              <div style={{ fontWeight: 600, marginBottom: 6 }}>NORMAL</div>
+              <CheckboxField
+                label="NORMAL"
+                checked={preform.eyeMobilityNormal && preform.eyePupilsNormal}
+                onChange={(v) =>
+                  setPreform({
+                    ...preform,
+                    eyeMobilityNormal: v,
+                    eyePupilsNormal: v,
+                  })
+                }
+              />
               <div style={{ display: "grid", gap: 8, marginBottom: 10 }}>
                 <CheckboxField label="54 - Mobilitate globi oculari" checked={preform.eyeMobilityNormal} onChange={(v) => setPreform({ ...preform, eyeMobilityNormal: v })} />
                 <CheckboxField label="55 - Pupile" checked={preform.eyePupilsNormal} onChange={(v) => setPreform({ ...preform, eyePupilsNormal: v })} />
                 <TextField label="Alte" value={preform.eyeExamOther} onChange={(v) => setPreform({ ...preform, eyeExamOther: v })} />
               </div>
 
-              <div style={{ display: "grid", gap: 8 }}>
+              <div
+                style={{
+                  display: "grid",
+                  gap: 10,
+                  width: "100%",
+                }}
+              >
                 <LrCheckboxRow
                   label="56 - Conjunctivite - 57"
                   leftChecked={preform.eyeConjunctivitisLeft}
@@ -957,7 +1088,7 @@ const aiFieldStyle = (field) => ({
 
             <div style={{ border: "1px solid #333", borderRadius: 8, padding: 12 }}>
               <div style={{ fontWeight: 700, marginBottom: 8 }}>APARAT CARDIOVASCULAR</div>
-              <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 8 }}>
+              <div style={{ display: "grid", gridTemplateColumns: "repeat(2, minmax(0, 1fr))", gap: 8 }}>
                 <CheckboxField label="70 - Ritm cardiac" checked={preform.cvRhythmNormal} onChange={(v) => setPreform({ ...preform, cvRhythmNormal: v })} />
                 <CheckboxField label="78 - Jugulare turgesc." checked={preform.cvJugularTurgor} onChange={(v) => setPreform({ ...preform, cvJugularTurgor: v })} />
 
@@ -990,7 +1121,24 @@ const aiFieldStyle = (field) => ({
             <div style={{ gridColumn: "1 / -1", border: "1px solid #333", borderRadius: 8, padding: 12 }}>
               <div style={{ fontWeight: 700, marginBottom: 8 }}>TORACE / APARAT RESPIRATOR</div>
 
-              <div style={{ fontWeight: 600, marginBottom: 6 }}>NORMAL</div>
+              <CheckboxField
+                label="NORMAL"
+                checked={
+                  preform.respThoraxAspectNormal &&
+                  preform.respThoraxPercussionNormal &&
+                  preform.respVesicularBilateralNormal &&
+                  preform.respOropharynxNormal
+                }
+                onChange={(v) =>
+                  setPreform({
+                    ...preform,
+                    respThoraxAspectNormal: v,
+                    respThoraxPercussionNormal: v,
+                    respVesicularBilateralNormal: v,
+                    respOropharynxNormal: v,
+                  })
+                }
+              />
               <div style={{ display: "grid", gridTemplateColumns: "repeat(2, 1fr)", gap: 8, marginBottom: 12 }}>
                 <CheckboxField label="90 - Aspectul toracelui" checked={preform.respThoraxAspectNormal} onChange={(v) => setPreform({ ...preform, respThoraxAspectNormal: v })} />
                 <CheckboxField label="91 - Percuția toracelui" checked={preform.respThoraxPercussionNormal} onChange={(v) => setPreform({ ...preform, respThoraxPercussionNormal: v })} />
@@ -998,8 +1146,14 @@ const aiFieldStyle = (field) => ({
                 <CheckboxField label="93 - Orofaringe" checked={preform.respOropharynxNormal} onChange={(v) => setPreform({ ...preform, respOropharynxNormal: v })} />
               </div>
 
-              <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 12 }}>
-                <div style={{ display: "grid", gap: 8 }}>
+              <div style={{ display: "grid", gridTemplateColumns: "repeat(2, minmax(0, 1fr))", gap: 12 }}>
+                <div
+  style={{
+    display: "grid",
+    gap: 10,
+    width: "100%",
+  }}
+>
                   <LrCheckboxRow
                     label="94 - Murmur vezicular diminuat - 95"
                     leftChecked={preform.respDiminishedMurmurLeft}
@@ -1037,7 +1191,13 @@ const aiFieldStyle = (field) => ({
                   />
                 </div>
 
-                <div style={{ display: "grid", gap: 8 }}>
+                <div
+  style={{
+    display: "grid",
+    gap: 10,
+    width: "100%",
+  }}
+>
                   <LrCheckboxRow
                     label="104 - Tiraj intercost/supraclavic - 105"
                     leftChecked={preform.respIntercostalRetractionLeft}
@@ -1083,16 +1243,20 @@ const aiFieldStyle = (field) => ({
 }}>
           <div style={{ fontWeight: 700, marginBottom: 10 }}>ABDOMEN</div>
 
-          <div style={{ fontWeight: 600, marginBottom: 8 }}>NORMAL</div>
-          <div style={{ display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: 10 }}>
+          <CheckboxField
+            label="NORMAL"
+            checked={preform.abdomenNormal}
+            onChange={(v) => setPreform({ ...preform, abdomenNormal: v })}
+          />
+          <div style={{ display: "grid", gridTemplateColumns: "repeat(5, 1fr)", gap: 10 }}>
             <CheckboxField label="120 - Palpare" checked={preform.abdomenPalpation} onChange={(v) => setPreform({ ...preform, abdomenPalpation: v })} />
             <CheckboxField label="121 - Percuție" checked={preform.abdomenPercussion} onChange={(v) => setPreform({ ...preform, abdomenPercussion: v })} />
             <CheckboxField label="122 - Tranzit intest." checked={preform.abdomenBowelTransit} onChange={(v) => setPreform({ ...preform, abdomenBowelTransit: v })} />
             <CheckboxField label="123 - Tuseu rectal" checked={preform.abdomenRectalExam} onChange={(v) => setPreform({ ...preform, abdomenRectalExam: v })} />
+            <CheckboxField label="124 - Abd. destins" checked={preform.abdomenDistended} onChange={(v) => setPreform({ ...preform, abdomenDistended: v })} />
           </div>
 
           <div style={{ marginTop: 12, display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: 10 }}>
-            <CheckboxField label="124 - Abd. destins" checked={preform.abdomenDistended} onChange={(v) => setPreform({ ...preform, abdomenDistended: v })} />
             <CheckboxField label="125 - Tranzit absent" checked={preform.abdomenTransitAbsent} onChange={(v) => setPreform({ ...preform, abdomenTransitAbsent: v })} />
             <CheckboxField label="126 - Hepatomegalie" checked={preform.abdomenHepatomegaly} onChange={(v) => setPreform({ ...preform, abdomenHepatomegaly: v })} />
             <CheckboxField label="127 - Splenomegalie" checked={preform.abdomenSplenomegaly} onChange={(v) => setPreform({ ...preform, abdomenSplenomegaly: v })} />
@@ -1137,7 +1301,7 @@ const aiFieldStyle = (field) => ({
             <CheckboxField label="153 - Transpirat" checked={preform.skinExamSweaty} onChange={(v) => setPreform({ ...preform, skinExamSweaty: v })} />
           </div>
 
-          <div style={{ marginTop: 12, display: "grid", gridTemplateColumns: "1fr 1fr", gap: 12 }}>
+          <div style={{ marginTop: 12, display: "grid", gridTemplateColumns: "repeat(2, minmax(0, 1fr))", gap: 12 }}>
             <TextField
               label="Localizare"
               value={preform.skinExamLocation}
@@ -1155,12 +1319,15 @@ const aiFieldStyle = (field) => ({
 }}>
           <div style={{ fontWeight: 700, marginBottom: 10 }}>GENITO URINAR</div>
 
-          <div style={{ fontWeight: 600, marginBottom: 8 }}>NORMAL</div>
+          <CheckboxField
+            label="NORMAL"
+            checked={preform.guExamNormal}
+            onChange={(v) => setPreform({ ...preform, guExamNormal: v })}
+          />
           <div style={{ display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: 10 }}>
             <CheckboxField label="160 - Organe genitale externe" checked={preform.guExternalGenitals} onChange={(v) => setPreform({ ...preform, guExternalGenitals: v })} />
             <CheckboxField label="161 - Menstruație regulată" checked={preform.guRegularMenstruation} onChange={(v) => setPreform({ ...preform, guRegularMenstruation: v })} />
             <CheckboxField label="162 - Tuseu rectal" checked={preform.guRectalExam} onChange={(v) => setPreform({ ...preform, guRectalExam: v })} />
-            <CheckboxField label="Normal" checked={preform.guExamNormal} onChange={(v) => setPreform({ ...preform, guExamNormal: v })} />
           </div>
 
           <div style={{ marginTop: 12 }}>
@@ -1236,7 +1403,13 @@ const aiFieldStyle = (field) => ({
 }}>
           <div style={{ fontWeight: 700, marginBottom: 10 }}>AP. LOCOMOTOR</div>
 
-          <div style={{ fontWeight: 600, marginBottom: 8 }}>NORMAL</div>
+          <CheckboxField
+  label="NORMAL"
+  checked={preform.noseNormal}
+  onChange={(v) =>
+    setPreform({ ...preform, noseNormal: v })
+  }
+/>
           <div style={{ display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: 10 }}>
             <CheckboxField label="190 - Cap" checked={preform.locomotorHead} onChange={(v) => setPreform({ ...preform, locomotorHead: v })} />
             <CheckboxField label="191 - Gât" checked={preform.locomotorNeck} onChange={(v) => setPreform({ ...preform, locomotorNeck: v })} />
@@ -1317,7 +1490,13 @@ const aiFieldStyle = (field) => ({
 }}>
           <div style={{ fontWeight: 700, marginBottom: 10 }}>NEURO PSIHIATRIC</div>
 
-          <div style={{ fontWeight: 600, marginBottom: 8 }}>NORMAL</div>
+          <CheckboxField
+  label="NORMAL"
+  checked={preform.noseNormal}
+  onChange={(v) =>
+    setPreform({ ...preform, noseNormal: v })
+  }
+/>
           <div style={{ display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: 10 }}>
             <CheckboxField label="220 - Orientat temp-sp" checked={preform.neuroPsychOriented} onChange={(v) => setPreform({ ...preform, neuroPsychOriented: v })} />
             <CheckboxField label="221 - Nervi cranieni" checked={preform.neuroPsychCranialNerves} onChange={(v) => setPreform({ ...preform, neuroPsychCranialNerves: v })} />
@@ -1373,7 +1552,7 @@ const aiFieldStyle = (field) => ({
             />
           </div>
 
-          <div style={{ marginTop: 12, display: "grid", gridTemplateColumns: "1fr 1fr", gap: 12 }}>
+          <div style={{ marginTop: 12, display: "grid", gridTemplateColumns: "repeat(2, minmax(0, 1fr))", gap: 12 }}>
             <TextField
               label="Alte"
               value={preform.neuroPsychOther}

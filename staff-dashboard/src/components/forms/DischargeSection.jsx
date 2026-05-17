@@ -18,7 +18,7 @@ const isRestricted = isReception || readOnly;
       title="Fișa de externare"
       isOpen={dischargeOpen}
       onToggle={() => setDischargeOpen((prev) => !prev)}
-      hideTopButtonWhenOpen={true}
+      hideTopButtonWhenOpen={false}
     >
       <div
   className="discharge-modern"
@@ -39,9 +39,15 @@ const isRestricted = isReception || readOnly;
           {discharge.hospitalName || "SPITALUL CLINIC DE URGENȚĂ"}
         </div>
 
-        <div style={{ fontWeight: 700, textAlign: "center" }}>
-          {discharge.sectionName || "UNITATE PRIMIRE URGENȚE"}
-        </div>
+        <div
+  style={{
+    fontWeight: 700,
+    textAlign: "center",
+    marginBottom: 24,
+  }}
+>
+  UNITATE PRIMIRE URGENȚE
+</div>
 
         <div style={{ display: "grid", gridTemplateColumns: "repeat(4, 1fr)", gap: 12 }}>
           <label>
@@ -175,7 +181,14 @@ const isRestricted = isReception || readOnly;
         </div>
 
         <div>
-          <div style={{ fontWeight: 700, marginBottom: 8 }}>Destinație pacient</div>
+          <div
+  style={{
+    fontWeight: 700,
+    marginTop: 24,
+  }}
+>
+  Destinație pacient
+</div>
           <div style={{ display: "grid", gap: 12 }}>
             <label>
               57 - Internat secția
@@ -221,8 +234,13 @@ const isRestricted = isReception || readOnly;
           </div>
         </div>
 
-        <label style={{ display: "block" }}>
-          Tratament și recomandări
+        <label
+  style={{
+    display: "block",
+    marginTop: 24,
+  }}
+>
+  Tratament și recomandări
           <textarea
             value={discharge.treatmentAndRecommendations}
             onChange={(e) =>
@@ -234,33 +252,48 @@ const isRestricted = isReception || readOnly;
         </label>
         </fieldset>
                 {dischargeOpen && (
-          <div
-            style={{
-              display: "flex",
-              justifyContent: "flex-end",
-              gap: 10,
-              flexWrap: "wrap",
-              marginTop: 24,
-              paddingTop: 16,
-              borderTop: "1px solid #333",
-            }}
-          >
-           {!isRestricted && (
-  <button onClick={onSave} style={{ padding: "8px 12px" }}>
-    Salvează fișa
-  </button>
+  <div
+    style={{
+      display: "flex",
+      justifyContent: "space-between",
+      alignItems: "center",
+      gap: 10,
+      flexWrap: "wrap",
+      marginTop: 24,
+      paddingTop: 16,
+      borderTop: "1px solid #333",
+    }}
+  >
+    <button
+      type="button"
+      onClick={() => setDischargeOpen(false)}
+      style={{
+        padding: "8px 12px",
+        borderRadius: 12,
+        border: "1px solid #cbd5e1",
+        background: "#f8fafc",
+        cursor: "pointer",
+        pointerEvents: "auto",
+      }}
+    >
+      Restrânge fișa
+    </button>
+
+    {!isRestricted && (
+      <button
+        type="button"
+        onClick={onSave}
+        style={{ padding: "8px 12px" }}
+      >
+        Salvează fișa
+      </button>
+    )}
+  </div>
 )}
-
-            <button
-              onClick={() => setDischargeOpen(false)}
-              style={{ padding: "8px 12px" }}
-            > 
-              Restrânge
-            </button>
-          </div>
-        )}
       </div>
-
     </SectionCard>
+    
   );
+
+  
 }

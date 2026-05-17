@@ -209,8 +209,14 @@ export default function HomePage({ onNavigate }) {
   };
 
   useEffect(() => {
+  load(true);
+
+  const interval = setInterval(() => {
     load(true);
-  }, []);
+  }, 7000);
+
+  return () => clearInterval(interval);
+}, []);
 
   const triageTotal = useMemo(() => {
     const t = stats?.waitingByTriage || {};
