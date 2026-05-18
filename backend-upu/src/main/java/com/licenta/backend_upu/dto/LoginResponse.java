@@ -12,6 +12,10 @@ public class LoginResponse {
     private String lastName;
     private String phoneNumber;
 
+    private String cnp;
+
+    private Boolean gdprAccepted;
+
     private String profileImage;
 
     private String specialization;
@@ -32,6 +36,8 @@ public class LoginResponse {
             String firstName,
             String lastName,
             String phoneNumber,
+            String cnp,
+            Boolean gdprAccepted,
             String profileImage,
             String specialization,
             String professionalGrade,
@@ -45,6 +51,8 @@ public class LoginResponse {
         this.firstName = firstName;
         this.lastName = lastName;
         this.phoneNumber = phoneNumber;
+        this.cnp = cnp;
+        this.gdprAccepted = gdprAccepted;
         this.profileImage = profileImage;
         this.specialization = specialization;
         this.professionalGrade = professionalGrade;
@@ -95,6 +103,22 @@ public class LoginResponse {
 
     public String getPhoneNumber() {
         return phoneNumber;
+    }
+
+    public String getCnp() {
+        return cnp;
+    }
+
+    public void setCnp(String cnp) {
+        this.cnp = cnp;
+    }
+
+    public Boolean getGdprAccepted() {
+        return gdprAccepted;
+    }
+
+    public void setGdprAccepted(Boolean gdprAccepted) {
+        this.gdprAccepted = gdprAccepted;
     }
 
     public void setPhoneNumber(String phoneNumber) {

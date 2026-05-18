@@ -2,14 +2,14 @@ package com.licenta.backend_upu.service;
 
 import com.licenta.backend_upu.dto.LoginRequest;
 import com.licenta.backend_upu.dto.LoginResponse;
+import com.licenta.backend_upu.dto.RegisterPatientRequest;
 import com.licenta.backend_upu.dto.UpdateAvailabilityRequest;
+import com.licenta.backend_upu.dto.UpdateMedicalProfileRequest;
 import com.licenta.backend_upu.entity.AvailabilityStatus;
 import com.licenta.backend_upu.entity.Role;
 import com.licenta.backend_upu.entity.User;
 import com.licenta.backend_upu.repository.UserRepository;
 import org.springframework.stereotype.Service;
-import com.licenta.backend_upu.dto.RegisterPatientRequest;
-import com.licenta.backend_upu.dto.UpdateMedicalProfileRequest;
 
 @Service
 public class AuthService {
@@ -21,10 +21,43 @@ public class AuthService {
     }
 
     public LoginResponse login(LoginRequest request) {
-        User user = userRepository.findByEmail(request.getEmail())
-                .orElseThrow(() -> new RuntimeException("Email invalid"));
+        User user;
 
-        if (!user.getPassword().equals(request.getPassword())) {
+        boolean isPatientLogin =
+                request.getCnp() != null && !request.getCnp().isBlank();
+
+        if (isPatientLogin) {
+            String inputCnp = request.getCnp().trim();
+            String inputName = normalizeName(request.getFullName());
+
+            user = userRepository.findByCnp(inputCnp)
+                    .orElseThrow(() -> new RuntimeException("Date pacient invalide"));
+
+            if (user.getRole() != Role.PATIENT) {
+                throw new RuntimeException("Contul nu este de pacient");
+            }
+
+            String firstLast = normalizeName(user.getFirstName() + " " + user.getLastName());
+            String lastFirst = normalizeName(user.getLastName() + " " + user.getFirstName());
+
+            if (!inputName.equals(firstLast) && !inputName.equals(lastFirst)) {
+                throw new RuntimeException("Nume pacient invalid");
+            }
+
+        } else {
+            user = userRepository.findByEmail(request.getEmail())
+                    .orElseThrow(() -> new RuntimeException("Email invalid"));
+
+            if (user.getRole() == Role.PATIENT) {
+                throw new RuntimeException("Pacienții trebuie să se autentifice cu nume și CNP");
+            }
+        }
+
+        String inputPassword = request.getPassword() != null
+                ? request.getPassword().trim()
+                : "";
+
+        if (!user.getPassword().equals(inputPassword)) {
             throw new RuntimeException("Parola invalida");
         }
 
@@ -33,14 +66,15 @@ public class AuthService {
         }
 
         return toLoginResponse(user);
-
     }
+
     public long countAvailableDoctors() {
         return userRepository.countByRoleAndAvailabilityStatus(
                 Role.DOCTOR,
                 AvailabilityStatus.AVAILABLE
         );
     }
+
     public void updateAvailability(Long userId, UpdateAvailabilityRequest request) {
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> new RuntimeException("Utilizatorul nu exista"));
@@ -50,16 +84,28 @@ public class AuthService {
     }
 
     public LoginResponse registerPatient(RegisterPatientRequest request) {
+        if (request.getGdprAccepted() == null || !request.getGdprAccepted()) {
+            throw new RuntimeException("Acordul GDPR este obligatoriu");
+        }
 
-        if (userRepository.existsByEmail(request.getEmail())) {
-            throw new RuntimeException("Email deja folosit");
+        if (userRepository.existsByCnp(request.getCnp().trim())) {
+            throw new RuntimeException("Există deja un cont pentru acest CNP");
         }
 
         User user = new User();
 
-        user.setEmail(request.getEmail());
-        user.setPassword(request.getPassword());
+        user.setEmail(null);
+        user.setPassword(request.getPassword().trim());
         user.setRole(Role.PATIENT);
+
+        user.setFirstName(request.getFirstName().trim());
+        user.setLastName(request.getLastName().trim());
+        user.setCnp(request.getCnp().trim());
+        user.setPhoneNumber(request.getPhoneNumber().trim());
+
+        user.setGdprAccepted(true);
+        user.setGdprAcceptedAt(java.time.LocalDateTime.now().toString());
+
         user.setIsActive(true);
         user.setAvailabilityStatus(AvailabilityStatus.AVAILABLE);
 
@@ -67,24 +113,7 @@ public class AuthService {
 
         return toLoginResponse(saved);
     }
-    private LoginResponse toLoginResponse(User user) {
-        return new LoginResponse(
-                user.getId(),
-                user.getEmail(),
-                user.getRole(),
-                user.getFirstName(),
-                user.getLastName(),
-                user.getPhoneNumber(),
-                user.getProfileImage(),
-                user.getSpecialization(),
-                user.getProfessionalGrade(),
-                user.getAvailabilityStatus() != null ? user.getAvailabilityStatus().name() : null,
-                user.getProfileSignature(),
-                user.getProfileSignedAt()
 
-        );
-
-    }
     public LoginResponse updateMedicalProfile(Long userId, UpdateMedicalProfileRequest request) {
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> new RuntimeException("Utilizatorul nu exista"));
@@ -103,4 +132,33 @@ public class AuthService {
         return toLoginResponse(saved);
     }
 
+    private LoginResponse toLoginResponse(User user) {
+        return new LoginResponse(
+                user.getId(),
+                user.getEmail(),
+                user.getRole(),
+                user.getFirstName(),
+                user.getLastName(),
+                user.getPhoneNumber(),
+                user.getCnp(),
+                user.getGdprAccepted(),
+                user.getProfileImage(),
+                user.getSpecialization(),
+                user.getProfessionalGrade(),
+                user.getAvailabilityStatus() != null ? user.getAvailabilityStatus().name() : null,
+                user.getProfileSignature(),
+                user.getProfileSignedAt()
+        );
+    }
+
+    private String normalizeName(String value) {
+        if (value == null) {
+            return "";
+        }
+
+        return value
+                .trim()
+                .replaceAll("\\s+", " ")
+                .toLowerCase();
+    }
 }

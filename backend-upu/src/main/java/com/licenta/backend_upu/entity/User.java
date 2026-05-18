@@ -16,7 +16,7 @@ public class User {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @Column(nullable = false, unique = true)
+    @Column(unique = true)
     private String email;
 
     @Column(nullable = false)
@@ -34,6 +34,15 @@ public class User {
 
     @Column
     private String phoneNumber;
+
+    @Column(unique = true)
+    private String cnp;
+
+    @Column
+    private Boolean gdprAccepted = false;
+
+    @Column
+    private String gdprAcceptedAt;
 
     @Column(columnDefinition = "TEXT")
     private String profileImage;
