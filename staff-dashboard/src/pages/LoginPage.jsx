@@ -1,48 +1,12 @@
 import { useState } from "react";
-import axios from "axios";
 import { theme } from "../styles/theme";
-import { useAuth } from "../context/AuthContext";
+import StaffLoginForm from "../components/auth/StaffLoginForm";
+import PatientLoginForm from "../components/auth/PatientLoginForm";
+import PatientRegisterModal from "../components/patient/PatientRegisterModal";
 
 export default function LoginPage() {
-  const { login } = useAuth();
-
-  const [email, setEmail] = useState("");
-  const [password, setPassword] = useState("");
-  const [error, setError] = useState("");
-  const [loading, setLoading] = useState(false);
-
-  const handleLogin = async () => {
-    setError("");
-    setLoading(true);
-
-    try {
-      const res = await axios.post("http://localhost:8081/auth/login", {
-        email,
-        password,
-      });
-
-      const user = res.data;
-      login(user);
-
-      if (user.role === "RECEPTION") {
-        window.location.href = "/";
-      } else if (user.role === "DOCTOR" || user.role === "NURSE") {
-        window.location.href = "/medical";
-      } else if (user.role === "PATIENT") {
-        window.location.href = "/patient";
-      }
-    } catch (err) {
-      setError("Email sau parolă incorectă.");
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  const handleEnter = (e) => {
-    if (e.key === "Enter") {
-      handleLogin();
-    }
-  };
+  const [loginType, setLoginType] = useState("STAFF");
+  const [registerOpen, setRegisterOpen] = useState(false);
 
   return (
     <div
@@ -158,7 +122,7 @@ export default function LoginPage() {
               {[
                 "Dashboard operațional pentru recepție",
                 "Flux medical pentru medic și asistent",
-                "Triaj asistat AI și documente PDF",
+                "Portal dedicat pentru pacienți",
               ].map((item) => (
                 <div
                   key={item}
@@ -190,7 +154,7 @@ export default function LoginPage() {
             background: "#f8fbff",
           }}
         >
-          <div style={{ marginBottom: 34 }}>
+          <div style={{ marginBottom: 28 }}>
             <div
               style={{
                 display: "inline-flex",
@@ -214,108 +178,65 @@ export default function LoginPage() {
                 letterSpacing: -0.8,
               }}
             >
-              Bine ai revenit
+              {loginType === "STAFF" ? "Bine ai revenit" : "Portal pacient"}
             </h2>
 
             <p style={{ color: "#64748b", marginTop: 10, fontSize: 15 }}>
-              Introdu datele contului pentru a accesa aplicația.
+              {loginType === "STAFF"
+                ? "Personalul medical se autentifică folosind emailul și parola."
+                : "Pacienții se autentifică folosind numele, CNP-ul și parola."}
             </p>
           </div>
 
-          <label style={{ display: "block", marginBottom: 16 }}>
-            <div
-              style={{
-                marginBottom: 7,
-                color: "#334155",
-                fontWeight: 800,
-                fontSize: 13,
-              }}
-            >
-              Email
-            </div>
-            <input
-              placeholder="email@exemplu.ro"
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
-              onKeyDown={handleEnter}
-              style={inputStyle}
-            />
-          </label>
-
-          <label style={{ display: "block", marginBottom: 14 }}>
-            <div
-              style={{
-                marginBottom: 7,
-                color: "#334155",
-                fontWeight: 800,
-                fontSize: 13,
-              }}
-            >
-              Parolă
-            </div>
-            <input
-              placeholder="Introdu parola"
-              type="password"
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-              onKeyDown={handleEnter}
-              style={inputStyle}
-            />
-          </label>
-
-          {error && (
-            <div
-              style={{
-                marginBottom: 16,
-                padding: 12,
-                borderRadius: 14,
-                background: "#fee2e2",
-                color: "#991b1b",
-                fontWeight: 800,
-                fontSize: 13,
-              }}
-            >
-              {error}
-            </div>
-          )}
-
-          <button
-            onClick={handleLogin}
-            disabled={loading}
+          <div
             style={{
-              width: "100%",
-              padding: "14px 16px",
-              borderRadius: 16,
-              border: "none",
-              background: "linear-gradient(135deg, #08b8b3, #069a96)",
-              color: "white",
-              fontWeight: 900,
-              fontSize: 15,
-              cursor: loading ? "not-allowed" : "pointer",
-              boxShadow: theme.shadow.teal,
-              opacity: loading ? 0.7 : 1,
+              display: "grid",
+              gridTemplateColumns: "1fr 1fr",
+              gap: 10,
+              marginBottom: 22,
+              padding: 6,
+              borderRadius: 18,
+              background: "#eaf3fb",
             }}
           >
-            {loading ? "Se autentifică..." : "Login"}
-          </button>
+            <button
+              type="button"
+              onClick={() => setLoginType("STAFF")}
+              style={{
+                ...tabButtonStyle,
+                background: loginType === "STAFF" ? "white" : "transparent",
+                color: loginType === "STAFF" ? "#069a96" : "#64748b",
+                boxShadow:
+                  loginType === "STAFF"
+                    ? "0 10px 24px rgba(15,23,42,0.08)"
+                    : "none",
+              }}
+            >
+              Personal medical
+            </button>
 
-          <button
-  type="button"
-  onClick={() => alert("Înregistrarea pacienților va fi disponibilă în etapa următoare.")}
-  style={{
-    marginTop: 12,
-    width: "100%",
-    padding: "12px 16px",
-    borderRadius: 16,
-    border: "1px solid rgba(8,184,179,0.25)",
-    background: "#e6fffd",
-    color: "#069a96",
-    fontWeight: 900,
-    cursor: "pointer",
-  }}
->
-  Creează cont pacient
-</button>
+            <button
+              type="button"
+              onClick={() => setLoginType("PATIENT")}
+              style={{
+                ...tabButtonStyle,
+                background: loginType === "PATIENT" ? "white" : "transparent",
+                color: loginType === "PATIENT" ? "#069a96" : "#64748b",
+                boxShadow:
+                  loginType === "PATIENT"
+                    ? "0 10px 24px rgba(15,23,42,0.08)"
+                    : "none",
+              }}
+            >
+              Pacient
+            </button>
+          </div>
+
+          {loginType === "STAFF" ? (
+            <StaffLoginForm />
+          ) : (
+            <PatientLoginForm onOpenRegister={() => setRegisterOpen(true)} />
+          )}
 
           <div
             style={{
@@ -330,19 +251,19 @@ export default function LoginPage() {
           </div>
         </div>
       </div>
+
+      <PatientRegisterModal
+        open={registerOpen}
+        onClose={() => setRegisterOpen(false)}
+      />
     </div>
   );
 }
 
-const inputStyle = {
-  width: "100%",
-  boxSizing: "border-box",
-  padding: "13px 14px",
-  borderRadius: 16,
-  border: "1px solid #e2e8f0",
-  background: "#ffffff",
-  color: "#102033",
-  outline: "none",
-  fontWeight: 700,
-  fontSize: 14,
+const tabButtonStyle = {
+  border: "none",
+  borderRadius: 14,
+  padding: "11px 12px",
+  fontWeight: 950,
+  cursor: "pointer",
 };
