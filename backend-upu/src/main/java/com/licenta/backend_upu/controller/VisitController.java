@@ -62,6 +62,22 @@ public class VisitController {
         return toResponsesWithTriage(visitService.getVisitsByDoctor(doctorId));
     }
 
+    @GetMapping("/by-cnp/{cnp}/active")
+    public VisitResponse getActiveVisitByCnp(@PathVariable String cnp) {
+        Visit visit = visitService.getActiveVisitByPatientCnp(cnp);
+
+        if (visit == null) {
+            return null;
+        }
+
+        return visitMapper.toResponse(visit);
+    }
+
+    @GetMapping("/by-cnp/{cnp}")
+    public List<VisitResponse> getVisitsByCnp(@PathVariable String cnp) {
+        return toResponsesWithTriage(visitService.getVisitsByPatientCnp(cnp));
+    }
+
     @ExceptionHandler(IllegalStateException.class)
     public org.springframework.http.ResponseEntity<String> handleIllegalState(IllegalStateException e) {
         return org.springframework.http.ResponseEntity.badRequest().body(e.getMessage());

@@ -57,4 +57,20 @@ public class ArchivedDocumentController {
     ) {
         archivedDocumentService.saveUploadedFile(file, visitId);
     }
+
+    @GetMapping("/{documentId}/view")
+    public ResponseEntity<Resource> view(@PathVariable Long documentId) {
+        ArchivedDocument doc = archivedDocumentService.getById(documentId);
+
+        Resource resource = archivedDocumentService.loadFile(doc);
+
+        return ResponseEntity.ok()
+                .contentType(MediaType.parseMediaType(
+                        doc.getContentType() != null
+                                ? doc.getContentType()
+                                : "application/pdf"
+                ))
+                .header(HttpHeaders.CONTENT_DISPOSITION, "inline; filename=\"" + doc.getFileName() + "\"")
+                .body(resource);
+    }
 }

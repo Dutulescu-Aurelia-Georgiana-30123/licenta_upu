@@ -12,4 +12,5 @@ public class UpdateMedicalProfileRequest {
     private String professionalGrade;
     private String profileSignature;
     private String profileSignedAt;
+    private String email;
 }

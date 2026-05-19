@@ -121,4 +121,20 @@ public class VisitService {
     public List<Visit> getVisitsByDoctor(Long doctorId) {
         return visitRepository.findByDoctor_IdOrderByCreatedAtDesc(doctorId);
     }
+
+    public Visit getActiveVisitByPatientCnp(String cnp) {
+        return visitRepository
+                .findFirstByPatient_CnpAndStatusNotInOrderByCreatedAtDesc(
+                        cnp,
+                        List.of(
+                                VisitStatus.DISCHARGED,
+                                VisitStatus.ADMITTED,
+                                VisitStatus.TRANSFERRED
+                        )
+                )
+                .orElse(null);
+    }
+    public List<Visit> getVisitsByPatientCnp(String cnp) {
+        return visitRepository.findByPatient_CnpOrderByCreatedAtDesc(cnp);
+    }
 }

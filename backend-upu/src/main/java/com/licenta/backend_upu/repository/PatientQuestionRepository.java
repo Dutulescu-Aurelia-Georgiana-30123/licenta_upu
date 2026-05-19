@@ -13,4 +13,5 @@ public interface PatientQuestionRepository extends JpaRepository<PatientQuestion
     List<PatientQuestion> findByPatient_IdOrderByCreatedAtDesc(Long patientId);
 
     List<PatientQuestion> findAllByOrderByCreatedAtDesc();
+    List<PatientQuestion> findByPatient_CnpOrderByCreatedAtDesc(String cnp);
 }

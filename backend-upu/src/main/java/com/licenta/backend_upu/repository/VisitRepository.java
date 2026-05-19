@@ -5,6 +5,7 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import com.licenta.backend_upu.entity.VisitStatus;
+import java.util.Optional;
 
 import java.util.List;
 
@@ -102,6 +103,10 @@ public interface VisitRepository extends JpaRepository<Visit, Long> {
     long countByDoctor_IdAndStatusNotIn(Long doctorId, List<VisitStatus> statuses);
     boolean existsByDoctor_IdAndStatusNotIn(Long doctorId, List<VisitStatus> statuses);
 
-
+    Optional<Visit> findFirstByPatient_CnpAndStatusNotInOrderByCreatedAtDesc(
+            String cnp,
+            List<VisitStatus> statuses
+    );
+    List<Visit> findByPatient_CnpOrderByCreatedAtDesc(String cnp);
 
 }

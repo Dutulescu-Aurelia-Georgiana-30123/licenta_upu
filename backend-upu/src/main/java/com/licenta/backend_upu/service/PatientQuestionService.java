@@ -105,4 +105,22 @@ public class PatientQuestionService {
 
         return response;
     }
+    public List<PatientQuestionResponse> getQuestionsByPatientCnp(String cnp) {
+        return questionRepository.findByPatient_CnpOrderByCreatedAtDesc(cnp)
+                .stream()
+                .map(this::toResponse)
+                .toList();
+    }
+    public PatientQuestionResponse createQuestionByCnp(String cnp, PatientQuestionCreateRequest request) {
+        Patient patient = patientRepository.findByCnp(cnp)
+                .orElseThrow(() -> new RuntimeException("Pacientul nu exista"));
+
+        PatientQuestion question = new PatientQuestion();
+        question.setPatient(patient);
+        question.setQuestionText(request.getQuestionText());
+        question.setStatus(QuestionStatus.OPEN);
+        question.setCreatedAt(LocalDateTime.now());
+
+        return toResponse(questionRepository.save(question));
+    }
 }

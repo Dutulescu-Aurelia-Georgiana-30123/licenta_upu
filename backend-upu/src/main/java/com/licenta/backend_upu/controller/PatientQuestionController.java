@@ -48,4 +48,18 @@ public class PatientQuestionController {
     ) {
         return patientQuestionService.answerQuestion(questionId, request);
     }
+    @PostMapping("/by-cnp/{cnp}")
+    public PatientQuestionResponse createQuestionByCnp(
+            @PathVariable String cnp,
+            @RequestBody PatientQuestionCreateRequest request
+    ) {
+        return patientQuestionService.createQuestionByCnp(cnp, request);
+    }
+
+    @GetMapping("/by-cnp/{cnp}")
+    public List<PatientQuestionResponse> getQuestionsByPatientCnp(
+            @PathVariable String cnp
+    ) {
+        return patientQuestionService.getQuestionsByPatientCnp(cnp);
+    }
 }
