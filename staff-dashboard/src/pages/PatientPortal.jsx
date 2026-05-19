@@ -1,3 +1,5 @@
+import { useEffect, useState } from "react";
+import axios from "axios";
 import { useAuth } from "../context/AuthContext";
 
 const teal = "#08b8b3";
@@ -62,7 +64,190 @@ function PatientInfoRow({ label, value }) {
 }
 
 export default function PatientPortal() {
-  const { user, logout } = useAuth();
+  const { user, logout, login } = useAuth();
+
+  const [editing, setEditing] = useState(false);
+  const [saving, setSaving] = useState(false);
+
+  const [activeVisit, setActiveVisit] = useState(null);
+  const [visitHistory, setVisitHistory] = useState([]);
+  const [documentsByVisit, setDocumentsByVisit] = useState({});
+  const [visitLoading, setVisitLoading] = useState(true);
+
+  const [questions, setQuestions] = useState([]);
+  const [questionText, setQuestionText] = useState("");
+  const [questionLoading, setQuestionLoading] = useState(true);
+  const [questionSending, setQuestionSending] = useState(false);
+
+  const [firstName, setFirstName] = useState(user?.firstName || "");
+  const [lastName, setLastName] = useState(user?.lastName || "");
+  const [phoneNumber, setPhoneNumber] = useState(user?.phoneNumber || "");
+  const [email, setEmail] = useState(user?.email || "");
+  const [profileImage, setProfileImage] = useState(user?.profileImage || "");
+
+  useEffect(() => {
+    const loadPatientData = async () => {
+      if (!user?.cnp) {
+        setVisitLoading(false);
+        setQuestionLoading(false);
+        return;
+      }
+
+      try {
+        const activeRes = await axios.get(
+          `http://localhost:8081/visits/by-cnp/${user.cnp}/active`
+        );
+
+        setActiveVisit(activeRes.data || null);
+
+        const historyRes = await axios.get(
+          `http://localhost:8081/visits/by-cnp/${user.cnp}`
+        );
+
+        const visits = historyRes.data || [];
+        setVisitHistory(visits);
+
+        const docsMap = {};
+
+        for (const visit of visits) {
+          try {
+            const docsRes = await axios.get(
+              `http://localhost:8081/archived-documents/visit/${visit.id}`
+            );
+
+            docsMap[visit.id] = docsRes.data || [];
+          } catch {
+            docsMap[visit.id] = [];
+          }
+        }
+
+        setDocumentsByVisit(docsMap);
+      } catch (err) {
+        console.error(err);
+        setActiveVisit(null);
+        setVisitHistory([]);
+        setDocumentsByVisit({});
+      } finally {
+        setVisitLoading(false);
+      }
+
+      try {
+        const questionsRes = await axios.get(
+          `http://localhost:8081/patient-questions/by-cnp/${user.cnp}`
+        );
+
+        setQuestions(questionsRes.data || []);
+      } catch (err) {
+        console.error(err);
+        setQuestions([]);
+      } finally {
+        setQuestionLoading(false);
+      }
+    };
+
+    loadPatientData();
+  }, [user?.cnp]);
+
+  const reloadQuestions = async () => {
+    if (!user?.cnp) return;
+
+    try {
+      const questionsRes = await axios.get(
+        `http://localhost:8081/patient-questions/by-cnp/${user.cnp}`
+      );
+
+      setQuestions(questionsRes.data || []);
+    } catch (err) {
+      console.error(err);
+      setQuestions([]);
+    }
+  };
+
+  const handleSendQuestion = async () => {
+    const cleanText = questionText.trim();
+
+    if (!cleanText) {
+      alert("Scrie întrebarea înainte de trimitere.");
+      return;
+    }
+
+    setQuestionSending(true);
+
+    try {
+      await axios.post(
+        `http://localhost:8081/patient-questions/by-cnp/${user.cnp}`,
+        {
+          questionText: cleanText,
+        }
+      );
+
+      setQuestionText("");
+      await reloadQuestions();
+    } catch (err) {
+      console.error(err);
+      alert("Nu s-a putut trimite întrebarea.");
+    } finally {
+      setQuestionSending(false);
+    }
+  };
+
+  const handleImageChange = (event) => {
+    const file = event.target.files?.[0];
+
+    if (!file) return;
+
+    const reader = new FileReader();
+
+    reader.onloadend = () => {
+      setProfileImage(reader.result);
+    };
+
+    reader.readAsDataURL(file);
+  };
+
+  const handleCancelEdit = () => {
+    setFirstName(user?.firstName || "");
+    setLastName(user?.lastName || "");
+    setPhoneNumber(user?.phoneNumber || "");
+    setEmail(user?.email || "");
+    setProfileImage(user?.profileImage || "");
+    setEditing(false);
+  };
+
+  const handleSaveProfile = async () => {
+    setSaving(true);
+
+    try {
+      const res = await axios.put(
+        `http://localhost:8081/auth/users/${user.id}/profile`,
+        {
+          email: email.trim() || null,
+          firstName: firstName.trim(),
+          lastName: lastName.trim(),
+          phoneNumber: phoneNumber.trim(),
+          profileImage: profileImage || null,
+          specialization: user?.specialization || null,
+          professionalGrade: user?.professionalGrade || null,
+          profileSignature: user?.profileSignature || null,
+          profileSignedAt: user?.profileSignedAt || null,
+        }
+      );
+
+      login(res.data);
+      setEditing(false);
+    } catch (err) {
+      console.error(err);
+      alert("Nu s-a putut actualiza profilul.");
+    } finally {
+      setSaving(false);
+    }
+  };
+
+  const initials =
+    firstName?.[0] ||
+    lastName?.[0] ||
+    email?.[0]?.toUpperCase() ||
+    "P";
 
   return (
     <div
@@ -116,19 +301,7 @@ export default function PatientPortal() {
           </div>
         </div>
 
-        <button
-          onClick={logout}
-          style={{
-            border: "none",
-            background: `linear-gradient(135deg, ${teal}, ${tealDark})`,
-            color: "white",
-            padding: "12px 16px",
-            borderRadius: 16,
-            fontWeight: 950,
-            cursor: "pointer",
-            boxShadow: "0 14px 30px rgba(8,184,179,0.24)",
-          }}
-        >
+        <button onClick={logout} style={logoutButtonStyle}>
           Logout
         </button>
       </div>
@@ -156,25 +329,21 @@ export default function PatientPortal() {
         >
           <Card>
             <div style={{ textAlign: "center" }}>
-              <div
-                style={{
-                  width: 110,
-                  height: 110,
-                  borderRadius: "50%",
-                  margin: "0 auto",
-                  background: "linear-gradient(135deg, #08b8b3, #069a96)",
-                  display: "grid",
-                  placeItems: "center",
-                  color: "white",
-                  fontWeight: 950,
-                  fontSize: 42,
-                  boxShadow: "0 20px 45px rgba(8,184,179,0.28)",
-                }}
-              >
-                {user?.firstName?.[0] ||
-                  user?.lastName?.[0] ||
-                  user?.email?.[0]?.toUpperCase() ||
-                  "P"}
+              <div style={avatarStyle}>
+                {profileImage ? (
+                  <img
+                    src={profileImage}
+                    alt="Profil pacient"
+                    style={{
+                      width: "100%",
+                      height: "100%",
+                      objectFit: "cover",
+                      borderRadius: "50%",
+                    }}
+                  />
+                ) : (
+                  initials
+                )}
               </div>
 
               <h2
@@ -185,7 +354,7 @@ export default function PatientPortal() {
                   fontWeight: 950,
                 }}
               >
-                {user?.firstName || "Pacient"} {user?.lastName || ""}
+                {firstName || "Pacient"} {lastName || ""}
               </h2>
 
               <div
@@ -209,11 +378,93 @@ export default function PatientPortal() {
             title="Date personale"
             subtitle="Informațiile principale ale pacientului"
           >
-            <PatientInfoRow label="Nume" value={user?.lastName} />
-            <PatientInfoRow label="Prenume" value={user?.firstName} />
-            <PatientInfoRow label="Email" value={user?.email} />
-            <PatientInfoRow label="CNP" value={user?.cnp} />
-            <PatientInfoRow label="Telefon" value={user?.phone} />
+            {!editing ? (
+              <>
+                <PatientInfoRow label="Nume" value={lastName} />
+                <PatientInfoRow label="Prenume" value={firstName} />
+                <PatientInfoRow label="Email" value={email} />
+                <PatientInfoRow label="CNP" value={user?.cnp} />
+                <PatientInfoRow label="Telefon" value={phoneNumber} />
+
+                <button onClick={() => setEditing(true)} style={primaryButtonStyle}>
+                  Editează profilul
+                </button>
+              </>
+            ) : (
+              <>
+                <div style={{ marginBottom: 14 }}>
+                  <div style={editLabel}>Poză de profil</div>
+                  <input
+                    type="file"
+                    accept="image/*"
+                    onChange={handleImageChange}
+                    style={editInput}
+                  />
+                </div>
+
+                <div style={{ marginBottom: 14 }}>
+                  <div style={editLabel}>Nume</div>
+                  <input
+                    value={lastName}
+                    onChange={(e) => setLastName(e.target.value)}
+                    style={editInput}
+                  />
+                </div>
+
+                <div style={{ marginBottom: 14 }}>
+                  <div style={editLabel}>Prenume</div>
+                  <input
+                    value={firstName}
+                    onChange={(e) => setFirstName(e.target.value)}
+                    style={editInput}
+                  />
+                </div>
+
+                <div style={{ marginBottom: 14 }}>
+                  <div style={editLabel}>Email</div>
+                  <input
+                    value={email}
+                    onChange={(e) => setEmail(e.target.value)}
+                    style={editInput}
+                    placeholder="email@exemplu.ro"
+                  />
+                </div>
+
+                <div style={{ marginBottom: 14 }}>
+                  <div style={editLabel}>Telefon</div>
+                  <input
+                    value={phoneNumber}
+                    onChange={(e) => setPhoneNumber(e.target.value)}
+                    style={editInput}
+                  />
+                </div>
+
+                <PatientInfoRow label="CNP" value={user?.cnp} />
+
+                <div style={{ display: "flex", gap: 12, flexWrap: "wrap" }}>
+                  <button
+                    onClick={handleSaveProfile}
+                    disabled={saving}
+                    style={{
+                      ...primaryButtonStyle,
+                      marginTop: 4,
+                      opacity: saving ? 0.7 : 1,
+                      cursor: saving ? "not-allowed" : "pointer",
+                    }}
+                  >
+                    {saving ? "Se salvează..." : "Salvează"}
+                  </button>
+
+                  <button
+                    onClick={handleCancelEdit}
+                    disabled={saving}
+                    style={secondaryButtonStyle}
+                  >
+                    Renunță
+                  </button>
+                </div>
+              </>
+            )}
           </Card>
         </div>
 
@@ -229,33 +480,192 @@ export default function PatientPortal() {
             title="Status vizită actuală"
             subtitle="Stadiul curent al vizitei tale în UPU"
           >
-            <div
-              style={{
-                padding: 16,
-                borderRadius: 20,
-                background: "#e6fffd",
-                color: tealDark,
-                fontWeight: 950,
-              }}
-            >
-              ● Nu există momentan o vizită activă
-            </div>
+            {visitLoading ? (
+              <div style={statusBoxStyle}>Se încarcă vizita...</div>
+            ) : activeVisit ? (
+              <div style={{ display: "grid", gap: 10 }}>
+                <div style={activeVisitBoxStyle}>
+                  ● Vizită activă: {formatVisitStatus(activeVisit.status)}
+                </div>
+
+                <PatientInfoRow label="Cod vizită" value={activeVisit.visitCode} />
+
+                <PatientInfoRow
+                  label="Data înregistrării"
+                  value={formatDateTime(activeVisit.createdAt)}
+                />
+
+                <PatientInfoRow
+                  label="Motiv prezentare"
+                  value={activeVisit.presentationReason}
+                />
+
+                <PatientInfoRow label="Medic" value={activeVisit.doctorEmail} />
+              </div>
+            ) : (
+              <div style={statusBoxStyle}>
+                ● Nu există momentan o vizită activă
+              </div>
+            )}
           </Card>
 
           <Card
-            title="Istoric fișe"
-            subtitle="Fișele medicale generate la vizitele anterioare"
+            title="Istoric vizite"
+            subtitle="Vizitele și fișele medicale ale pacientului"
           >
-            <p
-              style={{
-                margin: 0,
-                color: "#667085",
-                fontWeight: 700,
-                lineHeight: 1.6,
-              }}
-            >
-              Nu există încă fișe disponibile pentru acest pacient.
-            </p>
+            {visitLoading ? (
+              <div style={statusBoxStyle}>Se încarcă istoricul...</div>
+            ) : visitHistory.length === 0 ? (
+              <p
+                style={{
+                  margin: 0,
+                  color: "#667085",
+                  fontWeight: 700,
+                  lineHeight: 1.6,
+                }}
+              >
+                Nu există încă vizite înregistrate.
+              </p>
+            ) : (
+              <div
+                style={{
+                  display: "flex",
+                  flexDirection: "column",
+                  gap: 12,
+                }}
+              >
+                {visitHistory.map((visit) => (
+                  <div
+                    key={visit.id}
+                    style={{
+                      border: "1px solid #e5eef8",
+                      borderRadius: 18,
+                      padding: 16,
+                      background: "#f8fbff",
+                    }}
+                  >
+                    <div
+                      style={{
+                        display: "flex",
+                        justifyContent: "space-between",
+                        alignItems: "center",
+                        marginBottom: 10,
+                      }}
+                    >
+                      <div
+                        style={{
+                          fontWeight: 900,
+                          color: "#102033",
+                          fontSize: 15,
+                        }}
+                      >
+                        {visit.visitCode}
+                      </div>
+
+                      <div
+                        style={{
+                          background: "#e6fffd",
+                          color: tealDark,
+                          padding: "6px 10px",
+                          borderRadius: 999,
+                          fontWeight: 900,
+                          fontSize: 12,
+                        }}
+                      >
+                        {formatVisitStatus(visit.status)}
+                      </div>
+                    </div>
+
+                    <PatientInfoRow
+                      label="Data"
+                      value={formatDateTime(visit.createdAt)}
+                    />
+
+                    <PatientInfoRow
+                      label="Medic"
+                      value={visit.doctorEmail || "Nealocat"}
+                    />
+
+                    <PatientInfoRow
+                      label="Motiv prezentare"
+                      value={visit.presentationReason || "—"}
+                    />
+
+                    <PatientInfoRow
+                      label="Cod triaj"
+                      value={visit.triageColor || "—"}
+                    />
+
+                    {documentsByVisit[visit.id]?.length > 0 ? (
+                      <div style={{ marginTop: 12, display: "grid", gap: 10 }}>
+                        {documentsByVisit[visit.id].map((doc) => (
+                          <div
+                            key={doc.id}
+                            style={{
+                              display: "flex",
+                              gap: 10,
+                              flexWrap: "wrap",
+                            }}
+                          >
+                            <button
+                              onClick={() =>
+                                window.open(
+                                  `http://localhost:8081/archived-documents/${doc.id}/view`,
+                                  "_blank"
+                                )
+                              }
+                              style={{
+                                border: "1px solid #dbe7f3",
+                                background: "#eef7ff",
+                                color: "#102033",
+                                padding: "10px 14px",
+                                borderRadius: 14,
+                                fontWeight: 900,
+                                cursor: "pointer",
+                              }}
+                            >
+                              Previzualizează fișa
+                            </button>
+
+                            <button
+                              onClick={() =>
+                                window.open(
+                                  `http://localhost:8081/archived-documents/${doc.id}/download`,
+                                  "_blank"
+                                )
+                              }
+                              style={{
+                                border: "none",
+                                background: `linear-gradient(135deg, ${teal}, ${tealDark})`,
+                                color: "white",
+                                padding: "10px 14px",
+                                borderRadius: 14,
+                                fontWeight: 900,
+                                cursor: "pointer",
+                                boxShadow: "0 10px 24px rgba(8,184,179,0.18)",
+                              }}
+                            >
+                              Descarcă fișa
+                            </button>
+                          </div>
+                        ))}
+                      </div>
+                    ) : (
+                      <div
+                        style={{
+                          marginTop: 12,
+                          color: "#94a3b8",
+                          fontWeight: 800,
+                          fontSize: 13,
+                        }}
+                      >
+                        Nu există încă fișă PDF pentru această vizită.
+                      </div>
+                    )}
+                  </div>
+                ))}
+              </div>
+            )}
           </Card>
 
           <Card
@@ -265,6 +675,8 @@ export default function PatientPortal() {
             <textarea
               placeholder="Scrie întrebarea ta aici..."
               rows={4}
+              value={questionText}
+              onChange={(e) => setQuestionText(e.target.value)}
               style={{
                 width: "100%",
                 resize: "vertical",
@@ -278,20 +690,131 @@ export default function PatientPortal() {
             />
 
             <button
+              onClick={handleSendQuestion}
+              disabled={questionSending}
               style={{
-                marginTop: 12,
-                border: "none",
-                background: `linear-gradient(135deg, ${teal}, ${tealDark})`,
-                color: "white",
-                padding: "12px 16px",
-                borderRadius: 16,
-                fontWeight: 950,
-                cursor: "pointer",
-                boxShadow: "0 14px 30px rgba(8,184,179,0.24)",
+                ...askButtonStyle,
+                opacity: questionSending ? 0.7 : 1,
+                cursor: questionSending ? "not-allowed" : "pointer",
               }}
             >
-              Trimite întrebare
+              {questionSending ? "Se trimite..." : "Trimite întrebare"}
             </button>
+
+            <div style={{ marginTop: 18 }}>
+              <div
+                style={{
+                  fontWeight: 900,
+                  color: "#102033",
+                  marginBottom: 10,
+                }}
+              >
+                Întrebările mele
+              </div>
+
+              {questionLoading ? (
+                <div style={statusBoxStyle}>Se încarcă întrebările...</div>
+              ) : questions.length === 0 ? (
+                <div
+                  style={{
+                    color: "#667085",
+                    fontWeight: 700,
+                    lineHeight: 1.6,
+                  }}
+                >
+                  Nu ai trimis încă întrebări.
+                </div>
+              ) : (
+                <div style={{ display: "grid", gap: 12 }}>
+                  {questions.map((q) => (
+                    <div
+                      key={q.id}
+                      style={{
+                        border: "1px solid #e5eef8",
+                        borderRadius: 18,
+                        padding: 14,
+                        background: "#f8fbff",
+                      }}
+                    >
+                      <div
+                        style={{
+                          display: "flex",
+                          justifyContent: "space-between",
+                          gap: 10,
+                          marginBottom: 8,
+                        }}
+                      >
+                        <div
+                          style={{
+                            fontSize: 12,
+                            color: "#667085",
+                            fontWeight: 800,
+                          }}
+                        >
+                          {formatDateTime(q.createdAt)}
+                        </div>
+
+                        <div
+                          style={{
+                            fontSize: 12,
+                            fontWeight: 900,
+                            color: q.status === "ANSWERED" ? "#166534" : "#92400e",
+                            background:
+                              q.status === "ANSWERED" ? "#dcfce7" : "#fef3c7",
+                            padding: "5px 9px",
+                            borderRadius: 999,
+                          }}
+                        >
+                          {q.status === "ANSWERED" ? "Răspunsă" : "În așteptare"}
+                        </div>
+                      </div>
+
+                      <div
+                        style={{
+                          color: "#102033",
+                          fontWeight: 800,
+                          lineHeight: 1.5,
+                        }}
+                      >
+                        {q.questionText}
+                      </div>
+
+                      {q.answerText && (
+                        <div
+                          style={{
+                            marginTop: 10,
+                            padding: 12,
+                            borderRadius: 14,
+                            background: "#e6fffd",
+                            color: "#0f766e",
+                            fontWeight: 700,
+                            lineHeight: 1.5,
+                          }}
+                        >
+                          <div style={{ fontWeight: 950, marginBottom: 4 }}>
+                            Răspuns medic
+                          </div>
+                          {q.answerText}
+
+                          {q.answeredByName && (
+                            <div
+                              style={{
+                                marginTop: 8,
+                                fontSize: 12,
+                                color: "#069a96",
+                                fontWeight: 900,
+                              }}
+                            >
+                              Răspuns oferit de: {q.answeredByName}
+                            </div>
+                          )}
+                        </div>
+                      )}
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
           </Card>
 
           <Card
@@ -302,8 +825,7 @@ export default function PatientPortal() {
               style={{
                 height: 180,
                 borderRadius: 22,
-                background:
-                  "linear-gradient(135deg, #eef7ff, #e6fffd)",
+                background: "linear-gradient(135deg, #eef7ff, #e6fffd)",
                 display: "grid",
                 placeItems: "center",
                 color: "#667085",
@@ -319,3 +841,126 @@ export default function PatientPortal() {
     </div>
   );
 }
+
+function formatVisitStatus(status) {
+  const labels = {
+    REGISTERED: "Înregistrat",
+    WAITING_TRIAGE: "În așteptare pentru triaj",
+    TRIAGED: "Triat",
+    IN_CONSULTATION: "În consultație",
+    IN_INVESTIGATION: "În investigații",
+    UNDER_OBSERVATION: "Sub observație",
+    DISCHARGED: "Externat",
+    ADMITTED: "Internat",
+    TRANSFERRED: "Transferat",
+  };
+
+  return labels[status] || status || "—";
+}
+
+function formatDateTime(value) {
+  if (!value) return "—";
+
+  return new Date(value).toLocaleString("ro-RO", {
+    day: "2-digit",
+    month: "2-digit",
+    year: "numeric",
+    hour: "2-digit",
+    minute: "2-digit",
+  });
+}
+
+const avatarStyle = {
+  width: 110,
+  height: 110,
+  borderRadius: "50%",
+  margin: "0 auto",
+  background: "linear-gradient(135deg, #08b8b3, #069a96)",
+  display: "grid",
+  placeItems: "center",
+  color: "white",
+  fontWeight: 950,
+  fontSize: 42,
+  boxShadow: "0 20px 45px rgba(8,184,179,0.28)",
+  overflow: "hidden",
+};
+
+const logoutButtonStyle = {
+  border: "none",
+  background: `linear-gradient(135deg, ${teal}, ${tealDark})`,
+  color: "white",
+  padding: "12px 16px",
+  borderRadius: 16,
+  fontWeight: 950,
+  cursor: "pointer",
+  boxShadow: "0 14px 30px rgba(8,184,179,0.24)",
+};
+
+const primaryButtonStyle = {
+  marginTop: 18,
+  border: "none",
+  background: `linear-gradient(135deg, ${teal}, ${tealDark})`,
+  color: "white",
+  padding: "12px 16px",
+  borderRadius: 16,
+  fontWeight: 900,
+  cursor: "pointer",
+  boxShadow: "0 14px 30px rgba(8,184,179,0.18)",
+};
+
+const secondaryButtonStyle = {
+  marginTop: 4,
+  border: "1px solid #dbe7f3",
+  background: "white",
+  color: "#102033",
+  padding: "12px 16px",
+  borderRadius: 16,
+  fontWeight: 900,
+  cursor: "pointer",
+};
+
+const askButtonStyle = {
+  marginTop: 12,
+  border: "none",
+  background: `linear-gradient(135deg, ${teal}, ${tealDark})`,
+  color: "white",
+  padding: "12px 16px",
+  borderRadius: 16,
+  fontWeight: 950,
+  cursor: "pointer",
+  boxShadow: "0 14px 30px rgba(8,184,179,0.24)",
+};
+
+const editLabel = {
+  marginBottom: 6,
+  color: "#667085",
+  fontWeight: 800,
+  fontSize: 13,
+};
+
+const editInput = {
+  width: "100%",
+  padding: "12px 14px",
+  borderRadius: 16,
+  border: "1px solid #dbe7f3",
+  outline: "none",
+  fontWeight: 700,
+  fontSize: 14,
+  boxSizing: "border-box",
+};
+
+const statusBoxStyle = {
+  padding: 16,
+  borderRadius: 20,
+  background: "#e6fffd",
+  color: tealDark,
+  fontWeight: 950,
+};
+
+const activeVisitBoxStyle = {
+  padding: 16,
+  borderRadius: 20,
+  background: "#e6fffd",
+  color: tealDark,
+  fontWeight: 950,
+};

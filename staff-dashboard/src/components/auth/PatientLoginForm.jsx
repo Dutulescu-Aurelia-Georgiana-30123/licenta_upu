@@ -127,7 +127,7 @@ export default function PatientLoginForm({ onOpenRegister }) {
           cursor: "pointer",
         }}
       >
-        Creează cont pacient
+        Activeaza cont pacient
       </button>
     </>
   );

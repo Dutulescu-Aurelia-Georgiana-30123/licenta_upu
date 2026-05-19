@@ -111,7 +111,7 @@ export default function PatientRegisterModal({ open, onClose }) {
             <h2 style={titleStyle}>
               {step === "gdpr"
                 ? "Acord pentru prelucrarea datelor"
-                : "Creează cont pacient"}
+                : "Creeaza cont pacient"}
             </h2>
             <p style={subtitleStyle}>
               {step === "gdpr"
