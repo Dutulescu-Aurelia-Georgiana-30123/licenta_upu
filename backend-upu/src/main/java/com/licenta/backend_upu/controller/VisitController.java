@@ -70,7 +70,9 @@ public class VisitController {
             return null;
         }
 
-        return visitMapper.toResponse(visit);
+        List<VisitResponse> responses = toResponsesWithTriage(List.of(visit));
+
+        return responses.isEmpty() ? null : responses.get(0);
     }
 
     @GetMapping("/by-cnp/{cnp}")

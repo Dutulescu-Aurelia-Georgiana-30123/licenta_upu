@@ -107,6 +107,15 @@ public interface VisitRepository extends JpaRepository<Visit, Long> {
             String cnp,
             List<VisitStatus> statuses
     );
-    List<Visit> findByPatient_CnpOrderByCreatedAtDesc(String cnp);
+
+    List<Visit> findByPatient_CnpAndStatusInOrderByCreatedAtDesc(
+            String cnp,
+            List<VisitStatus> statuses
+    );
+
+    List<Visit> findByPatient_IdAndStatusInOrderByCreatedAtDesc(
+            Long patientId,
+            List<VisitStatus> statuses
+    );
 
 }

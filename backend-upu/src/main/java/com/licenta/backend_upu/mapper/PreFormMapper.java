@@ -7,6 +7,7 @@ import org.springframework.stereotype.Component;
 
 @Component
 public class PreFormMapper {
+
     public void applyToEntity(PreFormUpsertRequest req, PreHospitalizationForm e) {
         e.setFirstName(req.getFirstName());
         e.setLastName(req.getLastName());
@@ -14,17 +15,8 @@ public class PreFormMapper {
         e.setBirthDate(req.getBirthDate());
         e.setSex(req.getSex());
 
-        if (req.getTriageColor() != null) {
-            e.setTriageColor(TriageColor.valueOf(req.getTriageColor().toUpperCase()));
-        } else {
-            e.setTriageColor(null);
-        }
-
-        if (req.getArrivalMode() != null) {
-            e.setArrivalMode(ArrivalMode.valueOf(req.getArrivalMode().toUpperCase()));
-        } else {
-            e.setArrivalMode(null);
-        }
+        e.setTriageColor(parseEnum(TriageColor.class, req.getTriageColor()));
+        e.setArrivalMode(parseEnum(ArrivalMode.class, req.getArrivalMode()));
 
         e.setReason(req.getReason());
 
@@ -162,17 +154,8 @@ public class PreFormMapper {
 
         e.setAllergies(req.getAllergies());
 
-        if (req.getOutcome() != null) {
-            e.setOutcome(PatientOutcome.valueOf(req.getOutcome().toUpperCase()));
-        } else {
-            e.setOutcome(null);
-        }
-
-        if (req.getHandoverTo() != null) {
-            e.setHandoverTo(HandoverTo.valueOf(req.getHandoverTo().toUpperCase()));
-        } else {
-            e.setHandoverTo(null);
-        }
+        e.setOutcome(parseEnum(PatientOutcome.class, req.getOutcome()));
+        e.setHandoverTo(parseEnum(HandoverTo.class, req.getHandoverTo()));
 
         e.setDetails(req.getDetails());
 
@@ -355,5 +338,13 @@ public class PreFormMapper {
         r.setNurseSignedAt(e.getNurseSignedAt());
 
         return r;
+    }
+
+    private <E extends Enum<E>> E parseEnum(Class<E> enumClass, String value) {
+        if (value == null || value.isBlank()) {
+            return null;
+        }
+
+        return Enum.valueOf(enumClass, value.trim().toUpperCase());
     }
 }

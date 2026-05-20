@@ -86,7 +86,14 @@ public class VisitService {
     }
 
     public List<Visit> getVisitByPatient(Long patientId) {
-        return visitRepository.findByPatient_IdOrderByCreatedAtDesc(patientId);
+        return visitRepository.findByPatient_IdAndStatusInOrderByCreatedAtDesc(
+                patientId,
+                List.of(
+                        VisitStatus.DISCHARGED,
+                        VisitStatus.ADMITTED,
+                        VisitStatus.TRANSFERRED
+                )
+        );
     }
     public Visit assignDoctorToVisit(Long visitId, Long doctorId) {
         Visit visit = visitRepository.findById(visitId)
@@ -135,6 +142,13 @@ public class VisitService {
                 .orElse(null);
     }
     public List<Visit> getVisitsByPatientCnp(String cnp) {
-        return visitRepository.findByPatient_CnpOrderByCreatedAtDesc(cnp);
+        return visitRepository.findByPatient_CnpAndStatusInOrderByCreatedAtDesc(
+                cnp,
+                List.of(
+                        VisitStatus.DISCHARGED,
+                        VisitStatus.ADMITTED,
+                        VisitStatus.TRANSFERRED
+                )
+        );
     }
 }
