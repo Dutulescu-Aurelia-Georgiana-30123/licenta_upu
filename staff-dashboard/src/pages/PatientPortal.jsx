@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import axios from "axios";
 import { useAuth } from "../context/AuthContext";
+import NearbyHospitalsMap from "../components/patient/NearbyHospitalsMap";
 
 const teal = "#08b8b3";
 const tealDark = "#069a96";
@@ -146,7 +147,13 @@ export default function PatientPortal() {
     };
 
     loadPatientData();
-  }, [user?.cnp]);
+
+const interval = setInterval(() => {
+  loadPatientData();
+}, 7000);
+
+return () => clearInterval(interval);
+}, [user?.cnp]);
 
   const reloadQuestions = async () => {
     if (!user?.cnp) return;
@@ -476,38 +483,68 @@ export default function PatientPortal() {
             marginTop: 18,
           }}
         >
-          <Card
-            title="Status vizită actuală"
-            subtitle="Stadiul curent al vizitei tale în UPU"
-          >
-            {visitLoading ? (
-              <div style={statusBoxStyle}>Se încarcă vizita...</div>
-            ) : activeVisit ? (
-              <div style={{ display: "grid", gap: 10 }}>
-                <div style={activeVisitBoxStyle}>
-                  ● Vizită activă: {formatVisitStatus(activeVisit.status)}
-                </div>
+        <Card
+  title="Status vizită actuală"
+  subtitle="Stadiul curent al vizitei tale în UPU"
+>
+  {visitLoading ? (
+    <div style={statusBoxStyle}>Se încarcă vizita...</div>
+  ) : activeVisit ? (
+    <div style={{ display: "grid", gap: 18 }}>
+      <div style={activeVisitBoxStyle}>
+        Status curent: {formatVisitStatus(activeVisit.status)}
+      </div>
 
-                <PatientInfoRow label="Cod vizită" value={activeVisit.visitCode} />
+      <div
+        style={{
+          padding: 16,
+          borderRadius: 20,
+          background: getTriageBackground(activeVisit.triageColor),
+          border: `2px solid ${getTriageColor(activeVisit.triageColor)}`,
+        }}
+      >
+        <div
+          style={{
+            fontSize: 12,
+            fontWeight: 900,
+            marginBottom: 6,
+            color: getTriageColor(activeVisit.triageColor),
+          }}
+        >
+          COD DE TRIAJ
+        </div>
 
-                <PatientInfoRow
-                  label="Data înregistrării"
-                  value={formatDateTime(activeVisit.createdAt)}
-                />
+        <div
+          style={{
+            fontSize: 18,
+            fontWeight: 950,
+            color: getTriageColor(activeVisit.triageColor),
+          }}
+        >
+          {activeVisit.triageColor || "Neatribuit"}
+        </div>
+      </div>
 
-                <PatientInfoRow
-                  label="Motiv prezentare"
-                  value={activeVisit.presentationReason}
-                />
+      <PatientInfoRow label="Cod vizită" value={activeVisit.visitCode} />
 
-                <PatientInfoRow label="Medic" value={activeVisit.doctorEmail} />
-              </div>
-            ) : (
-              <div style={statusBoxStyle}>
-                ● Nu există momentan o vizită activă
-              </div>
-            )}
-          </Card>
+      <PatientInfoRow
+        label="Data înregistrării"
+        value={formatDateTime(activeVisit.createdAt)}
+      />
+
+      <PatientInfoRow
+        label="Motiv prezentare"
+        value={activeVisit.presentationReason}
+      />
+
+      <PatientInfoRow label="Medic" value={activeVisit.doctorEmail} />
+    </div>
+  ) : (
+    <div style={statusBoxStyle}>
+      Nu există momentan o vizită activă.
+    </div>
+  )}
+</Card>
 
           <Card
             title="Istoric vizite"
@@ -818,24 +855,11 @@ export default function PatientPortal() {
           </Card>
 
           <Card
-            title="Spitale de urgență apropiate"
-            subtitle="Hartă cu unități UPU din apropierea ta"
-          >
-            <div
-              style={{
-                height: 180,
-                borderRadius: 22,
-                background: "linear-gradient(135deg, #eef7ff, #e6fffd)",
-                display: "grid",
-                placeItems: "center",
-                color: "#667085",
-                fontWeight: 900,
-                border: "1px dashed #c8d8e8",
-              }}
-            >
-              Harta va fi adăugată ulterior
-            </div>
-          </Card>
+  title="Spitale de urgență apropiate"
+  subtitle="Hartă cu unități medicale de urgență"
+>
+  <NearbyHospitalsMap />
+</Card>
         </div>
       </div>
     </div>
@@ -845,17 +869,46 @@ export default function PatientPortal() {
 function formatVisitStatus(status) {
   const labels = {
     REGISTERED: "Înregistrat",
-    WAITING_TRIAGE: "În așteptare pentru triaj",
-    TRIAGED: "Triat",
-    IN_CONSULTATION: "În consultație",
-    IN_INVESTIGATION: "În investigații",
-    UNDER_OBSERVATION: "Sub observație",
+    WAITING_CONSULT: "În așteptare pentru consultație",
+    IN_CONSULT: "În consultație",
     DISCHARGED: "Externat",
     ADMITTED: "Internat",
     TRANSFERRED: "Transferat",
   };
 
   return labels[status] || status || "—";
+}
+
+function getTriageColor(color) {
+  switch (color) {
+    case "ROSU":
+      return "#dc2626";
+
+    case "GALBEN":
+      return "#ca8a04";
+
+    case "VERDE":
+      return "#16a34a";
+
+    default:
+      return "#64748b";
+  }
+}
+
+function getTriageBackground(color) {
+  switch (color) {
+    case "ROSU":
+      return "#fee2e2";
+
+    case "GALBEN":
+      return "#fef9c3";
+
+    case "VERDE":
+      return "#dcfce7";
+
+    default:
+      return "#f1f5f9";
+  }
 }
 
 function formatDateTime(value) {
