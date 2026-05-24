@@ -422,7 +422,10 @@ export default function ArchivePage() {
           <input
             placeholder="Caută după nume sau CNP"
             value={search}
-            onChange={(e) => setSearch(e.target.value)}
+            onChange={(e) => {
+  setSearch(e.target.value);
+  searchPatients(e.target.value);
+}}
             style={inputStyle}
           />
 
@@ -585,21 +588,51 @@ export default function ArchivePage() {
                       </div>
                     </div>
 
-                    <button
-                      onClick={() => downloadDocument(doc)}
-                      style={{
-                        padding: "12px 16px",
-                        borderRadius: 16,
-                        border: "none",
-                        background: `linear-gradient(135deg, ${teal}, ${tealDark})`,
-                        color: "white",
-                        fontWeight: 950,
-                        cursor: "pointer",
-                        boxShadow: "0 14px 30px rgba(8,184,179,0.24)",
-                      }}
-                    >
-                      Descarcă
-                    </button>
+                  <div
+  style={{
+    display: "flex",
+    gap: 10,
+    alignItems: "center",
+  }}
+>
+  <button
+    onClick={() =>
+      window.open(
+        `${API_BASE}/archived-documents/${doc.id}/view`,
+        "_blank"
+      )
+    }
+    style={{
+      padding: "10px 18px",
+      borderRadius: 14,
+      border: "1px solid #d1d5db",
+      background: "white",
+      color: "#102033",
+      fontWeight: 800,
+      cursor: "pointer",
+    }}
+  >
+    Previzualizează
+  </button>
+
+  <button
+    onClick={() => downloadDocument(doc)}
+    style={{
+      padding: "10px 18px",
+      borderRadius: 14,
+      border: "none",
+      background: "#08b8b3",
+      color: "white",
+      fontWeight: 800,
+      cursor: "pointer",
+    }}
+  >
+    Descarcă
+  </button>
+</div>
+
+
+                    
                   </div>
                 ))}
               </div>

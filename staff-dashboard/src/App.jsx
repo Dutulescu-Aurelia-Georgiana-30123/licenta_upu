@@ -1,4 +1,4 @@
-import { useMemo, useState } from "react";
+import { useMemo, useState, useEffect } from "react";
 import TopNav from "./components/TopNav";
 import HomePage from "./pages/HomePage";
 import PatientsPage from "./pages/PatientsPage";
@@ -10,25 +10,67 @@ import { ToastProvider } from "./context/ToastContext";
 import MedicalPage from "./pages/MedicalPage";
 import PatientPortal from "./pages/PatientPortal";
 import { useAuth } from "./context/AuthContext";
+import { apiGet } from "./api/api";
 import "./styles/theme.css";
 
 export default function App() {
-  const [activePage, setActivePage] = useState(() => {
-    return localStorage.getItem("activePage") || "home";
-  });
+  const [activePage, setActivePage] = useState(
+    localStorage.getItem("reception_active_page") || "home"
+  );
 
   const [selectedVisit, setSelectedVisit] = useState(null);
 
   const { user, role, authReady } = useAuth();
 
+  const selectVisit = (visit) => {
+    setSelectedVisit(visit);
+
+    if (visit?.id) {
+      localStorage.setItem("reception_selected_visit_id", String(visit.id));
+    } else {
+      localStorage.removeItem("reception_selected_visit_id");
+    }
+  };
+
   const changePage = (page) => {
     setActivePage(page);
-    localStorage.setItem("activePage", page);
+    localStorage.setItem("reception_active_page", page);
 
     if (page !== "forms") {
       setSelectedVisit(null);
+      localStorage.removeItem("reception_selected_visit_id");
     }
   };
+
+  useEffect(() => {
+    localStorage.setItem("reception_active_page", activePage);
+  }, [activePage]);
+
+  useEffect(() => {
+    const savedVisitId = localStorage.getItem("reception_selected_visit_id");
+
+    if (!savedVisitId) return;
+    if (activePage !== "forms") return;
+
+    const loadSavedVisit = async () => {
+      try {
+        const visits = await apiGet("/visits");
+        const visit = (visits || []).find(
+          (v) => String(v.id) === String(savedVisitId)
+        );
+
+        if (visit) {
+          setSelectedVisit(visit);
+        } else {
+          localStorage.removeItem("reception_selected_visit_id");
+        }
+      } catch (e) {
+        console.error("Eroare la reîncărcarea vizitei selectate:", e);
+      }
+    };
+
+    loadSavedVisit();
+  }, [activePage]);
 
   const content = useMemo(() => {
     if (activePage === "home") return <HomePage onNavigate={changePage} />;
@@ -37,7 +79,7 @@ export default function App() {
       return (
         <PatientsPage
           onVisitCreated={(visit) => {
-            setSelectedVisit(visit);
+            selectVisit(visit);
             changePage("forms");
           }}
         />
@@ -49,7 +91,7 @@ export default function App() {
         <VisitsPage
           selected={selectedVisit}
           onSelect={(visit) => {
-            setSelectedVisit(visit);
+            selectVisit(visit);
             changePage("forms");
           }}
         />
@@ -58,7 +100,10 @@ export default function App() {
 
     if (activePage === "forms") {
       return (
-        <FormsPage selected={selectedVisit} onSelectVisit={setSelectedVisit} />
+        <FormsPage
+          selected={selectedVisit}
+          onSelectVisit={selectVisit}
+        />
       );
     }
 

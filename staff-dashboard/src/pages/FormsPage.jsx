@@ -2,7 +2,6 @@ import { useEffect, useMemo, useRef, useState } from "react";
 import { apiGet } from "../api/api";
 import { initialPreformState, initialDischargeState } from "../forms/initialStates";
 import PatientDetailsPanel from "../components/forms/PatientDetailsPanel";
-import FormsToolbar from "../components/forms/FormsToolbar";
 import PreformSection from "../components/forms/PreformSection";
 import DischargeSection from "../components/forms/DischargeSection";
 import PreformPrintView from "../components/forms/PreFormPrintView";
@@ -154,20 +153,24 @@ function getTriageBadgeStyle(triageColor) {
   }
 
   if (triageColor === "CONSULT") {
-  return { background: "#e6fffd", color: tealDark };
-}
+    return { background: "#e6fffd", color: tealDark };
+  }
 
   return { background: "#f1f5f9", color: "#64748b" };
 }
 
 export default function FormsPage({ selected, onSelectVisit, previewOnly = false }) {
   const user = JSON.parse(localStorage.getItem("user"));
+  const isReception = user?.role === "RECEPTION";
+
   const [patientsSearch, setPatientsSearch] = useState("");
   const [preformOpen, setPreformOpen] = useState(false);
   const [dischargeOpen, setDischargeOpen] = useState(false);
 
   const [preform, setPreform] = useState(initialPreformState);
   const [discharge, setDischarge] = useState(initialDischargeState);
+  const [finalStatus, setFinalStatus] = useState("");
+  const [dischargeSaved, setDischargeSaved] = useState(false);
 
   const [msg, setMsg] = useState("");
   const [loading, setLoading] = useState(false);
@@ -200,6 +203,7 @@ export default function FormsPage({ selected, onSelectVisit, previewOnly = false
 
   const loadAllPatients = async () => {
     setMsg("");
+
     try {
       const data = await apiGet("/patients");
       setPatientsList(data || []);
@@ -227,9 +231,7 @@ export default function FormsPage({ selected, onSelectVisit, previewOnly = false
     const now = Date.now();
     const msSinceLastEdit = now - lastEditAtRef.current;
 
-    if (msSinceLastEdit < 4000) {
-      return;
-    }
+    if (msSinceLastEdit < 4000) return;
 
     setMsg("");
 
@@ -271,6 +273,8 @@ export default function FormsPage({ selected, onSelectVisit, previewOnly = false
     setSelectedPatient(null);
     setPatientVisits([]);
     setCombinedPrintMode(false);
+    setFinalStatus("");
+    setDischargeSaved(false);
     setMsg("");
     setAiTriageResult(null);
 
@@ -307,30 +311,43 @@ export default function FormsPage({ selected, onSelectVisit, previewOnly = false
   }, [selected?.id]);
 
   const savePreform = async () => {
-  if (!selected || isClosedVisit) return;
+    if (!selected || isClosedVisit) return;
 
-  setMsg("");
-  setLoading(true);
+    if (isReception && !preform.triageColor) {
+      setMsg("Selectează codul de triaj înainte de salvarea fișei.");
+      showError("Selectează codul de triaj.");
+      return;
+    }
 
-  const payload = buildPreformPayload(preform);
+    setMsg("");
+    setLoading(true);
 
-  try {
-    await savePreformData(selected, payload);
+    const payload = buildPreformPayload(preform);
 
-    await updateVisitStatusData(selected, "WAITING_CONSULT");
+    try {
+      await savePreformData(selected, payload);
 
-    lastEditAtRef.current = 0;
-    hasUserEditedRef.current = false;
+      if (isReception) {
+        await updateVisitStatusData(selected, "WAITING_CONSULT");
 
-    setMsg("Fișa de pre-spitalizare a fost salvată. Pacientul este în așteptare consult.");
-    showSuccess("Fișa salvată. Pacientul este în așteptare consult.");
-  } catch (e) {
-    setMsg(`Eroare salvare preform: ${e}`);
-    showError("Eroare salvare preform");
-  } finally {
-    setLoading(false);
-  }
-};
+        setMsg(
+          "Fișa de pre-spitalizare a fost salvată. Pacientul este în așteptare consult."
+        );
+        showSuccess("Fișa salvată. Pacientul este în așteptare consult.");
+      } else {
+        setMsg("Fișa de pre-spitalizare a fost salvată.");
+        showSuccess("Fișa de pre-spitalizare a fost salvată.");
+      }
+
+      lastEditAtRef.current = 0;
+      hasUserEditedRef.current = false;
+    } catch (e) {
+      setMsg(`Eroare salvare preform: ${e}`);
+      showError("Eroare salvare preform");
+    } finally {
+      setLoading(false);
+    }
+  };
 
   const autoSavePreform = async () => {
     if (!selected || isClosedVisit) return;
@@ -372,15 +389,15 @@ export default function FormsPage({ selected, onSelectVisit, previewOnly = false
     const missingFields = getMissingRequiredAiFields(preform);
 
     if (missingFields.length > 0) {
-  setAiMissingFields(missingFields);
+      setAiMissingFields(missingFields);
 
-  const message = `Completează înainte de AI: ${missingFields.join(", ")}.`;
-  setMsg(message);
-  showError(message);
-  return;
-}
+      const message = `Completează înainte de AI: ${missingFields.join(", ")}.`;
+      setMsg(message);
+      showError(message);
+      return;
+    }
 
-setAiMissingFields([]);
+    setAiMissingFields([]);
 
     const recommendedMissingFields = getMissingRecommendedAiFields(preform);
 
@@ -453,6 +470,7 @@ setAiMissingFields([]);
       lastEditAtRef.current = 0;
       setMsg("Fișa de externare a fost salvată.");
       showSuccess("Fișa de externare a fost salvată.");
+      setDischargeSaved(true);
     } catch (e) {
       setMsg(`Eroare salvare externare: ${e}`);
       showError("Eroare salvare externare");
@@ -460,7 +478,6 @@ setAiMissingFields([]);
       setLoading(false);
     }
   };
-
 
   const exportCombined = async () => {
     if (!selected) return;
@@ -499,6 +516,77 @@ setAiMissingFields([]);
     }, 500);
   };
 
+  const finalizeAndExportMedicalVisit = async () => {
+    if (!selected) return;
+
+    if (!dischargeSaved) {
+      showError("Salvează mai întâi fișa de externare.");
+      return;
+    }
+
+    if (!finalStatus) {
+      showError("Alege statusul final.");
+      return;
+    }
+
+    setMsg("");
+    setLoading(true);
+    setCombinedPrintMode(true);
+
+    const finalizedVisit = {
+      ...selected,
+      status: finalStatus,
+    };
+
+    try {
+      await updateVisitStatusData(selected, finalStatus);
+
+      if (onSelectVisit) {
+        onSelectVisit(finalizedVisit);
+      }
+
+      await new Promise((resolve) => setTimeout(resolve, 800));
+
+      const success = await exportCombinedPdf({
+        selected: finalizedVisit,
+        setMsg,
+      });
+
+      if (success) {
+        showSuccess("Pacient finalizat și fișele au fost salvate în arhivă.");
+        setFinalStatus("");
+      }
+    } catch (e) {
+      console.error("Eroare finalizare/export:", e);
+      setMsg(`Eroare finalizare/export: ${e.message || e}`);
+      showError(e.message || "Eroare la finalizare/export.");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const printMedicalForms = async () => {
+    if (!selected) return;
+
+    if (!dischargeSaved) {
+      showError("Salvează mai întâi fișa de externare.");
+      return;
+    }
+
+    setCombinedPrintMode(true);
+
+    setTimeout(async () => {
+      try {
+        await downloadCombinedPdf({ selected, setMsg });
+        showSuccess("PDF descărcat.");
+      } catch (e) {
+        console.error("Eroare print medic:", e);
+        setMsg(`Eroare la descărcarea PDF-ului: ${e.message || e}`);
+        showError("Eroare la descărcarea PDF-ului.");
+      }
+    }, 500);
+  };
+
   const loadPatientVisits = async (patient) => {
     await loadPatientVisitsAction({
       patient,
@@ -525,6 +613,7 @@ setAiMissingFields([]);
           >
             Fișe pacienți
           </h2>
+
           <div style={{ color: "#64748b", marginTop: 4, fontSize: 14 }}>
             Caută pacientul și selectează vizita pentru completarea fișelor
           </div>
@@ -617,6 +706,7 @@ setAiMissingFields([]);
               <div style={{ fontSize: 17, fontWeight: 900, color: "#0f172a" }}>
                 Fișele pacientului: {selectedPatient.firstName} {selectedPatient.lastName}
               </div>
+
               <div style={{ color: "#64748b", marginTop: 4, fontSize: 13 }}>
                 Selectează o vizită pentru a continua
               </div>
@@ -647,12 +737,8 @@ setAiMissingFields([]);
 
                   const statusLabels = {
                     REGISTERED: "Înregistrat",
-                    WAITING_TRIAGE: "În așteptare triaj",
-                    TRIAGE_DONE: "Triaj făcut",
                     WAITING_CONSULT: "În așteptare consult",
                     IN_CONSULT: "În consult",
-                    IN_INVESTIGATION: "În investigații",
-                    OBSERVATION: "În observație",
                     DISCHARGED: "Externat",
                     ADMITTED: "Internat",
                     TRANSFERRED: "Transferat",
@@ -687,41 +773,38 @@ setAiMissingFields([]);
 
   const triageBadgeStyle = getTriageBadgeStyle(preform.triageColor);
 
-if (previewOnly && selected) {
-  return (
-    <div
-      style={{
-        width: "100%",
-        background: "#ffffff",
-        borderRadius: 24,
-        padding: 20,
-        border: "1px solid #e5eef8",
-      }}
-    >
-      <div style={{ marginBottom: 16 }}>
-        <h2 style={{ margin: 0, color: "#0f172a" }}>
-          Previzualizare vizită veche
-        </h2>
+  if (previewOnly && selected) {
+    return (
+      <div
+        style={{
+          width: "100%",
+          background: "#ffffff",
+          borderRadius: 24,
+          padding: 20,
+          border: "1px solid #e5eef8",
+        }}
+      >
+        <div style={{ marginBottom: 16 }}>
+          <h2 style={{ margin: 0, color: "#0f172a" }}>
+            Previzualizare vizită veche
+          </h2>
 
-        <div style={{ color: "#64748b", marginTop: 4 }}>
-          {selected.visitCode || `Vizita ${selected.id}`}
+          <div style={{ color: "#64748b", marginTop: 4 }}>
+            {selected.visitCode || `Vizita ${selected.id}`}
+          </div>
+        </div>
+
+        <div id="print-area">
+          <PreformPrintView preform={preform} />
+
+          <div style={{ height: 24 }} />
+
+          <DischargePrintView discharge={discharge} preform={preform} />
         </div>
       </div>
+    );
+  }
 
-      <div id="print-area">
-        <PreformPrintView preform={preform} />
-
-        <div style={{ height: 24 }} />
-
-        <DischargePrintView
-          discharge={discharge}
-          preform={preform}
-        />
-      </div>
-    </div>
-  );
-}
-  
   return (
     <div style={{ width: "100%" }}>
       <div
@@ -747,7 +830,7 @@ if (previewOnly && selected) {
           </h2>
 
           <div style={{ color: "#64748b", marginTop: 4, fontSize: 14 }}>
-            Fișă pre-spitalizare, externare și suport AI pentru triaj
+            Fișă pre-spitalizare și fișă de externare
           </div>
         </div>
 
@@ -765,66 +848,134 @@ if (previewOnly && selected) {
             TRIAJ: {preform.triageColor}
           </div>
         )}
+
+{!isReception && (
+          <div
+            style={{
+              marginTop: 14,
+              display: "flex",
+              gap: 10,
+              flexWrap: "wrap",
+              alignItems: "center",
+            }}
+          >
+            <select
+              value={finalStatus}
+              onChange={(e) => setFinalStatus(e.target.value)}
+              disabled={!dischargeSaved || loading}
+              style={{
+                ...inputStyle,
+                minWidth: 240,
+                opacity: dischargeSaved && !loading ? 1 : 0.6,
+                cursor: dischargeSaved && !loading ? "pointer" : "not-allowed",
+              }}
+            >
+              <option value="">Alege status final</option>
+              <option value="DISCHARGED">Externat</option>
+              <option value="ADMITTED">Internat</option>
+              <option value="TRANSFERRED">Transferat</option>
+            </select>
+
+            <button
+              onClick={finalizeAndExportMedicalVisit}
+              disabled={!finalStatus || !dischargeSaved || loading}
+              style={{
+                ...primaryButtonStyle,
+                opacity: finalStatus && dischargeSaved && !loading ? 1 : 0.6,
+                cursor:
+                  finalStatus && dischargeSaved && !loading
+                    ? "pointer"
+                    : "not-allowed",
+              }}
+            >
+              {loading ? "Se procesează..." : "Finalizează și exportă fișele"}
+            </button>
+
+            <button
+              onClick={printMedicalForms}
+              disabled={!dischargeSaved || loading}
+              style={{
+                ...secondaryButtonStyle,
+                opacity: dischargeSaved && !loading ? 1 : 0.6,
+                cursor: dischargeSaved && !loading ? "pointer" : "not-allowed",
+              }}
+            >
+              Printează fișele
+            </button>
+
+            {!dischargeSaved && (
+              <div
+                style={{
+                  color: "#92400e",
+                  fontWeight: 800,
+                  fontSize: 13,
+                  width: "100%",
+                }}
+              >
+                Salvează fișa de externare înainte de finalizare.
+              </div>
+            )}
+          </div>
+        )}
+
       </div>
 
       <div style={cardStyle}>
         <PatientDetailsPanel patientDetails={patientDetails} />
       </div>
 
-      <div
-        style={{
-          marginTop: 14,
-          display: "flex",
-          gap: 10,
-          flexWrap: "wrap",
-          alignItems: "center",
-        }}
-      >
-        <button
-          onClick={() => setCombinedPrintMode((prev) => !prev)}
-          style={secondaryButtonStyle}
+      {isReception && (
+        <div
+          style={{
+            marginTop: 14,
+            display: "flex",
+            gap: 10,
+            flexWrap: "wrap",
+            alignItems: "center",
+          }}
         >
-          {combinedPrintMode
-            ? "Ascunde previzualizarea fișelor"
-            : "Arată previzualizarea fișelor"}
-        </button>
+          <button
+            onClick={() => setCombinedPrintMode((prev) => !prev)}
+            style={secondaryButtonStyle}
+          >
+            {combinedPrintMode
+              ? "Ascunde previzualizarea fișelor"
+              : "Arată previzualizarea fișelor"}
+          </button>
 
-        <button
-  onClick={exportCombined}
-  disabled={loading || alreadyExported}
-  style={{
-    ...primaryButtonStyle,
-    opacity: loading || alreadyExported ? 0.65 : 1,
-    cursor:
-      loading || alreadyExported ? "not-allowed" : "pointer",
-  }}
->
-  {alreadyExported
-    ? "Fișa deja exportată"
-    : "Export PDF combinat"}
-</button>
+          <button
+            onClick={exportCombined}
+            disabled={loading || alreadyExported}
+            style={{
+              ...primaryButtonStyle,
+              opacity: loading || alreadyExported ? 0.65 : 1,
+              cursor: loading || alreadyExported ? "not-allowed" : "pointer",
+            }}
+          >
+            {alreadyExported ? "Fișa deja exportată" : "Export PDF combinat"}
+          </button>
 
-        <button onClick={handlePrintCombined} style={secondaryButtonStyle}>
-          Printează fișele
-        </button>
+          <button onClick={handlePrintCombined} style={secondaryButtonStyle}>
+            Printează fișele
+          </button>
 
-        {user?.role === "RECEPTION" && (
-  <button
-    onClick={runAiTriage}
-    disabled={loading || isClosedVisit}
-    style={{
-      ...primaryButtonStyle,
-      opacity: loading ? 0.7 : 1,
-      cursor: loading ? "not-allowed" : "pointer",
-      minWidth: 170,
-    }}
-  >
-    {loading ? "Se generează..." : "Generează triaj AI"}
-  </button>
-)}
-      </div>
+          <button
+            onClick={runAiTriage}
+            disabled={loading || isClosedVisit}
+            style={{
+              ...primaryButtonStyle,
+              opacity: loading ? 0.7 : 1,
+              cursor: loading ? "not-allowed" : "pointer",
+              minWidth: 170,
+            }}
+          >
+            {loading ? "Se generează..." : "Generează triaj AI"}
+          </button>
+        </div>
+      )}
 
-      {aiTriageResult &&
+      {isReception &&
+        aiTriageResult &&
         (() => {
           const label = aiTriageResult.predictie_finala;
 
@@ -873,6 +1024,7 @@ if (previewOnly && selected) {
                   <div style={{ fontWeight: 900, fontSize: 17 }}>
                     Recomandare AI
                   </div>
+
                   <div style={{ color: "#64748b", marginTop: 4, fontSize: 13 }}>
                     Rezultat generat pe baza datelor clinice introduse
                   </div>
@@ -939,6 +1091,7 @@ if (previewOnly && selected) {
               {aiTriageResult.reguli_siguranta_aplicate?.length > 0 && (
                 <div style={{ marginTop: 14, color: "#334155" }}>
                   <strong>Reguli aplicate:</strong>
+
                   <ul style={{ marginTop: 6, marginBottom: 0 }}>
                     {aiTriageResult.reguli_siguranta_aplicate.map((rule, index) => (
                       <li key={index}>{rule}</li>
@@ -977,8 +1130,13 @@ if (previewOnly && selected) {
           );
         })()}
 
-      {combinedPrintMode && (
-        <div id="print-area">
+      {(combinedPrintMode || !isReception) && (
+        <div
+          id="print-area"
+          style={{
+            display: combinedPrintMode ? "block" : "none",
+          }}
+        >
           <PreformPrintView preform={preform} />
           <DischargePrintView discharge={discharge} preform={preform} />
         </div>
@@ -989,7 +1147,6 @@ if (previewOnly && selected) {
         onInputCapture={markEditing}
         onChangeCapture={markEditing}
       >
-
         <PreformSection
           preformOpen={preformOpen}
           setPreformOpen={setPreformOpen}
@@ -1009,13 +1166,14 @@ if (previewOnly && selected) {
           onSave={saveDischarge}
           readOnly={isClosedVisit}
         />
+
         <SignaturesSection
-  preform={preform}
-  setPreform={setPreform}
-  discharge={discharge}
-  setDischarge={setDischarge}
-  readOnly={isClosedVisit}
-/>
+          preform={preform}
+          setPreform={setPreform}
+          discharge={discharge}
+          setDischarge={setDischarge}
+          readOnly={isClosedVisit}
+        />
       </div>
     </div>
   );

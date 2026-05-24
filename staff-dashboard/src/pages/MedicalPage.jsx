@@ -8,6 +8,10 @@ import MyPatientsSection from "../components/medical/MyPatientsSection";
 import { useAuth } from "../context/AuthContext";
 import MedicalProfilePage from "./MedicalProfilePage";
 import QuestionsSection from "../components/medical/QuestionsSection";
+import {
+  exportCombinedPdf,
+  downloadCombinedPdf,
+} from "./formsPrintActions";
 
 export default function MedicalPage() {
   const { user, isDoctor, logout } = useAuth();
@@ -145,6 +149,7 @@ export default function MedicalPage() {
     }
   };
 
+
   if (!user) {
     return (
       <div
@@ -236,7 +241,7 @@ export default function MedicalPage() {
         <>
           <CurrentPatientSection
             currentVisit={currentVisit}
-            showForms={false}
+            showForms={showForms}
             onToggleForms={() => {
               if (!currentVisit) return;
 

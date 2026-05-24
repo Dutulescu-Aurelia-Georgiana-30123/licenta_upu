@@ -41,6 +41,8 @@ function InfoBox({ label, value }) {
 export default function CurrentPatientSection({
   currentVisit,
   onFinishPatient,
+  onFinishAndExport,
+  onPrintForms,
   onToggleForms,
   showForms,
   canFinish,
@@ -246,51 +248,19 @@ export default function CurrentPatientSection({
             </div>
           )}
 
-          <div
-            style={{
-              display: "flex",
-              gap: 10,
-              flexWrap: "wrap",
-              marginTop: 20,
-            }}
-          >
-            <button onClick={onToggleForms} style={theme.button.primary}>
-              {showForms ? "Ascunde fișa actuală" : "Deschide fișa actuală"}
-            </button>
+         <div
+  style={{
+    display: "flex",
+    gap: 10,
+    flexWrap: "wrap",
+    marginTop: 20,
+  }}
+>
+  <button onClick={onToggleForms} style={theme.button.primary}>
+    {showForms ? "Ascunde fișa actuală" : "Deschide fișa actuală"}
+  </button>
 
-            {canFinish && (
-              <>
-                <select
-                  value={finalStatus}
-                  onChange={(e) => setFinalStatus(e.target.value)}
-                  style={{
-                    ...theme.input.base,
-                    minWidth: 220,
-                  }}
-                >
-                  <option value="">Alege status final</option>
-                  <option value="DISCHARGED">Externat</option>
-                  <option value="ADMITTED">Internat</option>
-                  <option value="TRANSFERRED">Transferat</option>
-                </select>
-
-                <button
-                  onClick={onFinishPatient}
-                  disabled={!finalStatus}
-                  style={{
-                    ...theme.button.secondary,
-                    background: "#dcfce7",
-                    color: "#166534",
-                    border: "1px solid #bbf7d0",
-                    opacity: finalStatus ? 1 : 0.6,
-                    cursor: finalStatus ? "pointer" : "not-allowed",
-                  }}
-                >
-                  Finalizează pacient
-                </button>
-              </>
-            )}
-          </div>
+</div>
         </>
       )}
     </div>

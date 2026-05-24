@@ -17,7 +17,10 @@ export default function TopNav({ active, onChange }) {
     <aside
       style={{
         width: 270,
-        minHeight: "100vh",
+        height: "100vh",
+        position: "sticky",
+        top: 0,
+        overflowY: "auto",
         background: "rgba(255,255,255,0.92)",
         color: "#102033",
         padding: 22,
@@ -155,7 +158,7 @@ export default function TopNav({ active, onChange }) {
           transition: "0.2s ease",
         }}
       >
-        ⏻ Logout
+        Logout
       </button>
     </aside>
   );
