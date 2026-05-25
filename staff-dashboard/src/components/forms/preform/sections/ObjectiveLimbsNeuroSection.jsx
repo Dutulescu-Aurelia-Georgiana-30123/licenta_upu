@@ -39,13 +39,14 @@ export default function ObjectiveLimbsNeuroSection({ preform, setPreform }) {
 
         <CheckboxField
           label="NORMAL"
-          checked={preform.noseNormal}
-          onChange={(v) => setPreform({ ...preform, noseNormal: v })}
+          checked={preform.locomotorExamNormal}
+          onChange={(v) => setPreform({ ...preform, locomotorExamNormal: v })}
         />
 
         <CheckboxGrid
           preform={preform}
           setPreform={setPreform}
+          columns={3}
           items={[
             ["locomotorHead", "190 - Cap"],
             ["locomotorNeck", "191 - Gât"],
@@ -103,6 +104,57 @@ export default function ObjectiveLimbsNeuroSection({ preform, setPreform }) {
               setPreform({ ...preform, locomotorPulseFemoralRight: v })
             }
           />
+
+          <LrCheckboxRow
+            label="200 - Poplitee - 201"
+            leftChecked={preform.locomotorPulsePoplitealLeft}
+            rightChecked={preform.locomotorPulsePoplitealRight}
+            onLeftChange={(v) =>
+              setPreform({ ...preform, locomotorPulsePoplitealLeft: v })
+            }
+            onRightChange={(v) =>
+              setPreform({ ...preform, locomotorPulsePoplitealRight: v })
+            }
+          />
+
+          <LrCheckboxRow
+            label="202 - Pedioasă - 203"
+            leftChecked={preform.locomotorPulsePedialLeft}
+            rightChecked={preform.locomotorPulsePedialRight}
+            onLeftChange={(v) =>
+              setPreform({ ...preform, locomotorPulsePedialLeft: v })
+            }
+            onRightChange={(v) =>
+              setPreform({ ...preform, locomotorPulsePedialRight: v })
+            }
+          />
+        </div>
+
+        <div style={{ marginTop: 14 }}>
+          <CheckboxGrid
+            preform={preform}
+            setPreform={setPreform}
+            columns={2}
+            items={[
+              ["locomotorExamPain", "204 - Durere"],
+              ["locomotorExamSwelling", "205 - Tumefiere"],
+              ["locomotorExamEdema", "206 - Edem"],
+              ["locomotorExamFunctionalImpairment", "207 - Impotență funcțională"],
+              ["locomotorExamCyanosis", "208 - Cianoză"],
+              ["locomotorExamOpenFracture", "209 - Fractură deschisă"],
+              ["locomotorExamClosedFracture", "210 - Fractură închisă"],
+            ]}
+          />
+        </div>
+
+        <div style={{ marginTop: 12 }}>
+          <TextField
+            label="Observații"
+            value={preform.locomotorExamObservations}
+            onChange={(v) =>
+              setPreform({ ...preform, locomotorExamObservations: v })
+            }
+          />
         </div>
       </div>
 
@@ -114,10 +166,22 @@ export default function ObjectiveLimbsNeuroSection({ preform, setPreform }) {
           setPreform={setPreform}
           columns={3}
           items={[
-            ["neuroPsychNormal", "230 - Normal"],
-            ["neuroPsychConfusion", "231 - Confuzie"],
-            ["neuroPsychComa", "232 - Comă"],
-            ["neuroPsychAgitation", "233 - Agitație"],
+            ["neuroPsychNormal", "Normal"],
+            ["neuroPsychOriented", "220 - Orientat temp-sp"],
+            ["neuroPsychCranialNerves", "221 - Nervi cranieni"],
+            ["neuroPsychMotor", "222 - Motor"],
+            ["neuroPsychSensitive", "223 - Senzitiv"],
+            ["neuroPsychRot", "224 - ROT"],
+            ["neuroPsychHallucinations", "225 - Halucinații"],
+            ["neuroPsychDelirium", "226 - Delir"],
+            ["neuroPsychBehaviorDisorders", "227 - Tulb. comp."],
+            ["neuroPsychAgitated", "228 - Agitat"],
+            ["neuroPsychObnubilated", "229 - Obnubilat"],
+            ["neuroPsychConfused", "230 - Confuz"],
+            ["neuroPsychPhotophobia", "231 - Fotofobie"],
+            ["neuroPsychNeckStiffness", "232 - Redoarea cefei"],
+            ["neuroPsychParesthesia", "233 - Parestezii"],
+            ["neuroPsychAtaxia", "234 - Ataxie"],
             ["neuroPsychAphasia", "235 - Afazie"],
             ["neuroPsychMyoclonus", "236 - Mioclonii"],
             ["neuroPsychConvulsions", "237 - Convulsii"],

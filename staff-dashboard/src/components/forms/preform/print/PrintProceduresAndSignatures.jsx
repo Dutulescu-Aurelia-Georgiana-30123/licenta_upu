@@ -49,35 +49,35 @@ export default function PrintProceduresAndSignatures({ preform }) {
             </div>
             <CheckItem checked={preform.proceduresManualDefibrillation} label="41 - Defibrilare manuală" />
             <CheckItem checked={preform.proceduresAutomaticDefibrillation} label="42 - Defibrilare automată" />
-            <CheckItem checked={preform.proceduresCardioversion} label="43 - Cardioversie" />
-            <CheckItem checked={preform.proceduresTranscutaneousPm} label={`PM transcutanat: ${safe(preform.proceduresTranscutaneousPmValue)}`} />
-            <CheckItem checked={preform.proceduresTransvenousPm} label={`PM transvenos: ${safe(preform.proceduresTransvenousPmValue)}`} />
-            <CheckItem checked={preform.proceduresAnalgosedation} label="Analgosedare" />
-            <CheckItem checked={preform.proceduresLocalAnesthesia} label="Anestezie locală" />
-            <CheckItem checked={preform.proceduresShortIvAnesthesia} label="Anestezie iv scurtă durată" />
+            <CheckItem checked={preform.proceduresCardioversion} label="44 - Cardioversie" />
+            <CheckItem checked={preform.proceduresTranscutaneousPm} label={`46 - PM transcutanat: ${safe(preform.proceduresTranscutaneousPmValue)}`} />
+            <CheckItem checked={preform.proceduresTransvenousPm} label={`47 - PM transvenos: ${safe(preform.proceduresTransvenousPmValue)}`} />
+            <CheckItem checked={preform.proceduresAnalgosedation} label="68 - Analgosedare" />
+            <CheckItem checked={preform.proceduresLocalAnesthesia} label="69 - Anestezie locală" />
+            <CheckItem checked={preform.proceduresShortIvAnesthesia} label="70 - Anestezie iv scurtă durată" />
           </div>
 
           <div>
-            <CheckItem checked={preform.proceduresPericardialPuncture} label="45 - Puncție pericardică" />
-            <CheckItem checked={preform.proceduresPeritonealDiagnosticLavage} label="46 - Lavaj peritoneal diag." />
-            <CheckItem checked={preform.proceduresActiveRewarming} label="47 - Reîncălzire activă" />
-            <CheckItem checked={preform.proceduresPassiveRewarming} label="48 - Reîncălzire pasivă" />
-            <CheckItem checked={preform.proceduresGastricLavage} label={`49 - Lavaj gastric: ${safe(preform.proceduresGastricLavageValue)}`} />
-            <CheckItem checked={preform.proceduresNasogastricTube} label={`50 - Sondă nazogastrică: ${safe(preform.proceduresNasogastricTubeValue)}`} />
-            <CheckItem checked={preform.proceduresUrinaryCatheter} label={`51 - Sondă vezică urinară: ${safe(preform.proceduresUrinaryCatheterValue)}`} />
-            <CheckItem checked={preform.proceduresCervicalCollar} label="52 - Guler cervical" />
-            <CheckItem checked={preform.proceduresScoopStretcher} label="53 - Targă cu lopeți" />
-            <CheckItem checked={preform.proceduresSpineBoard} label="54 - Targă coloană" />
-            <CheckItem checked={preform.proceduresLimbImmobilization} label="55 - Imobilizare membre" />
-            <CheckItem checked={preform.proceduresSplint} label={`56 - Atelă: ${safe(preform.proceduresSplintValue)}`} />
-            <CheckItem checked={preform.proceduresCastDevice} label="57 - Aparat gipsat" />
-            <CheckItem checked={preform.proceduresWoundCleaning} label="58 - Toaletă plagă" />
-            <CheckItem checked={preform.proceduresSuture} label="59 - Sutură" />
-            <CheckItem checked={preform.proceduresMessage} label="60 - Mesaj" />
-            <CheckItem checked={preform.proceduresNasalPacking} label="61 - Tamponament nazal" />
-            <CheckItem checked={preform.proceduresShortSedation} label="Sedare de scurtă durată" />
-            <CheckItem checked={preform.proceduresProceduralSedation} label="Sedare procedurală" />
-            <CheckItem checked={preform.proceduresLongSedation} label="Sedare de lungă durată" />
+            <CheckItem checked={preform.proceduresPericardialPuncture} label="48 - Puncție pericardică" />
+            <CheckItem checked={preform.proceduresPeritonealDiagnosticLavage} label="49 - Lavaj peritoneal diag." />
+            <CheckItem checked={preform.proceduresActiveRewarming} label="51 - Reîncălzire activă" />
+            <CheckItem checked={preform.proceduresPassiveRewarming} label="50 - Reîncălzire pasivă" />
+            <CheckItem checked={preform.proceduresGastricLavage} label={`52 - Lavaj gastric: ${safe(preform.proceduresGastricLavageValue)}`} />
+            <CheckItem checked={preform.proceduresNasogastricTube} label={`53 - Sondă nazogastrică: ${safe(preform.proceduresNasogastricTubeValue)}`} />
+            <CheckItem checked={preform.proceduresUrinaryCatheter} label={`54 - Sondă vezică urinară: ${safe(preform.proceduresUrinaryCatheterValue)}`} />
+            <CheckItem checked={preform.proceduresCervicalCollar} label="55 - Guler cervical" />
+            <CheckItem checked={preform.proceduresScoopStretcher} label="56 - Targă cu lopeți" />
+            <CheckItem checked={preform.proceduresSpineBoard} label="57 - Targă coloană" />
+            <CheckItem checked={preform.proceduresLimbImmobilization} label="58 - Imobilizare membre" />
+            <CheckItem checked={preform.proceduresSplint} label={`59 - Atelă: ${safe(preform.proceduresSplintValue)}`} />
+            <CheckItem checked={preform.proceduresCastDevice} label="60 - Aparat gipsat" />
+            <CheckItem checked={preform.proceduresWoundCleaning} label="63 - Toaletă plagă" />
+            <CheckItem checked={preform.proceduresSuture} label="61 - Sutură" />
+            <CheckItem checked={preform.proceduresMessage} label="62 - Mesaj" />
+            <CheckItem checked={preform.proceduresNasalPacking} label="64 - Tamponament nazal" />
+            <CheckItem checked={preform.proceduresShortSedation} label="65 - Sedare de scurtă durată" />
+            <CheckItem checked={preform.proceduresProceduralSedation} label=" 66 - Sedare procedurală" />
+            <CheckItem checked={preform.proceduresLongSedation} label="67 - Sedare de lungă durată" />
             <CheckItem checked={preform.proceduresArterialPuncture} label="Puncție arterială" />
             <div style={{ marginBottom: 4 }}>
               <b>Alte:</b> {safe(preform.proceduresOther)}
