@@ -13,7 +13,6 @@ import {
   buildAiTriagePayload,
 } from "./formsPayloadBuilders";
 import { loadPreformIntoState, loadDischargeIntoState } from "./formsPageLoaders";
-import { loadPatientVisitsAction } from "./formsSearchActions";
 import SignaturesSection from "../components/forms/SignaturesSection";
 import {
   loadPreformData,
@@ -162,6 +161,8 @@ function getTriageBadgeStyle(triageColor) {
 export default function FormsPage({ selected, onSelectVisit, previewOnly = false }) {
   const user = JSON.parse(localStorage.getItem("user"));
   const isReception = user?.role === "RECEPTION";
+  const isDoctor = user?.role === "DOCTOR";
+const isNurse = user?.role === "NURSE";
 
   const [patientsSearch, setPatientsSearch] = useState("");
   const [preformOpen, setPreformOpen] = useState(false);
@@ -529,6 +530,16 @@ export default function FormsPage({ selected, onSelectVisit, previewOnly = false
       return;
     }
 
+    if (!preform.doctorSignature || !preform.nurseSignature) {
+  showError("Nu poți finaliza. Lipsește una dintre semnături.");
+  return;
+}
+
+if (!discharge.doctorSignature || !discharge.nurseSignature) {
+  showError("Nu poți finaliza. Lipsesc semnăturile de pe fișa de externare.");
+  return;
+}
+
     setMsg("");
     setLoading(true);
     setCombinedPrintMode(true);
@@ -553,9 +564,13 @@ export default function FormsPage({ selected, onSelectVisit, previewOnly = false
       });
 
       if (success) {
-        showSuccess("Pacient finalizat și fișele au fost salvate în arhivă.");
-        setFinalStatus("");
-      }
+  showSuccess("Pacient finalizat și fișele au fost salvate în arhivă.");
+  setFinalStatus("");
+
+  if (onSelectVisit) {
+    onSelectVisit(null);
+  }
+}
     } catch (e) {
       console.error("Eroare finalizare/export:", e);
       setMsg(`Eroare finalizare/export: ${e.message || e}`);
@@ -588,16 +603,56 @@ export default function FormsPage({ selected, onSelectVisit, previewOnly = false
   };
 
   const loadPatientVisits = async (patient) => {
-    await loadPatientVisitsAction({
-      patient,
-      setSelectedPatient,
-      setMsg,
-      setPatientVisits,
-      loadPatientVisitsData,
+  setSelectedPatient(patient);
+  setMsg("");
+
+  try {
+    const visits = await apiGet("/visits");
+
+    const patientCnp = String(patient?.cnp || "").trim();
+    const patientFirstName = String(patient?.firstName || "").trim().toLowerCase();
+    const patientLastName = String(patient?.lastName || "").trim().toLowerCase();
+
+    const activeVisits = (visits || []).filter((v) => {
+      const isClosed =
+        v.status === "DISCHARGED" ||
+        v.status === "ADMITTED" ||
+        v.status === "TRANSFERRED";
+
+      if (isClosed) return false;
+
+      const visitCnp = String(v.patientCnp || "").trim();
+      const visitFirstName = String(v.patientFirstName || "").trim().toLowerCase();
+      const visitLastName = String(v.patientLastName || "").trim().toLowerCase();
+
+      const sameCnp = patientCnp && visitCnp && patientCnp === visitCnp;
+
+      const sameName =
+        patientFirstName &&
+        patientLastName &&
+        visitFirstName === patientFirstName &&
+        visitLastName === patientLastName;
+
+      return sameCnp || sameName;
     });
 
-    showInfo("Pacient selectat");
-  };
+    setPatientVisits(activeVisits);
+
+    setTimeout(() => {
+      const el = document.getElementById("patient-visits-section");
+
+      if (el) {
+        el.scrollIntoView({
+          behavior: "smooth",
+          block: "start",
+        });
+      }
+    }, 150);
+  } catch (e) {
+    setMsg(`Eroare încărcare vizite pacient: ${e}`);
+    setPatientVisits([]);
+  }
+};
 
   if (!selected) {
     return (
@@ -701,14 +756,17 @@ export default function FormsPage({ selected, onSelectVisit, previewOnly = false
         </div>
 
         {selectedPatient && (
-          <div style={{ marginTop: 16, ...cardStyle }}>
+          <div
+  id="patient-visits-section"
+  style={{ marginTop: 16, ...cardStyle }}
+>
             <div style={{ marginBottom: 14 }}>
               <div style={{ fontSize: 17, fontWeight: 900, color: "#0f172a" }}>
                 Fișele pacientului: {selectedPatient.firstName} {selectedPatient.lastName}
               </div>
 
               <div style={{ color: "#64748b", marginTop: 4, fontSize: 13 }}>
-                Selectează o vizită pentru a continua
+                Vizite active disponibile pentru completare
               </div>
             </div>
 
@@ -747,7 +805,7 @@ export default function FormsPage({ selected, onSelectVisit, previewOnly = false
                   return (
                     <div
                       key={visit.id}
-                      onClick={() => onSelectVisit && onSelectVisit(visit)}
+                      
                       style={{
                         cursor: "pointer",
                         padding: 14,
@@ -760,6 +818,14 @@ export default function FormsPage({ selected, onSelectVisit, previewOnly = false
                     >
                       Vizita {visit.visitCode}, {visitDate} —{" "}
                       {statusLabels[visit.status] || visit.status}
+                      <div style={{ marginTop: 10 }}>
+  <button
+    onClick={() => onSelectVisit && onSelectVisit(visit)}
+    style={secondaryButtonStyle}
+  >
+    Previzualizează fișa
+  </button>
+</div>
                     </div>
                   );
                 })}
@@ -828,6 +894,18 @@ export default function FormsPage({ selected, onSelectVisit, previewOnly = false
           >
             Fișe ({selected.visitCode || `vizita ${selected.id}`})
           </h2>
+          {isReception && (
+  <button
+    type="button"
+    onClick={() => onSelectVisit && onSelectVisit(null)}
+    style={{
+      ...secondaryButtonStyle,
+      marginTop: 10,
+    }}
+  >
+    ← Înapoi la fișe
+  </button>
+)}
 
           <div style={{ color: "#64748b", marginTop: 4, fontSize: 14 }}>
             Fișă pre-spitalizare și fișă de externare
@@ -849,7 +927,8 @@ export default function FormsPage({ selected, onSelectVisit, previewOnly = false
           </div>
         )}
 
-{!isReception && (
+
+{isDoctor && (
           <div
             style={{
               marginTop: 14,
@@ -1168,12 +1247,14 @@ export default function FormsPage({ selected, onSelectVisit, previewOnly = false
         />
 
         <SignaturesSection
-          preform={preform}
-          setPreform={setPreform}
-          discharge={discharge}
-          setDischarge={setDischarge}
-          readOnly={isClosedVisit}
-        />
+  preform={preform}
+  setPreform={setPreform}
+  discharge={discharge}
+  setDischarge={setDischarge}
+  readOnly={isClosedVisit}
+  onSavePreform={savePreform}
+  onSaveDischarge={saveDischarge}
+/>
       </div>
     </div>
   );

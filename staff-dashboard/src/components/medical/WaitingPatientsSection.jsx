@@ -4,11 +4,25 @@ import { StatusBadge, TriageBadge } from "./MedicalBadges";
 
 const LIMIT = 4;
 
+function staffName(firstName, lastName, email) {
+  const fullName = `${firstName || ""} ${lastName || ""}`.trim();
+  return fullName || email || "Neasignat";
+}
 
-export default function WaitingPatientsSection({ visits, onTakePatient }) {
+export default function WaitingPatientsSection({
+  visits,
+  onTakePatient,
+  isDoctor,
+  isNurse,
+}) {
   const [expanded, setExpanded] = useState(false);
 
-  const waitingVisits = visits.filter((v) => !v.doctorEmail);
+  const waitingVisits = visits.filter((v) => {
+    if (isDoctor) return !v.doctorId;
+    if (isNurse) return !v.nurseId;
+    return false;
+  });
+
   const visibleVisits = expanded ? waitingVisits : waitingVisits.slice(0, LIMIT);
   const hasMore = waitingVisits.length > LIMIT;
 
@@ -16,15 +30,16 @@ export default function WaitingPatientsSection({ visits, onTakePatient }) {
     <div style={theme.card.base}>
       <div style={{ marginBottom: 16 }}>
         <div style={{ fontSize: 18, fontWeight: 950, color: theme.colors.text }}>
-          Pacienți în așteptare
+          Pacienți disponibili
         </div>
+
         <div style={subTextStyle}>
           {waitingVisits.length} pacienți disponibili pentru preluare
         </div>
       </div>
 
       {waitingVisits.length === 0 ? (
-        <div style={emptyStyle}>Nu există pacienți în așteptare.</div>
+        <div style={emptyStyle}>Nu există pacienți disponibili.</div>
       ) : (
         <>
           <div style={{ display: "grid", gap: 12 }}>
@@ -40,6 +55,24 @@ export default function WaitingPatientsSection({ visits, onTakePatient }) {
                   <div style={reasonStyle}>
                     Motiv: {v.presentationReason || "necompletat"}
                   </div>
+
+                  <div style={staffInfoStyle}>
+                    Medic:{" "}
+                    {staffName(
+                      v.doctorFirstName,
+                      v.doctorLastName,
+                      v.doctorEmail
+                    )}
+                  </div>
+
+                  <div style={staffInfoStyle}>
+                    Asistent:{" "}
+                    {staffName(
+                      v.nurseFirstName,
+                      v.nurseLastName,
+                      v.nurseEmail
+                    )}
+                  </div>
                 </div>
 
                 <div style={{ display: "grid", gap: 6, minWidth: 140 }}>
@@ -47,8 +80,11 @@ export default function WaitingPatientsSection({ visits, onTakePatient }) {
                   <StatusBadge status={v.status} />
                 </div>
 
-                <button onClick={() => onTakePatient(v.id)} style={theme.button.primary}>
-                  Preia pacient
+                <button
+                  onClick={() => onTakePatient(v.id)}
+                  style={theme.button.primary}
+                >
+                  {isDoctor ? "Preia ca medic" : "Preia ca asistent"}
                 </button>
               </div>
             ))}
@@ -110,4 +146,11 @@ const reasonStyle = {
   marginTop: 6,
   fontWeight: 800,
   lineHeight: 1.35,
+};
+
+const staffInfoStyle = {
+  color: "#475569",
+  fontSize: 13,
+  marginTop: 6,
+  fontWeight: 800,
 };

@@ -6,6 +6,8 @@ export default function SignaturesSection({
   setPreform,
   setDischarge,
   readOnly = false,
+  onSavePreform,
+  onSaveDischarge,
 }) {
   const { user } = useAuth();
   const { showSuccess, showError } = useToast();
@@ -40,6 +42,11 @@ export default function SignaturesSection({
         doctorSignedAt: signedAt,
       }));
 
+      setTimeout(() => {
+  onSavePreform && onSavePreform();
+  onSaveDischarge && onSaveDischarge();
+}, 100);
+
       showSuccess("Semnătura medicului a fost aplicată.");
       return;
     }
@@ -57,6 +64,11 @@ export default function SignaturesSection({
       nurseSignature: user.profileSignature,
       nurseSignedAt: signedAt,
     }));
+
+    setTimeout(() => {
+  onSavePreform && onSavePreform();
+  onSaveDischarge && onSaveDischarge();
+}, 100);
 
     showSuccess("Semnătura asistentului a fost aplicată.");
   };

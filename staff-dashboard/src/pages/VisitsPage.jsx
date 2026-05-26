@@ -165,7 +165,7 @@ export default function VisitsPage({ selected, onSelect }) {
   const [assignmentFilter, setAssignmentFilter] = useState("ALL");
   const [sortOrder, setSortOrder] = useState("desc");
 
-  const { showError, showInfo } = useToast();
+  const { showError} = useToast();
 
   const load = async (silent = false) => {
     setError("");
@@ -394,22 +394,6 @@ export default function VisitsPage({ selected, onSelect }) {
               <option value="asc">Cele mai vechi primele</option>
             </select>
           </FieldControl>
-
-          <button
-            onClick={() => load(false)}
-            style={{
-              border: "none",
-              background: `linear-gradient(135deg, ${teal}, ${tealDark})`,
-              color: "white",
-              padding: "13px 16px",
-              borderRadius: 16,
-              fontWeight: 950,
-              cursor: "pointer",
-              boxShadow: "0 14px 30px rgba(8,184,179,0.24)",
-            }}
-          >
-            Refresh
-          </button>
         </div>
 
         <div style={{ overflowX: "auto" }}>
@@ -442,10 +426,7 @@ export default function VisitsPage({ selected, onSelect }) {
                 return (
                   <tr
                     key={v.id}
-                    onClick={() => {
-                      onSelect(v);
-                      showInfo(`Vizită selectată: ${v.visitCode}`);
-                    }}
+                    onClick={() => onSelect(v)}
                     style={{
                       cursor: "pointer",
                       background: isSelected

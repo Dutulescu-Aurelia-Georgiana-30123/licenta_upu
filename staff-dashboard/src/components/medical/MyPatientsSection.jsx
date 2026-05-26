@@ -4,6 +4,11 @@ import { StatusBadge, TriageBadge } from "./MedicalBadges";
 
 const LIMIT = 4;
 
+function staffName(firstName, lastName, email) {
+  const fullName = `${firstName || ""} ${lastName || ""}`.trim();
+  return fullName || email || "Neasignat";
+}
+
 export default function MyPatientsSection({ myVisits }) {
   const [expanded, setExpanded] = useState(false);
 
@@ -35,6 +40,24 @@ export default function MyPatientsSection({ myVisits }) {
 
                   <div style={reasonStyle}>
                     Motiv: {v.presentationReason || "necompletat"}
+                  </div>
+
+                  <div style={staffInfoStyle}>
+                    Medic:{" "}
+                    {staffName(
+                      v.doctorFirstName,
+                      v.doctorLastName,
+                      v.doctorEmail
+                    )}
+                  </div>
+
+                  <div style={staffInfoStyle}>
+                    Asistent:{" "}
+                    {staffName(
+                      v.nurseFirstName,
+                      v.nurseLastName,
+                      v.nurseEmail
+                    )}
                   </div>
                 </div>
 
@@ -110,4 +133,11 @@ const reasonStyle = {
   marginTop: 6,
   fontWeight: 800,
   lineHeight: 1.35,
+};
+
+const staffInfoStyle = {
+  color: "#475569",
+  fontSize: 13,
+  marginTop: 6,
+  fontWeight: 800,
 };

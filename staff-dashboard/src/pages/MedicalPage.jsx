@@ -6,6 +6,7 @@ import CurrentPatientSection from "../components/medical/CurrentPatientSection";
 import WaitingPatientsSection from "../components/medical/WaitingPatientsSection";
 import MyPatientsSection from "../components/medical/MyPatientsSection";
 import { useAuth } from "../context/AuthContext";
+import { useToast } from "../context/ToastContext";
 import MedicalProfilePage from "./MedicalProfilePage";
 import QuestionsSection from "../components/medical/QuestionsSection";
 import {
@@ -14,7 +15,10 @@ import {
 } from "./formsPrintActions";
 
 export default function MedicalPage() {
-  const { user, isDoctor, logout } = useAuth();
+  const { user, logout } = useAuth();
+
+const isDoctor = user?.role === "DOCTOR";
+const isNurse = user?.role === "NURSE";
 
   const [visits, setVisits] = useState([]);
   const [myVisits, setMyVisits] = useState([]);
@@ -24,6 +28,7 @@ export default function MedicalPage() {
   const [finalStatus, setFinalStatus] = useState("");
   const [previewOnly, setPreviewOnly] = useState(false);
   const [showProfile, setShowProfile] = useState(false);
+  const { showSuccess, showError } = useToast();
 
   const [availabilityStatus, setAvailabilityStatus] = useState(
     user?.availabilityStatus || "AVAILABLE"
@@ -37,31 +42,41 @@ export default function MedicalPage() {
   const currentVisit = myVisits.find((v) => !isFinalStatus(v.status));
 
   const load = async () => {
-    if (!user?.id) return;
+  if (!user?.id) return;
 
-    try {
-      const allVisits = await apiGet("/visits");
-      setVisits(allVisits || []);
+  try {
+    const allVisits = await apiGet("/visits");
+    setVisits(allVisits || []);
 
-      const mine = await apiGet(`/visits/doctor/${user.id}`);
-      setMyVisits(mine || []);
+    const mine = isDoctor
+      ? await apiGet(`/visits/doctor/${user.id}`)
+      : await apiGet(`/visits/nurse/${user.id}`);
 
-      const activeVisit = (mine || []).find((v) => !isFinalStatus(v.status));
+    setMyVisits(mine || []);
 
-      if (activeVisit) {
-        setAvailabilityStatus("BUSY");
-      }
+    const activeVisit = (mine || []).find(
+      (v) => !isFinalStatus(v.status)
+    );
 
-      if (activeVisit?.patientId) {
-        const patientVisits = await apiGet(`/visits/patient/${activeVisit.patientId}`);
-        setHistoryVisits(patientVisits || []);
-      } else {
-        setHistoryVisits([]);
-      }
-    } catch (e) {
-      console.error(e);
+    if (activeVisit) {
+      setAvailabilityStatus("BUSY");
+    } else {
+      setAvailabilityStatus("AVAILABLE");
     }
-  };
+
+    if (activeVisit?.patientId) {
+      const patientVisits = await apiGet(
+        `/visits/patient/${activeVisit.patientId}`
+      );
+
+      setHistoryVisits(patientVisits || []);
+    } else {
+      setHistoryVisits([]);
+    }
+  } catch (e) {
+    console.error(e);
+  }
+}; 
 
   useEffect(() => {
   if (!user?.id) return;
@@ -83,7 +98,7 @@ export default function MedicalPage() {
     const hasActivePatient = myVisits.some((v) => !isFinalStatus(v.status));
 
     if (nextStatus === "AVAILABLE" && hasActivePatient) {
-      alert("Nu te poți marca disponibil cât timp ai un pacient activ.");
+      showError("Nu te poți marca disponibil cât timp ai un pacient activ.");
       return;
     }
 
@@ -94,14 +109,24 @@ export default function MedicalPage() {
 
       setAvailabilityStatus(nextStatus);
     } catch (e) {
-      alert(e.message || "Eroare la actualizarea disponibilității");
+      showError(e.message || "Eroare la actualizarea disponibilității");
     }
   };
 
   const takePatient = async (visitId) => {
-    if (!user?.id) return;
+  if (!user?.id) return;
 
-    try {
+  if (currentVisit) {
+    showError(
+      isDoctor
+        ? "Medicul are deja un pacient activ."
+        : "Asistentul are deja un pacient activ."
+    );
+    return;
+  }
+
+  try {
+    if (isDoctor) {
       await apiPut(`/visits/${visitId}/assign-doctor`, {
         doctorId: user.id,
       });
@@ -109,22 +134,49 @@ export default function MedicalPage() {
       await apiPut(`/visits/${visitId}/status`, {
         status: "IN_CONSULT",
       });
-
-      await updateAvailability("BUSY");
-
-      setPreviewOnly(false);
-      setShowForms(false);
-      setSelectedVisitForForms(null);
-
-      await load();
-    } catch (e) {
-      alert(e.message || "Nu poți prelua pacientul");
     }
-  };
+
+    if (isNurse) {
+      await apiPut(`/visits/${visitId}/assign-nurse`, {
+        nurseId: user.id,
+      });
+    }
+
+    setAvailabilityStatus("BUSY");
+
+    setPreviewOnly(false);
+    setShowForms(false);
+    setSelectedVisitForForms(null);
+
+    await load();
+
+    setTimeout(() => {
+      window.scrollTo({
+        top: 0,
+        behavior: "smooth",
+      });
+    }, 150);
+
+    showSuccess(
+      isDoctor
+        ? "Pacient preluat de medic."
+        : "Pacient preluat de asistent."
+    );
+  } catch (e) {
+    console.error(e);
+
+    showError(
+      e.message ||
+        (isDoctor
+          ? "Nu poți prelua pacientul ca medic"
+          : "Nu poți prelua pacientul ca asistent")
+    );
+  }
+};
 
   const finishCurrentPatient = async () => {
     if (!currentVisit || !finalStatus) {
-      alert("Alege statusul final: externat, internat sau transferat.");
+      showError("Alege statusul final: externat, internat sau transferat.");
       return;
     }
 
@@ -145,7 +197,7 @@ export default function MedicalPage() {
       });
       setAvailabilityStatus("AVAILABLE");
     } catch (e) {
-      alert("Eroare la finalizare");
+      showError("Eroare la finalizare");
     }
   };
 
@@ -233,7 +285,15 @@ export default function MedicalPage() {
 
           <FormsPage
             selected={selectedVisitForForms}
-            onSelectVisit={setSelectedVisitForForms}
+            onSelectVisit={(visit) => {
+  setSelectedVisitForForms(visit);
+
+  if (!visit) {
+    setShowForms(false);
+    setPreviewOnly(false);
+    load();
+  }
+}}
             previewOnly={previewOnly}
           />
         </div>
@@ -271,14 +331,16 @@ export default function MedicalPage() {
           >
             <div style={{ display: "grid", gap: 18 }}>
               <WaitingPatientsSection
-                visits={visits}
-                onTakePatient={takePatient}
-              />
+  visits={visits}
+  onTakePatient={takePatient}
+  isDoctor={isDoctor}
+  isNurse={isNurse}
+/>
             </div>
 
             <div style={{ display: "grid", gap: 18 }}>
               <MyPatientsSection myVisits={myVisits} />
-              <QuestionsSection />
+              {isDoctor && <QuestionsSection />}
             </div>
           </div>
         </>

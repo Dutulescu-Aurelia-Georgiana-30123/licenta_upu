@@ -258,7 +258,7 @@ export default function PatientsPage({ onVisitCreated }) {
 
     try {
       const createdVisit = await apiPost("/visits", { patientId });
-      showSuccess("Vizită creată");
+      
 
       if (onVisitCreated) {
         onVisitCreated(createdVisit);
@@ -388,7 +388,6 @@ export default function PatientsPage({ onVisitCreated }) {
       >
         <MiniStat label="Pacienți total" value={patients.length} icon="👥" />
         <MiniStat label="Pacienți afișați" value={filteredPatients.length} icon="▦" />
-        <MiniStat label="Formular" value={showCreate ? 1 : 0} icon="＋" />
       </div>
 
       {error && (
@@ -567,21 +566,29 @@ export default function PatientsPage({ onVisitCreated }) {
                         </SecondaryButton>
 
                         <GhostButton
-                          onClick={() => {
-                            setForm({
-                              firstName: p.firstName || "",
-                              lastName: p.lastName || "",
-                              cnp: p.cnp || "",
-                              phoneNumber: p.phoneNumber || "",
-                              email: p.email || "",
-                            });
-                            setEditingPatientId(p.id);
-                            setShowCreate(true);
-                            setError("");
-                          }}
-                        >
-                          Editează
-                        </GhostButton>
+  onClick={() => {
+    setForm({
+      firstName: p.firstName || "",
+      lastName: p.lastName || "",
+      cnp: p.cnp || "",
+      phoneNumber: p.phoneNumber || "",
+      email: p.email || "",
+    });
+
+    setEditingPatientId(p.id);
+    setShowCreate(true);
+    setError("");
+
+    setTimeout(() => {
+      window.scrollTo({
+        top: 0,
+        behavior: "smooth",
+      });
+    }, 100);
+  }}
+>
+  Editează
+</GhostButton>
                       </div>
                     </td>
                   </tr>

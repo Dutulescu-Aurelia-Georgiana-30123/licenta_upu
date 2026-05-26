@@ -173,7 +173,7 @@ export default function ArchivePage() {
   const [documents, setDocuments] = useState([]);
   const [loading, setLoading] = useState(false);
 
-  const { showSuccess, showError, showInfo } = useToast();
+  const { showSuccess, showError} = useToast();
 
   const searchPatients = async (value) => {
     const q = (value || "").trim().toLowerCase();
@@ -245,7 +245,6 @@ export default function ArchivePage() {
       const visits = await apiGet(`/visits/patient/${patient.id}`);
       setPatientVisits(visits || []);
       setSearchResults([]);
-      showInfo("Pacient selectat");
     } catch (e) {
       setMsg(`Eroare încărcare vizite: ${e}`);
       showError("Eroare la încărcarea vizitelor");
@@ -262,7 +261,6 @@ export default function ArchivePage() {
     try {
       const docs = await apiGet(`/archived-documents/visit/${visit.id}`);
       setDocuments(docs || []);
-      showInfo("Vizită selectată");
     } catch (e) {
       setMsg(`Eroare încărcare documente: ${e}`);
       showError("Eroare la încărcarea documentelor");

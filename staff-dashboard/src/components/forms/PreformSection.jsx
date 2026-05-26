@@ -49,10 +49,18 @@ const aiFieldStyle = (field) => ({
       <div
   className="preform-modern"
   style={{
-    pointerEvents: isFormLocked ? "none" : "auto",
-    opacity: isFormLocked ? 0.6 : 1,
+    opacity: 1,
   }}
 >
+  <fieldset
+  disabled={isFormLocked}
+  style={{
+    border: "none",
+    padding: 0,
+    margin: 0,
+    minWidth: 0,
+  }}
+></fieldset>
         <div style={{ fontWeight: 700, fontSize: 18, textAlign: "center" }}>
           SPITALUL CLINIC DE URGENȚĂ
         </div>

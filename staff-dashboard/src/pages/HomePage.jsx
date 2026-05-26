@@ -234,7 +234,7 @@ export default function HomePage({ onNavigate }) {
       <div
         style={{
           display: "grid",
-          gridTemplateColumns: "1.4fr 0.6fr",
+          gridTemplateColumns: "1fr",
           gap: 18,
           alignItems: "stretch",
         }}
@@ -350,41 +350,7 @@ export default function HomePage({ onNavigate }) {
           </div>
         </div>
 
-        <Card>
-          <div style={{ color: "#667085", fontSize: 13, fontWeight: 800 }}>
-            Status sistem
-          </div>
-
-          <div style={{ marginTop: 14, display: "grid", gap: 12 }}>
-            <div
-              style={{
-                padding: 14,
-                borderRadius: 20,
-                background: "#e6fffd",
-                color: tealDark,
-                fontWeight: 900,
-              }}
-            >
-              ● Sistem activ
-            </div>
-
-            <button
-              onClick={() => load(false)}
-              style={{
-                border: "none",
-                background: `linear-gradient(135deg, ${teal}, ${tealDark})`,
-                color: "white",
-                padding: "13px 16px",
-                borderRadius: 16,
-                fontWeight: 950,
-                cursor: "pointer",
-                boxShadow: "0 14px 30px rgba(8,184,179,0.24)",
-              }}
-            >
-              Refresh date
-            </button>
-          </div>
-        </Card>
+        
       </div>
 
       {error && (
@@ -511,32 +477,89 @@ export default function HomePage({ onNavigate }) {
             </Card>
 
             <Card title="Acțiuni rapide" subtitle="Scurtături pentru fluxul zilnic">
-              <div style={{ display: "grid", gap: 12 }}>
-                <button onClick={() => onNavigate?.("patients")} style={quickActionStyle}>
-                  <span style={quickIconStyle}>＋</span>
-                  <span>
-                    <strong>Pacient nou</strong>
-                    <small>Înregistrează pacient și date de contact</small>
-                  </span>
-                </button>
+  <div style={{ display: "grid", gap: 12 }}>
+    <button
+      onClick={() => onNavigate?.("patients")}
+      style={quickActionStyle}
+    >
+      <span style={quickIconStyle}>＋</span>
 
-                <button onClick={() => onNavigate?.("patients")} style={quickActionStyle}>
-                  <span style={quickIconStyle}>📋</span>
-                  <span>
-                    <strong>Vizită nouă</strong>
-                    <small>Creează vizită pentru un pacient existent</small>
-                  </span>
-                </button>
+      <span
+        style={{
+          display: "grid",
+          gap: 6,
+        }}
+      >
+        <strong>Pacient nou</strong>
 
-                <button onClick={() => onNavigate?.("archive")} style={quickActionStyle}>
-                  <span style={quickIconStyle}>🗂</span>
-                  <span>
-                    <strong>Arhivă PDF</strong>
-                    <small>Caută documente medicale arhivate</small>
-                  </span>
-                </button>
-              </div>
-            </Card>
+        <small
+          style={{
+            color: "#667085",
+            fontSize: 12,
+            fontWeight: 600,
+            lineHeight: 1.45,
+          }}
+        >
+          Înregistrează pacient și date de contact
+        </small>
+      </span>
+    </button>
+
+    <button
+      onClick={() => onNavigate?.("patients")}
+      style={quickActionStyle}
+    >
+      <span style={quickIconStyle}>📋</span>
+
+      <span
+        style={{
+          display: "grid",
+          gap: 6,
+        }}
+      >
+        <strong>Vizită nouă</strong>
+
+        <small
+          style={{
+            color: "#667085",
+            fontSize: 12,
+            fontWeight: 600,
+            lineHeight: 1.45,
+          }}
+        >
+          Creează vizită pentru un pacient existent
+        </small>
+      </span>
+    </button>
+
+    <button
+      onClick={() => onNavigate?.("archive")}
+      style={quickActionStyle}
+    >
+      <span style={quickIconStyle}>🗂</span>
+
+      <span
+        style={{
+          display: "grid",
+          gap: 6,
+        }}
+      >
+        <strong>Arhivă PDF</strong>
+
+        <small
+          style={{
+            color: "#667085",
+            fontSize: 12,
+            fontWeight: 600,
+            lineHeight: 1.45,
+          }}
+        >
+          Caută documente medicale arhivate
+        </small>
+      </span>
+    </button>
+  </div>
+</Card>
           </div>
 
           <div
