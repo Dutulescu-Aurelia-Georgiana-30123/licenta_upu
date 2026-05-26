@@ -85,6 +85,20 @@ public class VisitController {
         return org.springframework.http.ResponseEntity.badRequest().body(e.getMessage());
     }
 
+    @PutMapping("/{id}/assign-nurse")
+    public VisitResponse assignNurseToVisit(
+            @PathVariable Long id,
+            @RequestBody Map<String, Long> request
+    ) {
+        Visit updated = visitService.assignNurseToVisit(id, request.get("nurseId"));
+        return visitMapper.toResponse(updated);
+    }
+
+    @GetMapping("/nurse/{nurseId}")
+    public List<VisitResponse> getVisitsByNurse(@PathVariable Long nurseId) {
+        return toResponsesWithTriage(visitService.getVisitsByNurse(nurseId));
+    }
+
     private List<VisitResponse> toResponsesWithTriage(List<Visit> visits) {
         if (visits == null || visits.isEmpty()) {
             return List.of();

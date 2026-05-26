@@ -117,5 +117,9 @@ public interface VisitRepository extends JpaRepository<Visit, Long> {
             Long patientId,
             List<VisitStatus> statuses
     );
+    List<Visit> findByNurse_IdOrderByCreatedAtDesc(Long nurseId);
 
+    long countByNurse_IdAndStatusNotIn(Long nurseId, List<VisitStatus> statuses);
+
+    boolean existsByNurse_IdAndStatusNotIn(Long nurseId, List<VisitStatus> statuses);
 }

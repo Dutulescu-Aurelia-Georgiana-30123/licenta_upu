@@ -25,6 +25,10 @@ public class Visit {
     @JoinColumn(name = "doctor_id")
     private User doctor;
 
+    @ManyToOne
+    @JoinColumn(name = "nurse_id")
+    private User nurse;
+
     @Enumerated(EnumType.STRING)
      @Column(nullable = false)
     private VisitStatus status;

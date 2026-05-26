@@ -1,14 +1,9 @@
 package com.licenta.backend_upu.service;
 
-import com.licenta.backend_upu.entity.Patient;
-import com.licenta.backend_upu.entity.Visit;
-import com.licenta.backend_upu.entity.VisitStatus;
+import com.licenta.backend_upu.entity.*;
 import com.licenta.backend_upu.repository.PatientRepository;
-import com.licenta.backend_upu.repository.VisitRepository;
-import com.licenta.backend_upu.entity.AvailabilityStatus;
-import com.licenta.backend_upu.entity.Role;
-import com.licenta.backend_upu.entity.User;
 import com.licenta.backend_upu.repository.UserRepository;
+import com.licenta.backend_upu.repository.VisitRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
@@ -32,7 +27,6 @@ public class VisitService {
         visit.setCreatedAt(LocalDateTime.now());
 
         visit = visitRepository.save(visit);
-
         visit.setVisitCode(generateVisitCode(visit.getId()));
 
         return visitRepository.save(visit);
@@ -56,14 +50,15 @@ public class VisitService {
 
             Visit savedVisit = visitRepository.save(visit);
 
-            if (savedVisit.getDoctor() != null &&
-                    (newStatus == VisitStatus.DISCHARGED ||
+            boolean isFinalStatus =
+                    newStatus == VisitStatus.DISCHARGED ||
                             newStatus == VisitStatus.ADMITTED ||
-                            newStatus == VisitStatus.TRANSFERRED)) {
+                            newStatus == VisitStatus.TRANSFERRED;
 
+            if (isFinalStatus && savedVisit.getDoctor() != null) {
                 User doctor = savedVisit.getDoctor();
 
-                long activeVisits = visitRepository.countByDoctor_IdAndStatusNotIn(
+                long activeDoctorVisits = visitRepository.countByDoctor_IdAndStatusNotIn(
                         doctor.getId(),
                         List.of(
                                 VisitStatus.DISCHARGED,
@@ -72,14 +67,31 @@ public class VisitService {
                         )
                 );
 
-                if (activeVisits == 0) {
+                if (activeDoctorVisits == 0) {
                     doctor.setAvailabilityStatus(AvailabilityStatus.AVAILABLE);
                     userRepository.save(doctor);
                 }
             }
 
-            return savedVisit;
+            if (isFinalStatus && savedVisit.getNurse() != null) {
+                User nurse = savedVisit.getNurse();
 
+                long activeNurseVisits = visitRepository.countByNurse_IdAndStatusNotIn(
+                        nurse.getId(),
+                        List.of(
+                                VisitStatus.DISCHARGED,
+                                VisitStatus.ADMITTED,
+                                VisitStatus.TRANSFERRED
+                        )
+                );
+
+                if (activeNurseVisits == 0) {
+                    nurse.setAvailabilityStatus(AvailabilityStatus.AVAILABLE);
+                    userRepository.save(nurse);
+                }
+            }
+
+            return savedVisit;
         } catch (IllegalArgumentException e) {
             throw new RuntimeException("Status invalid: " + status);
         }
@@ -95,6 +107,7 @@ public class VisitService {
                 )
         );
     }
+
     public Visit assignDoctorToVisit(Long visitId, Long doctorId) {
         Visit visit = visitRepository.findById(visitId)
                 .orElseThrow(() -> new RuntimeException("Vizita nu a fost gasita cu id: " + visitId));
@@ -125,8 +138,44 @@ public class VisitService {
         userRepository.save(doctor);
         return visitRepository.save(visit);
     }
+
+    public Visit assignNurseToVisit(Long visitId, Long nurseId) {
+        Visit visit = visitRepository.findById(visitId)
+                .orElseThrow(() -> new RuntimeException("Vizita nu a fost gasita cu id: " + visitId));
+
+        User nurse = userRepository.findById(nurseId)
+                .orElseThrow(() -> new RuntimeException("Utilizatorul nu a fost gasit cu id: " + nurseId));
+
+        if (nurse.getRole() != Role.NURSE) {
+            throw new RuntimeException("Utilizatorul selectat nu este asistent");
+        }
+
+        boolean hasActiveVisit = visitRepository.existsByNurse_IdAndStatusNotIn(
+                nurseId,
+                List.of(
+                        VisitStatus.DISCHARGED,
+                        VisitStatus.ADMITTED,
+                        VisitStatus.TRANSFERRED
+                )
+        );
+
+        if (hasActiveVisit) {
+            throw new IllegalStateException("Asistentul are deja un pacient activ");
+        }
+
+        visit.setNurse(nurse);
+        nurse.setAvailabilityStatus(AvailabilityStatus.BUSY);
+
+        userRepository.save(nurse);
+        return visitRepository.save(visit);
+    }
+
     public List<Visit> getVisitsByDoctor(Long doctorId) {
         return visitRepository.findByDoctor_IdOrderByCreatedAtDesc(doctorId);
+    }
+
+    public List<Visit> getVisitsByNurse(Long nurseId) {
+        return visitRepository.findByNurse_IdOrderByCreatedAtDesc(nurseId);
     }
 
     public Visit getActiveVisitByPatientCnp(String cnp) {
@@ -141,6 +190,7 @@ public class VisitService {
                 )
                 .orElse(null);
     }
+
     public List<Visit> getVisitsByPatientCnp(String cnp) {
         return visitRepository.findByPatient_CnpAndStatusInOrderByCreatedAtDesc(
                 cnp,
