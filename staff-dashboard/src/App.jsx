@@ -12,6 +12,7 @@ import PatientPortal from "./pages/PatientPortal";
 import { useAuth } from "./context/AuthContext";
 import { apiGet } from "./api/api";
 import "./styles/theme.css";
+import AdminPortal from "./pages/AdminPortal";
 
 export default function App() {
   const [activePage, setActivePage] = useState(
@@ -121,6 +122,14 @@ export default function App() {
   if (!user) {
     return <LoginPage />;
   }
+
+  if (role === "ADMIN") {
+  return (
+    <ToastProvider>
+      <AdminPortal />
+    </ToastProvider>
+  );
+}
 
   if (role === "DOCTOR" || role === "NURSE") {
     return (
