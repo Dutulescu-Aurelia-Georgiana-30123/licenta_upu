@@ -7,13 +7,13 @@ export function AuthProvider({ children }) {
   const [authReady, setAuthReady] = useState(false);
 
   useEffect(() => {
-    const savedUser = localStorage.getItem("user");
+    const savedUser = sessionStorage.getItem("user");
 
     if (savedUser) {
       try {
         setUser(JSON.parse(savedUser));
       } catch {
-        localStorage.removeItem("user");
+        sessionStorage.removeItem("user");
       }
     }
 
@@ -21,13 +21,13 @@ export function AuthProvider({ children }) {
   }, []);
 
   const login = (userData) => {
-    localStorage.setItem("user", JSON.stringify(userData));
+    sessionStorage.setItem("user", JSON.stringify(userData));
     setUser(userData);
   };
 
   const logout = () => {
-    localStorage.removeItem("user");
-    localStorage.removeItem("activePage");
+    sessionStorage.removeItem("user");
+    sessionStorage.removeItem("activePage");
     setUser(null);
   };
 
