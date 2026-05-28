@@ -12,7 +12,7 @@ import {
   buildDischargePayload,
   buildAiTriagePayload,
 } from "./formsPayloadBuilders";
-import { loadPreformIntoState, loadDischargeIntoState } from "./formsPageLoaders";
+import { loadPreformIntoState, loadDischargeIntoState, buildAppliedProceduresFromPreform, } from "./formsPageLoaders";
 import SignaturesSection from "../components/forms/SignaturesSection";
 import {
   loadPreformData,
@@ -159,10 +159,12 @@ function getTriageBadgeStyle(triageColor) {
 }
 
 export default function FormsPage({ selected, onSelectVisit, previewOnly = false }) {
-  const user = JSON.parse(localStorage.getItem("user"));
+  const user = JSON.parse(sessionStorage.getItem("user"));
   const isReception = user?.role === "RECEPTION";
   const isDoctor = user?.role === "DOCTOR";
 const isNurse = user?.role === "NURSE";
+const canEditMedicalFields = isDoctor || isNurse;
+const canEditReceptionFields = isReception || isDoctor || isNurse;
 
   const [patientsSearch, setPatientsSearch] = useState("");
   const [preformOpen, setPreformOpen] = useState(false);
@@ -311,44 +313,63 @@ const isNurse = user?.role === "NURSE";
     });
   }, [selected?.id]);
 
-  const savePreform = async () => {
-    if (!selected || isClosedVisit) return;
+  const savePreform = async (overridePreform = null) => {
+  if (!selected || isClosedVisit) return;
 
-    if (isReception && !preform.triageColor) {
-      setMsg("Selectează codul de triaj înainte de salvarea fișei.");
-      showError("Selectează codul de triaj.");
-      return;
-    }
+  const isValidOverride =
+    overridePreform &&
+    typeof overridePreform === "object" &&
+    !overridePreform.target &&
+    !overridePreform.currentTarget;
 
-    setMsg("");
-    setLoading(true);
+  const dataToSave = isValidOverride ? overridePreform : preform;
 
-    const payload = buildPreformPayload(preform);
-
-    try {
-      await savePreformData(selected, payload);
-
-      if (isReception) {
-        await updateVisitStatusData(selected, "WAITING_CONSULT");
-
-        setMsg(
-          "Fișa de pre-spitalizare a fost salvată. Pacientul este în așteptare consult."
-        );
-        showSuccess("Fișa salvată. Pacientul este în așteptare consult.");
-      } else {
-        setMsg("Fișa de pre-spitalizare a fost salvată.");
-        showSuccess("Fișa de pre-spitalizare a fost salvată.");
-      }
-
-      lastEditAtRef.current = 0;
-      hasUserEditedRef.current = false;
-    } catch (e) {
-      setMsg(`Eroare salvare preform: ${e}`);
-      showError("Eroare salvare preform");
-    } finally {
-      setLoading(false);
-    }
+  const normalizedPreform = {
+    ...dataToSave,
+    triageColor: dataToSave.triageColor || selected?.triageColor || "",
   };
+
+  if (isReception && !normalizedPreform.triageColor) {
+    setMsg("Selectează codul de triaj înainte de salvarea fișei.");
+    showError("Selectează codul de triaj.");
+    return;
+  }
+
+  setMsg("");
+  setLoading(true);
+
+  const payload = buildPreformPayload(normalizedPreform);
+
+  try {
+    await savePreformData(selected, payload);
+
+    const generatedProcedures =
+      buildAppliedProceduresFromPreform(normalizedPreform);
+
+    setDischarge((prev) => ({
+      ...prev,
+      appliedProcedures: generatedProcedures,
+    }));
+
+    if (isReception) {
+      await updateVisitStatusData(selected, "WAITING_CONSULT");
+      setMsg("Fișa de pre-spitalizare a fost salvată. Pacientul este în așteptare consult.");
+      showSuccess("Fișa salvată. Pacientul este în așteptare consult.");
+    } else {
+      setMsg("Fișa de pre-spitalizare a fost salvată.");
+      showSuccess("Fișa de pre-spitalizare a fost salvată.");
+    }
+
+    lastEditAtRef.current = 0;
+    hasUserEditedRef.current = false;
+  } catch (e) {
+    setMsg(`Eroare salvare preform: ${e}`);
+    showError("Eroare salvare preform");
+    throw e;
+  } finally {
+    setLoading(false);
+  }
+};
 
   const autoSavePreform = async () => {
     if (!selected || isClosedVisit) return;
@@ -458,27 +479,39 @@ const isNurse = user?.role === "NURSE";
     showInfo("Culoarea triajului a fost modificată manual.");
   };
 
-  const saveDischarge = async () => {
-    if (!selected || isClosedVisit) return;
+ const saveDischarge = async (overrideDischarge = null) => {
+  if (!selected || isClosedVisit) return;
 
-    setMsg("");
-    setLoading(true);
+  const isValidOverride =
+    overrideDischarge &&
+    typeof overrideDischarge === "object" &&
+    !overrideDischarge.target &&
+    !overrideDischarge.currentTarget;
 
-    const payload = buildDischargePayload(discharge);
+  const dataToSave = isValidOverride ? overrideDischarge : discharge;
 
-    try {
-      await saveDischargeData(selected, payload);
-      lastEditAtRef.current = 0;
-      setMsg("Fișa de externare a fost salvată.");
-      showSuccess("Fișa de externare a fost salvată.");
-      setDischargeSaved(true);
-    } catch (e) {
-      setMsg(`Eroare salvare externare: ${e}`);
-      showError("Eroare salvare externare");
-    } finally {
-      setLoading(false);
-    }
-  };
+  setMsg("");
+  setLoading(true);
+
+  const payload = buildDischargePayload(dataToSave);
+
+  try {
+    await saveDischargeData(selected, payload);
+
+    lastEditAtRef.current = 0;
+
+    setMsg("Fișa de externare a fost salvată.");
+    showSuccess("Fișa de externare a fost salvată.");
+
+    setDischargeSaved(true);
+  } catch (e) {
+    setMsg(`Eroare salvare externare: ${e}`);
+    showError("Eroare salvare externare");
+    throw e;
+  } finally {
+    setLoading(false);
+  }
+};
 
   const exportCombined = async () => {
     if (!selected) return;
@@ -653,6 +686,70 @@ if (!discharge.doctorSignature || !discharge.nurseSignature) {
     setPatientVisits([]);
   }
 };
+
+useEffect(() => {
+  if (!selected || isClosedVisit) return;
+  if (!isDoctor) return;
+
+  const interval = setInterval(async () => {
+    try {
+      const result = await loadPreformData(selected);
+      const data = result?.data;
+
+      let parsedDetails = {};
+      try {
+        parsedDetails = data?.details ? JSON.parse(data.details) : {};
+      } catch {
+        parsedDetails = {};
+      }
+
+      setPreform((prev) => ({
+        ...prev,
+        nurseName: data?.nurseName || parsedDetails?.nurseName || prev.nurseName,
+        nurseSignature:
+          data?.nurseSignature ||
+          parsedDetails?.nurseSignature ||
+          prev.nurseSignature,
+        nurseSignedAt:
+          data?.nurseSignedAt ||
+          parsedDetails?.nurseSignedAt ||
+          prev.nurseSignedAt,
+      }));
+
+      const dischargeResult = await loadDischargeData(selected);
+      const dischargeData = dischargeResult?.data;
+
+      let parsedDischargeDetails = {};
+      try {
+        parsedDischargeDetails = dischargeData?.details
+          ? JSON.parse(dischargeData.details)
+          : {};
+      } catch {
+        parsedDischargeDetails = {};
+      }
+
+      setDischarge((prev) => ({
+        ...prev,
+        nurseName:
+          dischargeData?.nurseName ||
+          parsedDischargeDetails?.nurseName ||
+          prev.nurseName,
+        nurseSignature:
+          dischargeData?.nurseSignature ||
+          parsedDischargeDetails?.nurseSignature ||
+          prev.nurseSignature,
+        nurseSignedAt:
+          dischargeData?.nurseSignedAt ||
+          parsedDischargeDetails?.nurseSignedAt ||
+          prev.nurseSignedAt,
+      }));
+    } catch (e) {
+      console.error("Eroare sync semnătură asistent:", e);
+    }
+  }, 2000);
+
+  return () => clearInterval(interval);
+}, [selected?.id, isClosedVisit, isDoctor]);
 
   if (!selected) {
     return (
@@ -1227,14 +1324,15 @@ if (!discharge.doctorSignature || !discharge.nurseSignature) {
         onChangeCapture={markEditing}
       >
         <PreformSection
-          preformOpen={preformOpen}
-          setPreformOpen={setPreformOpen}
-          preform={preform}
-          setPreform={setPreform}
-          onSave={savePreform}
-          readOnly={isClosedVisit}
-          aiMissingFields={aiMissingFields}
-        />
+  preformOpen={preformOpen}
+  setPreformOpen={setPreformOpen}
+  preform={preform}
+  setPreform={setPreform}
+  onSave={savePreform}
+  readOnly={isClosedVisit}
+  medicalReadOnly={isReception || isClosedVisit}
+  aiMissingFields={aiMissingFields}
+/>
 
         <DischargeSection
           dischargeOpen={dischargeOpen}
@@ -1243,7 +1341,7 @@ if (!discharge.doctorSignature || !discharge.nurseSignature) {
           setDischarge={setDischarge}
           preform={preform}
           onSave={saveDischarge}
-          readOnly={isClosedVisit}
+          readOnly={isReception || isClosedVisit}
         />
 
         <SignaturesSection

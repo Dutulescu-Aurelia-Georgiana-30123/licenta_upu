@@ -19,13 +19,12 @@ export default function PreformSection({
   preform,
   setPreform,
   onSave,
-  readOnly=false,
-  aiMissingFields = [],
+  readOnly = false,
+medicalReadOnly = false,
+aiMissingFields = [],
 }) {
-  const user = JSON.parse(localStorage.getItem("user"));
-const isReception = user?.role === "RECEPTION";
-const isFormLocked = readOnly;
-const isObjectiveRestricted = isReception || readOnly;
+  const isFormLocked = readOnly;
+const isObjectiveRestricted = medicalReadOnly;
 
 const isAiMissing = (field) => aiMissingFields.includes(field);
 

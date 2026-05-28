@@ -15,7 +15,7 @@ function getCurrentTime() {
   });
 }
 
-function buildAppliedProceduresFromPreform(preformData) {
+export function buildAppliedProceduresFromPreform(preformData) {
   if (!preformData) return "";
 
   const procedures = [];
@@ -181,7 +181,11 @@ export async function loadPreformIntoState({
       ...prev,
       ...(data ? data : {}),
       ...parsedDetails,
-      triageColor: data?.triageColor || "",
+      triageColor:
+  data?.triageColor ||
+  parsedDetails?.triageColor ||
+  selected?.triageColor ||
+  "",
       arrivalMode: data?.arrivalMode || prev.arrivalMode,
       sheetNumber: data?.sheetNumber || extractSheetNumber(selected.visitCode),
       presentationDate: data?.presentationDate || getTodayDate(),
@@ -264,9 +268,9 @@ export async function loadDischargeIntoState({
       birthDate: data?.birthDate || mergedPreformData?.birthDate || "",
       age: data?.age ?? mergedPreformData?.age ?? "",
       diagnosisAtAdmission:
-        data?.diagnosisAtAdmission?.trim()
-          ? data.diagnosisAtAdmission
-          : mergedPreformData?.anamnesis || "",
+  mergedPreformData?.reason?.trim()
+    ? mergedPreformData.reason
+    : data?.diagnosisAtAdmission || "",
       appliedProcedures:
         data?.appliedProcedures?.trim()
           ? data.appliedProcedures

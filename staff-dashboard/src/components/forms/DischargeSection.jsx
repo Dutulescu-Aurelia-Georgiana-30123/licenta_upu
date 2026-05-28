@@ -10,7 +10,7 @@ export default function DischargeSection({
   onSave,
   readOnly=false,
 }) {
-  const user = JSON.parse(localStorage.getItem("user"));
+  const user = JSON.parse(sessionStorage.getItem("user"));
 const isReception = user?.role === "RECEPTION";
 const isRestricted = isReception || readOnly;
   return (
@@ -282,7 +282,7 @@ const isRestricted = isReception || readOnly;
     {!isRestricted && (
       <button
         type="button"
-        onClick={onSave}
+        onClick={() => onSave()}
         style={{ padding: "8px 12px" }}
       >
         Salvează fișa

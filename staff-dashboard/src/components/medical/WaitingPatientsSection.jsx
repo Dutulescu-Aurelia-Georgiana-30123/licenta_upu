@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useMemo } from "react";
 import { theme } from "../../styles/theme";
 import { StatusBadge, TriageBadge } from "./MedicalBadges";
 
@@ -16,12 +16,29 @@ export default function WaitingPatientsSection({
   isNurse,
 }) {
   const [expanded, setExpanded] = useState(false);
+  const [search, setSearch] = useState("");
 
-  const waitingVisits = visits.filter((v) => {
+  const waitingVisits = useMemo(() => {
+  const availableVisits = visits.filter((v) => {
     if (isDoctor) return !v.doctorId;
     if (isNurse) return !v.nurseId;
     return false;
   });
+
+  const q = search.trim().toLowerCase();
+
+  if (!q) return availableVisits;
+
+  return availableVisits.filter((v) => {
+    const patientName = `${v.patientFirstName || ""} ${
+      v.patientLastName || ""
+    }`.toLowerCase();
+
+    const visitCode = String(v.visitCode || "").toLowerCase();
+
+    return patientName.includes(q) || visitCode.includes(q);
+  });
+}, [visits, isDoctor, isNurse, search]);
 
   const visibleVisits = expanded ? waitingVisits : waitingVisits.slice(0, LIMIT);
   const hasMore = waitingVisits.length > LIMIT;
@@ -36,6 +53,15 @@ export default function WaitingPatientsSection({
         <div style={subTextStyle}>
           {waitingVisits.length} pacienți disponibili pentru preluare
         </div>
+        <input
+  value={search}
+  onChange={(e) => {
+    setSearch(e.target.value);
+    setExpanded(false);
+  }}
+  placeholder="Caută după nume sau cod vizită"
+  style={searchInputStyle}
+/>
       </div>
 
       {waitingVisits.length === 0 ? (
@@ -109,6 +135,8 @@ export default function WaitingPatientsSection({
       )}
     </div>
   );
+
+  
 }
 
 const emptyStyle = {
@@ -153,4 +181,17 @@ const staffInfoStyle = {
   fontSize: 13,
   marginTop: 6,
   fontWeight: 800,
+};
+
+const searchInputStyle = {
+  width: "100%",
+  boxSizing: "border-box",
+  padding: "12px 14px",
+  borderRadius: 16,
+  border: `1px solid ${theme.colors.border}`,
+  background: "#f8fafc",
+  color: theme.colors.text,
+  outline: "none",
+  fontWeight: 800,
+  marginTop: 12,
 };
