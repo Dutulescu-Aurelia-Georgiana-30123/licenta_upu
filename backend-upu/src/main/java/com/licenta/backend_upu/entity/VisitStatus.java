@@ -6,5 +6,6 @@ public enum VisitStatus {
     IN_CONSULT,
     DISCHARGED,
     ADMITTED,
-    TRANSFERRED
+    TRANSFERRED,
+    CANCELLED
 }
