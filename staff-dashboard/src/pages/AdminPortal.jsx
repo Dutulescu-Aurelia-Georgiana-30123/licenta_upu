@@ -1,4 +1,5 @@
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
+import { apiGet, apiPost, apiPut } from "../api/api";
 
 const teal = "#08b8b3";
 const tealDark = "#069a96";
@@ -6,6 +7,7 @@ const tealDark = "#069a96";
 const navItems = [
   { key: "dashboard", label: "Dashboard", icon: "▦" },
   { key: "personal", label: "Personal", icon: "👥" },
+  { key: "activeVisits", label: "Vizite active", icon: "📋" },
   { key: "audit", label: "Audit", icon: "🧾" },
 ];
 
@@ -119,18 +121,103 @@ function getCurrentUser() {
 export default function AdminPortal() {
   const [activePage, setActivePage] = useState("dashboard");
   const [activeRoleTab, setActiveRoleTab] = useState("DOCTOR");
+  const [dashboardData, setDashboardData] = useState(null);
+const [users, setUsers] = useState([]);
+const [loadingUsers, setLoadingUsers] = useState(false);
+const [activeVisits, setActiveVisits] = useState([]);
+const [loadingActiveVisits, setLoadingActiveVisits] = useState(false);
+
+const [showCreateForm, setShowCreateForm] = useState(false);
+const [createForm, setCreateForm] = useState({
+  email: "",
+  password: "",
+  role: "DOCTOR",
+  firstName: "",
+  lastName: "",
+  phoneNumber: "",
+  availabilityStatus: "AVAILABLE",
+});
+const [editingUser, setEditingUser] = useState(null);
+const [editForm, setEditForm] = useState({
+  email: "",
+  role: "DOCTOR",
+  firstName: "",
+  lastName: "",
+  phoneNumber: "",
+  availabilityStatus: "AVAILABLE",
+});
+const [resetUser, setResetUser] = useState(null);
+const [resetPasswordForm, setResetPasswordForm] = useState({
+  newPassword: "",
+});
 
   const user = getCurrentUser();
 
-  const stats = [
-    { label: "Total medici", value: 12 },
-    { label: "Total asistenți", value: 18 },
-    { label: "Total recepționeri", value: 6 },
-    { label: "Utilizatori activi", value: 31 },
-    { label: "Utilizatori inactivi", value: 5 },
-    { label: "Pacienți azi", value: 42 },
-    { label: "Vizite active", value: 17 },
-  ];
+  useEffect(() => {
+  const loadDashboard = async () => {
+    try {
+      const data = await apiGet("/admin/dashboard");
+      setDashboardData(data);
+    } catch (err) {
+      console.error("Eroare dashboard admin:", err);
+    }
+  };
+
+  loadDashboard();
+}, []);
+
+useEffect(() => {
+  const loadUsers = async () => {
+    try {
+      setLoadingUsers(true);
+
+      const data = await apiGet(
+        `/admin/users/${activeRoleTab}`
+      );
+
+      setUsers(data || []);
+    } catch (err) {
+      console.error("Eroare utilizatori admin:", err);
+    } finally {
+      setLoadingUsers(false);
+    }
+  };
+
+  loadUsers();
+}, [activeRoleTab]);
+
+  const stats = dashboardData
+  ? [
+      {
+        label: "Total medici",
+        value: dashboardData.totalDoctors,
+      },
+      {
+        label: "Total asistenți",
+        value: dashboardData.totalNurses,
+      },
+      {
+        label: "Conturi recepție",
+        value: dashboardData.totalReceptionUsers,
+      },
+      {
+        label: "Utilizatori activi",
+        value: dashboardData.activeUsers,
+      },
+      {
+        label: "Utilizatori inactivi",
+        value: dashboardData.inactiveUsers,
+      },
+      {
+        label: "Vizite azi",
+        value: dashboardData.todayVisits,
+      },
+      {
+        label: "Vizite active",
+        value: dashboardData.activeVisits,
+      },
+    ]
+  : [];
 
   const tabs = [
     { key: "DOCTOR", label: "Medici" },
@@ -139,20 +226,146 @@ export default function AdminPortal() {
   ];
 
   const filteredUsers = useMemo(() => {
-    return mockUsers.filter((item) => item.role === activeRoleTab);
-  }, [activeRoleTab]);
+  return users;
+}, [users]);
 
   const titleMap = {
     dashboard: "Admin Dashboard",
     personal: "Gestionare personal",
+    activeVisits: "Vizite active",
     audit: "Audit simplu",
   };
 
   const subtitleMap = {
     dashboard: "Privire generală asupra sistemului UPU",
     personal: "Administrare conturi pentru medici, asistenți și recepție",
+    activeVisits: "Monitorizare și intervenții administrative asupra vizitelor active",
     audit: "Urmărirea acțiunilor importante din sistem",
   };
+
+  const handleCreateUser = async (e) => {
+  e.preventDefault();
+
+  try {
+    await apiPost("/admin/users", createForm);
+
+    setShowCreateForm(false);
+
+    setCreateForm({
+      email: "",
+      password: "",
+      role: "DOCTOR",
+      firstName: "",
+      lastName: "",
+      phoneNumber: "",
+      availabilityStatus: "AVAILABLE",
+    });
+
+    const data = await apiGet(`/admin/users/${activeRoleTab}`);
+    setUsers(data || []);
+
+    const dashboard = await apiGet("/admin/dashboard");
+    setDashboardData(dashboard);
+  } catch (err) {
+    console.error("Eroare creare utilizator:", err);
+    alert("Eroare la crearea utilizatorului.");
+  }
+};
+
+useEffect(() => {
+  if (activePage !== "activeVisits") return;
+
+  const loadActiveVisits = async () => {
+    try {
+      setLoadingActiveVisits(true);
+
+      const data = await apiGet("/admin/active-visits");
+      setActiveVisits(data || []);
+    } catch (err) {
+      console.error("Eroare vizite active admin:", err);
+      setActiveVisits([]);
+    } finally {
+      setLoadingActiveVisits(false);
+    }
+  };
+
+  loadActiveVisits();
+}, [activePage]);
+
+const handleToggleActive = async (userId) => {
+  try {
+    await apiPut(`/admin/users/${userId}/toggle-active`, {});
+
+    const data = await apiGet(`/admin/users/${activeRoleTab}`);
+    setUsers(data || []);
+
+    const dashboard = await apiGet("/admin/dashboard");
+    setDashboardData(dashboard);
+  } catch (err) {
+    console.error("Eroare activare/dezactivare:", err);
+    alert("Eroare la actualizarea statusului.");
+  }
+};
+
+const openEditForm = (item) => {
+  setEditingUser(item);
+
+  setEditForm({
+    email: item.email || "",
+    role: item.role || "DOCTOR",
+    firstName: item.firstName || "",
+    lastName: item.lastName || "",
+    phoneNumber: item.phoneNumber || "",
+    availabilityStatus: item.availabilityStatus || "AVAILABLE",
+  });
+};
+
+const handleUpdateUser = async (e) => {
+  e.preventDefault();
+
+  try {
+    await apiPut(`/admin/users/${editingUser.id}`, editForm);
+
+    setEditingUser(null);
+
+    const data = await apiGet(`/admin/users/${activeRoleTab}`);
+    setUsers(data || []);
+
+    const dashboard = await apiGet("/admin/dashboard");
+    setDashboardData(dashboard);
+  } catch (err) {
+    console.error("Eroare editare utilizator:", err);
+    alert("Eroare la editarea utilizatorului.");
+  }
+};
+
+const openResetPasswordForm = (item) => {
+  setResetUser(item);
+  setResetPasswordForm({
+    newPassword: "",
+  });
+};
+
+const handleResetPassword = async (e) => {
+  e.preventDefault();
+
+  try {
+    await apiPut(
+      `/admin/users/${resetUser.id}/reset-password`,
+      resetPasswordForm
+    );
+
+    setResetUser(null);
+    setResetPasswordForm({
+      newPassword: "",
+    });
+
+    alert("Parola a fost resetată.");
+  } catch (err) {
+    console.error("Eroare resetare parolă:", err);
+    alert("Eroare la resetarea parolei.");
+  }
+};
 
   const handleLogout = () => {
     localStorage.removeItem("user");
@@ -288,6 +501,53 @@ export default function AdminPortal() {
     </div>
   );
 
+  const reloadActiveVisits = async () => {
+  try {
+    setLoadingActiveVisits(true);
+    const data = await apiGet("/admin/active-visits");
+    setActiveVisits(data || []);
+
+    const dashboard = await apiGet("/admin/dashboard");
+    setDashboardData(dashboard);
+  } catch (err) {
+    console.error("Eroare reload vizite active:", err);
+  } finally {
+    setLoadingActiveVisits(false);
+  }
+};
+
+const handleCancelVisit = async (visitId) => {
+  const confirmed = window.confirm(
+    "Sigur vrei să anulezi această vizită? Această acțiune trebuie folosită doar pentru vizite create greșit."
+  );
+
+  if (!confirmed) return;
+
+  try {
+    await apiPut(`/admin/visits/${visitId}/cancel`, {});
+    await reloadActiveVisits();
+  } catch (err) {
+    console.error("Eroare anulare vizită:", err);
+    alert("Eroare la anularea vizitei.");
+  }
+};
+
+const handleForceDischargeVisit = async (visitId) => {
+  const confirmed = window.confirm(
+    "Sigur vrei să finalizezi forțat această vizită? Pacientul va fi marcat ca externat fără semnăturile normale."
+  );
+
+  if (!confirmed) return;
+
+  try {
+    await apiPut(`/admin/visits/${visitId}/force-discharge`, {});
+    await reloadActiveVisits();
+  } catch (err) {
+    console.error("Eroare finalizare forțată:", err);
+    alert("Eroare la finalizarea forțată a vizitei.");
+  }
+};
+
   const renderPersonal = () => (
     <div style={cardStyle}>
       <div
@@ -310,10 +570,131 @@ export default function AdminPortal() {
           </div>
         </div>
 
-        <button type="button" style={primaryButtonStyle}>
-          + Creează cont
-        </button>
+        <button
+  type="button"
+  onClick={() => setShowCreateForm((prev) => !prev)}
+  style={primaryButtonStyle}
+>
+  {showCreateForm ? "Închide formularul" : "+ Creează cont"}
+</button>
       </div>
+
+      {showCreateForm && (
+  <form
+    onSubmit={handleCreateUser}
+    style={{
+      marginBottom: 18,
+      padding: 18,
+      borderRadius: 24,
+      background: "#f8fafc",
+      border: "1px solid #e2e8f0",
+      display: "grid",
+      gap: 12,
+    }}
+  >
+    <div
+      style={{
+        display: "grid",
+        gridTemplateColumns: "repeat(auto-fit, minmax(220px, 1fr))",
+        gap: 12,
+      }}
+    >
+      <input
+        type="text"
+        placeholder="Prenume"
+        value={createForm.firstName}
+        onChange={(e) =>
+          setCreateForm({ ...createForm, firstName: e.target.value })
+        }
+        required
+        style={{ padding: 12, borderRadius: 14, border: "1px solid #cbd5e1" }}
+      />
+
+      <input
+        type="text"
+        placeholder="Nume"
+        value={createForm.lastName}
+        onChange={(e) =>
+          setCreateForm({ ...createForm, lastName: e.target.value })
+        }
+        required
+        style={{ padding: 12, borderRadius: 14, border: "1px solid #cbd5e1" }}
+      />
+
+      <input
+        type="email"
+        placeholder="Email"
+        value={createForm.email}
+        onChange={(e) =>
+          setCreateForm({ ...createForm, email: e.target.value })
+        }
+        required
+        style={{ padding: 12, borderRadius: 14, border: "1px solid #cbd5e1" }}
+      />
+
+      <input
+        type="password"
+        placeholder="Parolă"
+        value={createForm.password}
+        onChange={(e) =>
+          setCreateForm({ ...createForm, password: e.target.value })
+        }
+        required
+        style={{ padding: 12, borderRadius: 14, border: "1px solid #cbd5e1" }}
+      />
+
+      <input
+        type="text"
+        placeholder="Telefon"
+        value={createForm.phoneNumber}
+        onChange={(e) =>
+          setCreateForm({ ...createForm, phoneNumber: e.target.value })
+        }
+        style={{ padding: 12, borderRadius: 14, border: "1px solid #cbd5e1" }}
+      />
+
+      <select
+        value={createForm.role}
+        onChange={(e) =>
+          setCreateForm({ ...createForm, role: e.target.value })
+        }
+        style={{ padding: 12, borderRadius: 14, border: "1px solid #cbd5e1" }}
+      >
+        <option value="DOCTOR">Medic</option>
+        <option value="NURSE">Asistent</option>
+        <option value="RECEPTION">Recepție</option>
+      </select>
+
+      <select
+        value={createForm.availabilityStatus}
+        onChange={(e) =>
+          setCreateForm({
+            ...createForm,
+            availabilityStatus: e.target.value,
+          })
+        }
+        style={{ padding: 12, borderRadius: 14, border: "1px solid #cbd5e1" }}
+      >
+        <option value="AVAILABLE">AVAILABLE</option>
+        <option value="BUSY">BUSY</option>
+      </select>
+    </div>
+
+    <div style={{ display: "flex", justifyContent: "flex-end", gap: 10 }}>
+      <button
+        type="button"
+        onClick={() => setShowCreateForm(false)}
+        style={secondaryButtonStyle}
+      >
+        Anulează
+      </button>
+
+      <button type="submit" style={primaryButtonStyle}>
+        Salvează cont
+      </button>
+    </div>
+  </form>
+)}
 
       <div style={{ display: "flex", gap: 10, flexWrap: "wrap", marginBottom: 18 }}>
         {tabs.map((tab) => {
@@ -345,6 +726,167 @@ export default function AdminPortal() {
         })}
       </div>
 
+{editingUser && (
+  <form
+    onSubmit={handleUpdateUser}
+    style={{
+      marginBottom: 18,
+      padding: 18,
+      borderRadius: 24,
+      background: "#f8fafc",
+      border: "1px solid #e2e8f0",
+      display: "grid",
+      gap: 12,
+    }}
+  >
+    <div style={{ fontWeight: 900, color: "#102033" }}>
+      Editează utilizator: {editingUser.firstName} {editingUser.lastName}
+    </div>
+
+    <div
+      style={{
+        display: "grid",
+        gridTemplateColumns: "repeat(auto-fit, minmax(220px, 1fr))",
+        gap: 12,
+      }}
+    >
+      <input
+        type="text"
+        placeholder="Prenume"
+        value={editForm.firstName}
+        onChange={(e) =>
+          setEditForm({ ...editForm, firstName: e.target.value })
+        }
+        required
+        style={{ padding: 12, borderRadius: 14, border: "1px solid #cbd5e1" }}
+      />
+
+      <input
+        type="text"
+        placeholder="Nume"
+        value={editForm.lastName}
+        onChange={(e) =>
+          setEditForm({ ...editForm, lastName: e.target.value })
+        }
+        required
+        style={{ padding: 12, borderRadius: 14, border: "1px solid #cbd5e1" }}
+      />
+
+      <input
+        type="email"
+        placeholder="Email"
+        value={editForm.email}
+        onChange={(e) =>
+          setEditForm({ ...editForm, email: e.target.value })
+        }
+        required
+        style={{ padding: 12, borderRadius: 14, border: "1px solid #cbd5e1" }}
+      />
+
+      <input
+        type="text"
+        placeholder="Telefon"
+        value={editForm.phoneNumber}
+        onChange={(e) =>
+          setEditForm({ ...editForm, phoneNumber: e.target.value })
+        }
+        style={{ padding: 12, borderRadius: 14, border: "1px solid #cbd5e1" }}
+      />
+
+      <select
+        value={editForm.role}
+        onChange={(e) =>
+          setEditForm({ ...editForm, role: e.target.value })
+        }
+        style={{ padding: 12, borderRadius: 14, border: "1px solid #cbd5e1" }}
+      >
+        <option value="DOCTOR">Medic</option>
+        <option value="NURSE">Asistent</option>
+        <option value="RECEPTION">Recepție</option>
+      </select>
+
+      <select
+        value={editForm.availabilityStatus}
+        onChange={(e) =>
+          setEditForm({
+            ...editForm,
+            availabilityStatus: e.target.value,
+          })
+        }
+        style={{ padding: 12, borderRadius: 14, border: "1px solid #cbd5e1" }}
+      >
+        <option value="AVAILABLE">AVAILABLE</option>
+        <option value="BUSY">BUSY</option>
+      </select>
+    </div>
+
+    <div style={{ display: "flex", justifyContent: "flex-end", gap: 10 }}>
+      <button
+        type="button"
+        onClick={() => setEditingUser(null)}
+        style={secondaryButtonStyle}
+      >
+        Anulează
+      </button>
+
+      <button type="submit" style={primaryButtonStyle}>
+        Salvează modificările
+      </button>
+    </div>
+  </form>
+)}
+
+{resetUser && (
+  <form
+    onSubmit={handleResetPassword}
+    style={{
+      marginBottom: 18,
+      padding: 18,
+      borderRadius: 24,
+      background: "#f8fafc",
+      border: "1px solid #e2e8f0",
+      display: "grid",
+      gap: 12,
+    }}
+  >
+    <div style={{ fontWeight: 900, color: "#102033" }}>
+      Resetează parola pentru: {resetUser.firstName} {resetUser.lastName}
+    </div>
+
+    <input
+      type="password"
+      placeholder="Parolă nouă"
+      value={resetPasswordForm.newPassword}
+      onChange={(e) =>
+        setResetPasswordForm({
+          ...resetPasswordForm,
+          newPassword: e.target.value,
+        })
+      }
+      required
+      style={{
+        padding: 12,
+        borderRadius: 14,
+        border: "1px solid #cbd5e1",
+        maxWidth: 360,
+      }}
+    />
+
+    <div style={{ display: "flex", justifyContent: "flex-end", gap: 10 }}>
+      <button
+        type="button"
+        onClick={() => setResetUser(null)}
+        style={secondaryButtonStyle}
+      >
+        Anulează
+      </button>
+
+      <button type="submit" style={primaryButtonStyle}>
+        Salvează parola nouă
+      </button>
+    </div>
+  </form>
+)}
       <div style={{ overflowX: "auto" }}>
         <table
           style={{
@@ -367,6 +909,19 @@ export default function AdminPortal() {
           </thead>
 
           <tbody>
+{loadingUsers && (
+  <tr>
+    <td
+      colSpan="7"
+      style={{
+        textAlign: "center",
+        padding: 20,
+      }}
+    >
+      Se încarcă...
+    </td>
+  </tr>
+)}
             {filteredUsers.map((item) => (
               <tr key={item.id}>
                 <td style={tableCellStyle}>
@@ -398,15 +953,27 @@ export default function AdminPortal() {
 
                 <td style={tableCellStyle}>
                   <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
-                    <button type="button" style={secondaryButtonStyle}>
-                      Editează
-                    </button>
-                    <button type="button" style={secondaryButtonStyle}>
-                      Reset parolă
-                    </button>
-                    <button type="button" style={secondaryButtonStyle}>
-                      {item.isActive ? "Dezactivează" : "Activează"}
-                    </button>
+                    <button
+  type="button"
+  onClick={() => openEditForm(item)}
+  style={secondaryButtonStyle}
+>
+  Editează
+</button>
+                    <button
+  type="button"
+  onClick={() => openResetPasswordForm(item)}
+  style={secondaryButtonStyle}
+>
+  Reset parolă
+</button>
+                    <button
+  type="button"
+  onClick={() => handleToggleActive(item.id)}
+  style={secondaryButtonStyle}
+>
+  {item.isActive ? "Dezactivează" : "Activează"}
+</button>
                   </div>
                 </td>
               </tr>
@@ -432,6 +999,166 @@ export default function AdminPortal() {
       </div>
     </div>
   );
+
+  const renderActiveVisits = () => (
+  <div style={cardStyle}>
+    <div
+      style={{
+        display: "flex",
+        justifyContent: "space-between",
+        gap: 12,
+        alignItems: "center",
+        flexWrap: "wrap",
+        marginBottom: 18,
+      }}
+    >
+      <div>
+        <h2 style={{ margin: 0, color: "#102033", fontSize: 24 }}>
+          Vizite active
+        </h2>
+
+        <div style={{ color: "#64748b", marginTop: 4, fontWeight: 700 }}>
+          Vizite care nu sunt încă externate, internate sau transferate
+        </div>
+      </div>
+
+      <button
+        type="button"
+        onClick={async () => {
+          try {
+            setLoadingActiveVisits(true);
+            const data = await apiGet("/admin/active-visits");
+            setActiveVisits(data || []);
+          } catch (err) {
+            console.error("Eroare refresh vizite active:", err);
+          } finally {
+            setLoadingActiveVisits(false);
+          }
+        }}
+        style={secondaryButtonStyle}
+      >
+        Reîncarcă
+      </button>
+    </div>
+
+    <div style={{ overflowX: "auto" }}>
+      <table
+        style={{
+          width: "100%",
+          borderCollapse: "separate",
+          borderSpacing: 0,
+          background: "#ffffff",
+        }}
+      >
+        <thead>
+          <tr>
+            <th style={tableHeadCellStyle}>Cod vizită</th>
+            <th style={tableHeadCellStyle}>Pacient</th>
+            <th style={tableHeadCellStyle}>Status</th>
+            <th style={tableHeadCellStyle}>Medic</th>
+            <th style={tableHeadCellStyle}>Asistent</th>
+            <th style={tableHeadCellStyle}>Creată la</th>
+            <th style={tableHeadCellStyle}>Acțiuni</th>
+          </tr>
+        </thead>
+
+        <tbody>
+          {loadingActiveVisits && (
+            <tr>
+              <td colSpan="7" style={{ textAlign: "center", padding: 20 }}>
+                Se încarcă...
+              </td>
+            </tr>
+          )}
+
+          {!loadingActiveVisits &&
+            activeVisits.map((visit) => (
+              <tr key={visit.id}>
+                <td style={tableCellStyle}>{visit.visitCode || "-"}</td>
+
+                <td style={tableCellStyle}>
+                  {visit.patientFirstName || ""} {visit.patientLastName || ""}
+                </td>
+
+                <td style={tableCellStyle}>
+                  <span
+                    style={{
+                      padding: "6px 10px",
+                      borderRadius: 999,
+                      background: "#e6fffd",
+                      color: tealDark,
+                      fontWeight: 900,
+                      fontSize: 12,
+                    }}
+                  >
+                    {visit.status}
+                  </span>
+                </td>
+
+                <td style={tableCellStyle}>
+                  {visit.doctorFirstName
+                    ? `${visit.doctorFirstName} ${visit.doctorLastName || ""}`
+                    : "-"}
+                </td>
+
+                <td style={tableCellStyle}>
+                  {visit.nurseFirstName
+                    ? `${visit.nurseFirstName} ${visit.nurseLastName || ""}`
+                    : "-"}
+                </td>
+
+                <td style={tableCellStyle}>
+                  {visit.createdAt
+                    ? new Date(visit.createdAt).toLocaleString("ro-RO")
+                    : "-"}
+                </td>
+
+                <td style={tableCellStyle}>
+                  <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
+                    <button type="button" style={secondaryButtonStyle}>
+                      Vezi
+                    </button>
+
+                    <button
+  type="button"
+  onClick={() => handleForceDischargeVisit(visit.id)}
+  style={secondaryButtonStyle}
+>
+  Finalizează forțat
+</button>
+
+<button
+  type="button"
+  onClick={() => handleCancelVisit(visit.id)}
+  style={secondaryButtonStyle}
+>
+  Anulează
+</button>
+                  </div>
+                </td>
+              </tr>
+            ))}
+
+          {!loadingActiveVisits && activeVisits.length === 0 && (
+            <tr>
+              <td
+                colSpan="7"
+                style={{
+                  textAlign: "center",
+                  padding: 22,
+                  color: "#64748b",
+                  fontWeight: 800,
+                }}
+              >
+                Nu există vizite active momentan.
+              </td>
+            </tr>
+          )}
+        </tbody>
+      </table>
+    </div>
+  </div>
+);
 
   const renderAudit = () => (
     <div style={cardStyle}>
@@ -486,11 +1213,12 @@ export default function AdminPortal() {
   );
 
   const renderContent = () => {
-    if (activePage === "personal") return renderPersonal();
-    if (activePage === "audit") return renderAudit();
+  if (activePage === "personal") return renderPersonal();
+  if (activePage === "activeVisits") return renderActiveVisits();
+  if (activePage === "audit") return renderAudit();
 
-    return renderDashboard();
-  };
+  return renderDashboard();
+};
 
   return (
     <div
