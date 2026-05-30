@@ -13,6 +13,8 @@ import org.springframework.stereotype.Service;
 import com.licenta.backend_upu.dto.AdminCreateUserRequest;
 import com.licenta.backend_upu.dto.AdminUpdateUserRequest;
 import com.licenta.backend_upu.dto.AdminResetPasswordRequest;
+import com.licenta.backend_upu.repository.PatientRepository;
+import com.licenta.backend_upu.entity.Patient;
 
 import java.util.List;
 
@@ -23,6 +25,8 @@ public class AdminService {
     private final UserRepository userRepository;
     private final VisitRepository visitRepository;
     private final VisitService visitService;
+    private final AuditLogService auditLogService;
+    private final PatientRepository patientRepository;
 
     public AdminDashboardResponse getDashboard() {
         List<VisitStatus> activeStatuses = List.of(
@@ -74,6 +78,16 @@ public class AdminService {
 
         User saved = userRepository.save(user);
 
+        auditLogService.log(
+                "CREATE_USER",
+                "A fost creat utilizatorul " +
+                        saved.getFirstName() + " " +
+                        saved.getLastName() +
+                        " (" + saved.getRole() + ")",
+                null,
+                "ADMIN"
+        );
+
         return toAdminUserResponse(saved);
     }
 
@@ -84,6 +98,17 @@ public class AdminService {
         user.setIsActive(!user.getIsActive());
 
         User saved = userRepository.save(user);
+
+        auditLogService.log(
+                user.getIsActive()
+                        ? "ACTIVATE_USER"
+                        : "DEACTIVATE_USER",
+                "Utilizator: " +
+                        user.getFirstName() + " " +
+                        user.getLastName(),
+                null,
+                "ADMIN"
+        );
 
         return toAdminUserResponse(saved);
     }
@@ -108,6 +133,15 @@ public class AdminService {
 
         User saved = userRepository.save(user);
 
+        auditLogService.log(
+                "UPDATE_USER",
+                "A fost modificat utilizatorul " +
+                        saved.getFirstName() + " " +
+                        saved.getLastName(),
+                null,
+                "ADMIN"
+        );
+
         return toAdminUserResponse(saved);
     }
 
@@ -122,6 +156,15 @@ public class AdminService {
         user.setPassword(request.newPassword());
 
         userRepository.save(user);
+
+        auditLogService.log(
+                "RESET_PASSWORD",
+                "Parola a fost resetată pentru " +
+                        user.getFirstName() + " " +
+                        user.getLastName(),
+                null,
+                "ADMIN"
+        );
     }
 
     private AdminUserResponse toAdminUserResponse(User user) {
@@ -156,13 +199,63 @@ public class AdminService {
 
         visit.setStatus(VisitStatus.CANCELLED);
 
-        return visitRepository.save(visit);
+        Visit saved = visitRepository.save(visit);
+
+        auditLogService.log(
+                "CANCEL_VISIT",
+                "Vizita " + saved.getVisitCode() +
+                        " pentru pacientul " +
+                        saved.getPatient().getFirstName() + " " +
+                        saved.getPatient().getLastName() +
+                        " a fost anulată de admin.",
+                null,
+                "ADMIN"
+        );
+
+        return saved;
     }
 
     public Visit forceDischargeVisit(Long visitId) {
-        return visitService.updateVisistStatus(
+        Visit saved = visitService.updateVisistStatus(
                 visitId,
                 "DISCHARGED"
+        );
+
+        auditLogService.log(
+                "FORCE_DISCHARGE_VISIT",
+                "Vizita " + saved.getVisitCode() +
+                        " pentru pacientul " +
+                        saved.getPatient().getFirstName() + " " +
+                        saved.getPatient().getLastName() +
+                        " a fost finalizată forțat de admin.",
+                null,
+                "ADMIN"
+        );
+
+        return saved;
+    }
+
+    public void deletePatient(Long patientId) {
+        Patient patient = patientRepository.findById(patientId)
+                .orElseThrow(() -> new RuntimeException("Pacientul nu există."));
+
+        long visitsCount = visitRepository.countByPatient_Id(patientId);
+
+        if (visitsCount > 0) {
+            throw new RuntimeException(
+                    "Pacientul nu poate fi șters deoarece are vizite asociate."
+            );
+        }
+
+        String patientName = patient.getFirstName() + " " + patient.getLastName();
+
+        patientRepository.delete(patient);
+
+        auditLogService.log(
+                "DELETE_PATIENT",
+                "Pacientul " + patientName + " a fost șters de admin.",
+                null,
+                "ADMIN"
         );
     }
 }

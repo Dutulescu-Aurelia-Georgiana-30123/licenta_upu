@@ -4,6 +4,7 @@ import com.licenta.backend_upu.dto.AdminDashboardResponse;
 import com.licenta.backend_upu.dto.AdminUserResponse;
 import com.licenta.backend_upu.entity.Role;
 import com.licenta.backend_upu.service.AdminService;
+import com.licenta.backend_upu.service.AuditLogService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.*;
 import com.licenta.backend_upu.dto.AdminCreateUserRequest;
@@ -12,6 +13,8 @@ import com.licenta.backend_upu.dto.AdminResetPasswordRequest;
 import com.licenta.backend_upu.dto.VisitResponse;
 import com.licenta.backend_upu.entity.Visit;
 import com.licenta.backend_upu.mapper.VisitMapper;
+import com.licenta.backend_upu.dto.AuditLogResponse;
+import com.licenta.backend_upu.mapper.AuditLogMapper;
 import java.util.List;
 
 @RestController
@@ -22,6 +25,8 @@ public class AdminController {
 
     private final AdminService adminService;
     private final VisitMapper visitMapper;
+    private final AuditLogService auditLogService;
+    private final AuditLogMapper auditLogMapper;
 
     @GetMapping("/dashboard")
     public AdminDashboardResponse getDashboard() {
@@ -76,5 +81,17 @@ public class AdminController {
     @PutMapping("/visits/{visitId}/force-discharge")
     public VisitResponse forceDischargeVisit(@PathVariable Long visitId) {
         return visitMapper.toResponse(adminService.forceDischargeVisit(visitId));
+    }
+    @GetMapping("/audit")
+    public List<AuditLogResponse> getAuditLogs() {
+        return auditLogService.getLatestLogs()
+                .stream()
+                .map(auditLogMapper::toResponse)
+                .toList();
+    }
+
+    @DeleteMapping("/patients/{patientId}")
+    public void deletePatient(@PathVariable Long patientId) {
+        adminService.deletePatient(patientId);
     }
 }
