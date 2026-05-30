@@ -4,6 +4,22 @@ import {
   cardStyle,
 } from "./adminStyles";
 
+const actionLabels = {
+  CREATE_USER: "Utilizator creat",
+  UPDATE_USER: "Utilizator modificat",
+  RESET_PASSWORD: "Parolă resetată",
+  ACTIVATE_USER: "Utilizator activat",
+  DEACTIVATE_USER: "Utilizator dezactivat",
+  DELETE_PATIENT: "Pacient șters",
+  UPDATE_PATIENT: "Pacient modificat",
+  CANCEL_VISIT: "Vizită anulată",
+  FORCE_DISCHARGE_VISIT: "Vizită finalizată forțat",
+};
+
+function getActionLabel(action) {
+  return actionLabels[action] || action || "-";
+}
+
 export default function AdminDashboard({stats, auditLogs = [], }) {
   return (
     <div style={{ display: "grid", gap: 18 }}>
@@ -86,7 +102,7 @@ export default function AdminDashboard({stats, auditLogs = [], }) {
               marginBottom: 4,
             }}
           >
-            {log.action}
+           {getActionLabel(log.action)}
           </div>
 
           <div

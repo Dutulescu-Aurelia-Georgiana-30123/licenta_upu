@@ -6,23 +6,25 @@ import {
   tableCellStyle,
 } from "./adminStyles";
 
-export default function AdminAudit({
-  auditLogs,
-  loadingAudit,
-  onReloadAudit,
-}) {
+const actionLabels = {
+  CREATE_USER: "Utilizator creat",
+  UPDATE_USER: "Utilizator modificat",
+  RESET_PASSWORD: "Parolă resetată",
+  ACTIVATE_USER: "Utilizator activat",
+  DEACTIVATE_USER: "Utilizator dezactivat",
+  DELETE_PATIENT: "Pacient șters",
+  CANCEL_VISIT: "Vizită anulată",
+  FORCE_DISCHARGE_VISIT: "Vizită finalizată forțat",
+};
+
+function getActionLabel(action) {
+  return actionLabels[action] || action || "-";
+}
+
+export default function AdminAudit({ auditLogs, loadingAudit, onReloadAudit }) {
   return (
     <div style={cardStyle}>
-      <div
-        style={{
-          display: "flex",
-          justifyContent: "space-between",
-          gap: 12,
-          alignItems: "center",
-          flexWrap: "wrap",
-          marginBottom: 18,
-        }}
-      >
+      <div style={{ display: "flex", justifyContent: "space-between", gap: 12, alignItems: "center", flexWrap: "wrap", marginBottom: 18 }}>
         <div>
           <h2 style={{ margin: 0, color: "#102033", fontSize: 24 }}>
             Jurnal activitate
@@ -39,14 +41,7 @@ export default function AdminAudit({
       </div>
 
       <div style={{ overflowX: "auto" }}>
-        <table
-          style={{
-            width: "100%",
-            borderCollapse: "separate",
-            borderSpacing: 0,
-            background: "#ffffff",
-          }}
-        >
+        <table style={{ width: "100%", borderCollapse: "separate", borderSpacing: 0, background: "#ffffff" }}>
           <thead>
             <tr>
               <th style={tableHeadCellStyle}>Dată</th>
@@ -69,9 +64,7 @@ export default function AdminAudit({
               auditLogs.map((log) => (
                 <tr key={log.id}>
                   <td style={tableCellStyle}>
-                    {log.createdAt
-                      ? new Date(log.createdAt).toLocaleString("ro-RO")
-                      : "-"}
+                    {log.createdAt ? new Date(log.createdAt).toLocaleString("ro-RO") : "-"}
                   </td>
 
                   <td style={tableCellStyle}>
@@ -85,30 +78,20 @@ export default function AdminAudit({
                         fontSize: 12,
                       }}
                     >
-                      {log.action}
+                      {getActionLabel(log.action)}
                     </span>
                   </td>
 
                   <td style={tableCellStyle}>{log.details || "-"}</td>
 
-                  <td style={tableCellStyle}>
-                    {log.performedByName || "ADMIN"}
-                  </td>
+                  <td style={tableCellStyle}>{log.performedByName || "ADMIN"}</td>
                 </tr>
               ))}
 
             {!loadingAudit && auditLogs.length === 0 && (
               <tr>
-                <td
-                  colSpan="4"
-                  style={{
-                    textAlign: "center",
-                    padding: 22,
-                    color: "#64748b",
-                    fontWeight: 800,
-                  }}
-                >
-                  Nu există încă acțiuni în audit.
+                <td colSpan="4" style={{ textAlign: "center", padding: 22, color: "#64748b", fontWeight: 800 }}>
+                  Nu există încă acțiuni în jurnal.
                 </td>
               </tr>
             )}

@@ -6,6 +6,70 @@ import {
   tableCellStyle,
 } from "./adminStyles";
 
+const statusLabels = {
+  REGISTERED: "Înregistrat",
+  WAITING_CONSULT: "În așteptare consult",
+  IN_CONSULT: "În consult",
+  DISCHARGED: "Externat",
+  ADMITTED: "Internat",
+  TRANSFERRED: "Transferat",
+  CANCELLED: "Anulat",
+};
+
+const statusStyles = {
+  REGISTERED: { background: "#fef3c7", color: "#92400e" },
+  WAITING_CONSULT: { background: "#ffedd5", color: "#9a3412" },
+  IN_CONSULT: { background: "#ccfbf1", color: "#0f766e" },
+  DISCHARGED: { background: "#dcfce7", color: "#166534" },
+  ADMITTED: { background: "#e0f2fe", color: "#0369a1" },
+  TRANSFERRED: { background: "#fee2e2", color: "#991b1b" },
+  CANCELLED: { background: "#f1f5f9", color: "#475569" },
+};
+
+function getStatusLabel(status) {
+  return statusLabels[status] || status || "-";
+}
+
+function StatusBadge({ status }) {
+  const config = statusStyles[status] || {
+    background: "#f1f5f9",
+    color: "#475569",
+  };
+
+  return (
+    <span
+      style={{
+        display: "inline-block",
+        padding: "6px 10px",
+        borderRadius: 999,
+        background: config.background,
+        color: config.color,
+        fontWeight: 900,
+        fontSize: 12,
+        whiteSpace: "nowrap",
+      }}
+    >
+      {getStatusLabel(status)}
+    </span>
+  );
+}
+
+function formatShortDateTime(value) {
+  if (!value) return "-";
+
+  const d = new Date(value);
+
+  if (Number.isNaN(d.getTime())) return value;
+
+  return d.toLocaleString("ro-RO", {
+    day: "2-digit",
+    month: "2-digit",
+    year: "numeric",
+    hour: "2-digit",
+    minute: "2-digit",
+  });
+}
+
 export default function AdminPatients({
   patientsSearch,
   setPatientsSearch,
@@ -89,8 +153,10 @@ export default function AdminPatients({
         </form>
       )}
 
-      {selectedPatientRecord && (
-        <div style={{ marginBottom: 18, padding: 18, borderRadius: 24, background: "#f8fafc", border: "1px solid #e2e8f0" }}>
+     {selectedPatientRecord && (
+  <div
+    id="admin-patient-record"
+    style={{ marginBottom: 18, padding: 18, borderRadius: 24, background: "#f8fafc", border: "1px solid #e2e8f0" }}>
           <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 16, gap: 12, flexWrap: "wrap" }}>
             <div>
               <div style={{ fontWeight: 900, color: "#102033", fontSize: 18 }}>
@@ -128,10 +194,18 @@ export default function AdminPatients({
                     <tr key={visit.id}>
                       <td style={tableCellStyle}>{visit.visitCode || "-"}</td>
                       <td style={tableCellStyle}>
-                        {visit.createdAt ? new Date(visit.createdAt).toLocaleString("ro-RO") : "-"}
+                        {formatShortDateTime(visit.createdAt)}
                       </td>
-                      <td style={tableCellStyle}>{visit.status || "-"}</td>
-                      <td style={tableCellStyle}>{visit.presentationReason || "-"}</td>
+                      <td style={tableCellStyle}><StatusBadge status={visit.status} /></td>
+                      <td style={tableCellStyle}><div
+  style={{
+    maxWidth: 360,
+    whiteSpace: "normal",
+    lineHeight: 1.4,
+  }}
+>
+  {visit.presentationReason || "-"}
+</div></td>
                       <td style={tableCellStyle}>
                         <button type="button" onClick={() => onOpenVisitDocuments(visit)} style={secondaryButtonStyle}>
                           Vezi documente

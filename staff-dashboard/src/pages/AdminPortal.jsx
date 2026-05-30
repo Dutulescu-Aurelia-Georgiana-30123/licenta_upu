@@ -6,6 +6,7 @@ import AdminAudit from "../components/admin/AdminAudit";
 import AdminPatients from "../components/admin/AdminPatients";
 import AdminVisits from "../components/admin/AdminVisits";
 import AdminPersonal from "../components/admin/AdminPersonal";
+import { useToast } from "../context/ToastContext";
 
 const navItems = [
   { key: "dashboard", label: "Dashboard" },
@@ -77,6 +78,7 @@ const [resetPasswordForm, setResetPasswordForm] = useState({
 });
 
   const user = getCurrentUser();
+  const { showSuccess, showError } = useToast();
 
   useEffect(() => {
   const loadDashboard = async () => {
@@ -162,7 +164,7 @@ useEffect(() => {
   } catch (err) {
     console.error("Eroare documente vizită:", err);
     setRecordVisitDocuments([]);
-    alert("Nu am putut încărca documentele vizitei.");
+    showError("Nu am putut încărca documentele vizitei.");
   } finally {
     setLoadingRecordDocuments(false);
   }
@@ -171,14 +173,22 @@ useEffect(() => {
   const openPatientRecord = async (patient) => {
   try {
     setSelectedPatientRecord(patient);
+    setSelectedRecordVisit(null);
+    setRecordVisitDocuments([]);
     setLoadingPatientRecord(true);
 
     const data = await apiGet(`/visits/patient/${patient.id}`);
     setPatientVisits(data || []);
+
+    setTimeout(() => {
+      document
+        .getElementById("admin-patient-record")
+        ?.scrollIntoView({ behavior: "smooth", block: "start" });
+    }, 100);
   } catch (err) {
     console.error("Eroare dosar pacient:", err);
     setPatientVisits([]);
-    alert("Nu am putut încărca dosarul pacientului.");
+    showError("Nu am putut încărca dosarul pacientului.");
   } finally {
     setLoadingPatientRecord(false);
   }
@@ -256,7 +266,7 @@ const filteredPatients = useMemo(() => {
     setDashboardData(dashboard);
   } catch (err) {
     console.error("Eroare creare utilizator:", err);
-    alert("Eroare la crearea utilizatorului.");
+    showError("Eroare la crearea utilizatorului.");
   }
 };
 
@@ -331,7 +341,7 @@ const handleToggleActive = async (userId) => {
     setDashboardData(dashboard);
   } catch (err) {
     console.error("Eroare activare/dezactivare:", err);
-    alert("Eroare la actualizarea statusului.");
+    showError("Eroare la actualizarea statusului.");
   }
 };
 
@@ -363,7 +373,7 @@ const handleUpdateUser = async (e) => {
     setDashboardData(dashboard);
   } catch (err) {
     console.error("Eroare editare utilizator:", err);
-    alert("Eroare la editarea utilizatorului.");
+    showError("Eroare la editarea utilizatorului.");
   }
 };
 
@@ -388,10 +398,10 @@ const handleResetPassword = async (e) => {
       newPassword: "",
     });
 
-    alert("Parola a fost resetată.");
+    showSuccess("Parola a fost resetată.");
   } catch (err) {
     console.error("Eroare resetare parolă:", err);
-    alert("Eroare la resetarea parolei.");
+    showError("Eroare la resetarea parolei.");
   }
 };
 
@@ -426,10 +436,10 @@ const handleDeletePatient = async (patientId) => {
 
     await reloadPatients();
 
-    alert("Pacientul a fost șters.");
+    showSuccess("Pacientul a fost șters.");
   } catch (err) {
     console.error("Eroare ștergere pacient:", err);
-    alert(err.message || "Pacientul nu poate fi șters dacă are vizite asociate.");
+    showError(err.message || "Pacientul nu poate fi șters dacă are vizite asociate.");
   }
 };
 
@@ -455,10 +465,10 @@ const handleUpdatePatient = async (e) => {
 
     await reloadPatients();
 
-    alert("Pacientul a fost actualizat.");
+    showSuccess("Pacientul a fost actualizat.");
   } catch (err) {
     console.error("Eroare editare pacient:", err);
-    alert("Eroare la editarea pacientului.");
+    showError("Eroare la editarea pacientului.");
   }
 };
 
@@ -497,7 +507,7 @@ const handleCancelVisit = async (visitId) => {
     await reloadActiveVisits();
   } catch (err) {
     console.error("Eroare anulare vizită:", err);
-    alert("Eroare la anularea vizitei.");
+    showError("Eroare la anularea vizitei.");
   }
 };
 
@@ -513,7 +523,7 @@ const handleForceDischargeVisit = async (visitId) => {
     await reloadActiveVisits();
   } catch (err) {
     console.error("Eroare finalizare forțată:", err);
-    alert("Eroare la finalizarea forțată a vizitei.");
+    showError("Eroare la finalizarea forțată a vizitei.");
   }
 };
 
@@ -566,7 +576,12 @@ const handleForceDischargeVisit = async (visitId) => {
 patientVisits={patientVisits}
 loadingPatientRecord={loadingPatientRecord}
 onOpenPatientRecord={openPatientRecord}
-onClosePatientRecord={() => setSelectedPatientRecord(null)}
+onClosePatientRecord={() => {
+  setSelectedPatientRecord(null);
+  setPatientVisits([]);
+  setSelectedRecordVisit(null);
+  setRecordVisitDocuments([]);
+}}
 selectedRecordVisit={selectedRecordVisit}
 recordVisitDocuments={recordVisitDocuments}
 loadingRecordDocuments={loadingRecordDocuments}
