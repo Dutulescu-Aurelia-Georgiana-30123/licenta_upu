@@ -52,4 +52,9 @@ public class AuthController {
     ) {
         return ResponseEntity.ok(authService.updateMedicalProfile(id, request));
     }
+
+    @GetMapping("/users/{id}")
+    public ResponseEntity<LoginResponse> getUserById(@PathVariable Long id) {
+        return ResponseEntity.ok(authService.getUserById(id));
+    }
 }

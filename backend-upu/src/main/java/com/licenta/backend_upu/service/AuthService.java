@@ -13,11 +13,13 @@ import com.licenta.backend_upu.repository.PatientRepository;
 import com.licenta.backend_upu.repository.UserRepository;
 import org.springframework.stereotype.Service;
 
+
 @Service
 public class AuthService {
 
     private final UserRepository userRepository;
     private final PatientRepository patientRepository;
+
 
     public AuthService(UserRepository userRepository, PatientRepository patientRepository) {
         this.userRepository = userRepository;
@@ -197,6 +199,31 @@ public class AuthService {
         User saved = userRepository.save(user);
 
         return toLoginResponse(saved);
+    }
+
+    public LoginResponse getUserById(Long id) {
+        User user = userRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("Utilizatorul nu exista"));
+
+        if (user.getRole() == Role.PATIENT && user.getCnp() != null) {
+            patientRepository.findAll()
+                    .stream()
+                    .filter(patient ->
+                            patient.getCnp() != null &&
+                                    patient.getCnp().trim().equals(user.getCnp().trim())
+                    )
+                    .findFirst()
+                    .ifPresent(patient -> {
+                        user.setFirstName(patient.getFirstName());
+                        user.setLastName(patient.getLastName());
+                        user.setPhoneNumber(patient.getPhoneNumber());
+                        user.setEmail(patient.getEmail());
+
+                        userRepository.save(user);
+                    });
+        }
+
+        return toLoginResponse(user);
     }
 
     private LoginResponse toLoginResponse(User user) {

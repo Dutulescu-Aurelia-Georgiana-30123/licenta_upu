@@ -9,6 +9,7 @@ public record AdminUpdateUserRequest(
         String firstName,
         String lastName,
         String phoneNumber,
-        AvailabilityStatus availabilityStatus
+        AvailabilityStatus availabilityStatus,
+        String profileImage
 ) {
 }

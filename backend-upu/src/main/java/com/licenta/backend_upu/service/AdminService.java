@@ -128,6 +128,7 @@ public class AdminService {
         user.setLastName(request.lastName());
 
         user.setPhoneNumber(request.phoneNumber());
+        user.setProfileImage(request.profileImage());
 
         user.setAvailabilityStatus(request.availabilityStatus());
 
@@ -176,7 +177,8 @@ public class AdminService {
                 user.getLastName(),
                 user.getPhoneNumber(),
                 user.getIsActive(),
-                user.getAvailabilityStatus()
+                user.getAvailabilityStatus(),
+                user.getProfileImage()
         );
     }
 

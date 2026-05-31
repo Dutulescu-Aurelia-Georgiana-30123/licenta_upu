@@ -11,6 +11,7 @@ public record AdminUserResponse(
         String lastName,
         String phoneNumber,
         Boolean isActive,
-        AvailabilityStatus availabilityStatus
+        AvailabilityStatus availabilityStatus,
+        String profileImage
 ) {
 }

@@ -3,9 +3,14 @@ package com.licenta.backend_upu.mapper;
 import com.licenta.backend_upu.dto.VisitResponse;
 import com.licenta.backend_upu.entity.Visit;
 import org.springframework.stereotype.Component;
+import com.licenta.backend_upu.repository.PreHospitalizationFormRepository;
+import lombok.RequiredArgsConstructor;
 
 @Component
+@RequiredArgsConstructor
 public class VisitMapper {
+
+    private final PreHospitalizationFormRepository preHospitalizationFormRepository;
     public VisitResponse toResponse(Visit visit) {
         VisitResponse response = new VisitResponse();
 
@@ -32,7 +37,15 @@ public class VisitMapper {
             response.setNurseFirstName(visit.getNurse().getFirstName());
             response.setNurseLastName(visit.getNurse().getLastName());
         }
-
+        preHospitalizationFormRepository.findByVisitId(visit.getId())
+                .ifPresent(preform -> {
+                    response.setTriageColor(
+                            preform.getTriageColor() != null
+                                    ? preform.getTriageColor().name()
+                                    : null
+                    );
+                    response.setPresentationReason(preform.getReason());
+                });
         return response;
     }
 }
