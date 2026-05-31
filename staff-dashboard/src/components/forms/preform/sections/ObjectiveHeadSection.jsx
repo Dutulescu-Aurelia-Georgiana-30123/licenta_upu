@@ -109,16 +109,12 @@ export default function ObjectiveHeadSection({ preform, setPreform }) {
           <div style={titleStyle}>NAS</div>
 
           <CheckboxField
-            label="NORMAL"
-            checked={preform.noseNostrilsNormal && preform.noseMucosaNormal}
-            onChange={(v) =>
-              setPreform({
-                ...preform,
-                noseNostrilsNormal: v,
-                noseMucosaNormal: v,
-              })
-            }
-          />
+  label="NORMAL"
+  checked={preform.noseNormal}
+  onChange={(v) =>
+    setPreform({ ...preform, noseNormal: v })
+  }
+/>
 
           <div style={{ display: "grid", gap: 8, marginBottom: 10 }}>
             <CheckboxField
@@ -187,21 +183,12 @@ export default function ObjectiveHeadSection({ preform, setPreform }) {
           <div style={titleStyle}>APARAT AUDITIV</div>
 
           <CheckboxField
-            label="NORMAL"
-            checked={
-              preform.earTympanicMembraneNormal &&
-              preform.earExternalCanalsNormal &&
-              preform.earAuricleNormal
-            }
-            onChange={(v) =>
-              setPreform({
-                ...preform,
-                earTympanicMembraneNormal: v,
-                earExternalCanalsNormal: v,
-                earAuricleNormal: v,
-              })
-            }
-          />
+  label="NORMAL"
+  checked={preform.earNormal}
+  onChange={(v) =>
+    setPreform({ ...preform, earNormal: v })
+  }
+/>
 
           <div style={{ display: "grid", gap: 8, marginBottom: 10 }}>
             <CheckboxField
@@ -290,16 +277,12 @@ export default function ObjectiveHeadSection({ preform, setPreform }) {
           <div style={titleStyle}>OCHI</div>
 
           <CheckboxField
-            label="NORMAL"
-            checked={preform.eyeMobilityNormal && preform.eyePupilsNormal}
-            onChange={(v) =>
-              setPreform({
-                ...preform,
-                eyeMobilityNormal: v,
-                eyePupilsNormal: v,
-              })
-            }
-          />
+  label="NORMAL"
+  checked={preform.eyeNormal}
+  onChange={(v) =>
+    setPreform({ ...preform, eyeNormal: v })
+  }
+/>
 
           <div style={{ display: "grid", gap: 8, marginBottom: 10 }}>
             <CheckboxField

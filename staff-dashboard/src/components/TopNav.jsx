@@ -1,4 +1,7 @@
+import { useAuth } from "../context/AuthContext";
+
 export default function TopNav({ active, onChange }) {
+  const { logout } = useAuth();
   const items = [
     { key: "home", label: "Dashboard", icon: "▦" },
     { key: "patients", label: "Pacienți", icon: "👥" },
@@ -8,10 +11,14 @@ export default function TopNav({ active, onChange }) {
   ];
 
   const handleLogout = () => {
-    localStorage.removeItem("user");
-    localStorage.removeItem("activePage");
-    window.location.reload();
-  };
+  sessionStorage.removeItem("reception_active_page");
+  sessionStorage.removeItem("reception_selected_visit_id");
+
+  localStorage.removeItem("reception_active_page");
+  localStorage.removeItem("reception_selected_visit_id");
+
+  logout();
+};
 
   return (
     <aside

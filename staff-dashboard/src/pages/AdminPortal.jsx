@@ -7,6 +7,7 @@ import AdminPatients from "../components/admin/AdminPatients";
 import AdminVisits from "../components/admin/AdminVisits";
 import AdminPersonal from "../components/admin/AdminPersonal";
 import { useToast } from "../context/ToastContext";
+import { useAuth } from "../context/AuthContext";
 
 const navItems = [
   { key: "dashboard", label: "Dashboard" },
@@ -25,8 +26,12 @@ function getCurrentUser() {
 }
 
 export default function AdminPortal() {
-  const [activePage, setActivePage] = useState("dashboard");
-  const [activeRoleTab, setActiveRoleTab] = useState("DOCTOR");
+  const [activePage, setActivePage] = useState(() => {
+  return sessionStorage.getItem("adminActivePage") || "dashboard";
+});
+  const [activeRoleTab, setActiveRoleTab] = useState(() => {
+  return localStorage.getItem("adminRoleTab") || "DOCTOR";
+});
   const [dashboardData, setDashboardData] = useState(null);
 const [users, setUsers] = useState([]);
 const [loadingUsers, setLoadingUsers] = useState(false);
@@ -71,6 +76,7 @@ const [editForm, setEditForm] = useState({
   lastName: "",
   phoneNumber: "",
   availabilityStatus: "AVAILABLE",
+  profileImage: "",
 });
 const [resetUser, setResetUser] = useState(null);
 const [resetPasswordForm, setResetPasswordForm] = useState({
@@ -78,6 +84,7 @@ const [resetPasswordForm, setResetPasswordForm] = useState({
 });
 
   const user = getCurrentUser();
+  const { logout } = useAuth();
   const { showSuccess, showError } = useToast();
 
   useEffect(() => {
@@ -193,6 +200,13 @@ useEffect(() => {
     setLoadingPatientRecord(false);
   }
 };
+
+useEffect(() => {
+  sessionStorage.setItem("adminActivePage", activePage);
+}, [activePage]);
+useEffect(() => {
+  localStorage.setItem("adminRoleTab", activeRoleTab);
+}, [activeRoleTab]);
 
 const filteredPatients = useMemo(() => {
   const q = patientsSearch.trim().toLowerCase();
@@ -355,6 +369,7 @@ const openEditForm = (item) => {
     lastName: item.lastName || "",
     phoneNumber: item.phoneNumber || "",
     availabilityStatus: item.availabilityStatus || "AVAILABLE",
+    profileImage: item.profileImage || "",
   });
 };
 
@@ -473,12 +488,15 @@ const handleUpdatePatient = async (e) => {
 };
 
   const handleLogout = () => {
-    localStorage.removeItem("user");
-    localStorage.removeItem("activePage");
-    localStorage.removeItem("reception_active_page");
-    localStorage.removeItem("reception_selected_visit_id");
-    window.location.reload();
-  };
+  sessionStorage.removeItem("adminActivePage");
+  sessionStorage.removeItem("activePage");
+
+  localStorage.removeItem("adminActivePage");
+  localStorage.removeItem("reception_active_page");
+  localStorage.removeItem("reception_selected_visit_id");
+
+  logout();
+};
 
   const reloadActiveVisits = async () => {
   try {

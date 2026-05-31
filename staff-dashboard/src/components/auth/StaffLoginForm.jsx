@@ -44,53 +44,57 @@ export default function StaffLoginForm() {
   };
 
   return (
-    <>
-      <label style={{ display: "block", marginBottom: 16 }}>
-        <div style={labelStyle}>Email</div>
-        <input
-          placeholder="email@exemplu.ro"
-          value={email}
-          onChange={(e) => setEmail(e.target.value)}
-          onKeyDown={handleEnter}
-          style={inputStyle}
-        />
-      </label>
+  <>
+    <label style={{ display: "block", marginBottom: 16 }}>
+      <div style={labelStyle}>Email</div>
 
-      <label style={{ display: "block", marginBottom: 14 }}>
-        <div style={labelStyle}>Parolă</div>
-        <input
-          placeholder="Introdu parola"
-          type="password"
-          value={password}
-          onChange={(e) => setPassword(e.target.value)}
-          onKeyDown={handleEnter}
-          style={inputStyle}
-        />
-      </label>
+      <input
+        placeholder="email@exemplu.ro"
+        value={email}
+        onChange={(e) => setEmail(e.target.value)}
+        onKeyDown={handleEnter}
+        autoComplete="off"
+        style={inputStyle}
+      />
+    </label>
 
-      {error && <div style={errorStyle}>{error}</div>}
+    <label style={{ display: "block", marginBottom: 14 }}>
+      <div style={labelStyle}>Parolă</div>
 
-      <button
-        onClick={handleLogin}
-        disabled={loading}
-        style={{
-          width: "100%",
-          padding: "14px 16px",
-          borderRadius: 16,
-          border: "none",
-          background: "linear-gradient(135deg, #08b8b3, #069a96)",
-          color: "white",
-          fontWeight: 900,
-          fontSize: 15,
-          cursor: loading ? "not-allowed" : "pointer",
-          boxShadow: theme.shadow.teal,
-          opacity: loading ? 0.7 : 1,
-        }}
-      >
-        {loading ? "Se autentifică..." : "Login personal medical"}
-      </button>
-    </>
-  );
+      <input
+        placeholder="Introdu parola"
+        type="password"
+        value={password}
+        onChange={(e) => setPassword(e.target.value)}
+        onKeyDown={handleEnter}
+        autoComplete="off"
+        style={inputStyle}
+      />
+    </label>
+
+    {error && <div style={errorStyle}>{error}</div>}
+
+    <button
+      onClick={handleLogin}
+      disabled={loading}
+      style={{
+        width: "100%",
+        padding: "14px 16px",
+        borderRadius: 16,
+        border: "none",
+        background: "linear-gradient(135deg, #08b8b3, #069a96)",
+        color: "white",
+        fontWeight: 900,
+        fontSize: 15,
+        cursor: loading ? "not-allowed" : "pointer",
+        boxShadow: theme.shadow.teal,
+        opacity: loading ? 0.7 : 1,
+      }}
+    >
+      {loading ? "Se autentifică..." : "Login personal medical"}
+    </button>
+  </>
+);
 }
 
 const labelStyle = {

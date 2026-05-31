@@ -3,7 +3,9 @@ import { useToast } from "../../context/ToastContext";
 import { theme } from "../../styles/theme";
 
 export default function SignaturesSection({
+  preform,
   setPreform,
+  discharge,
   setDischarge,
   readOnly = false,
   onSavePreform,
@@ -28,49 +30,51 @@ export default function SignaturesSection({
     const signedAt = new Date().toISOString();
 
     if (type === "doctor") {
-      setPreform((prev) => ({
-        ...prev,
-        doctorName: profileName,
-        doctorSignature: user.profileSignature,
-        doctorSignedAt: signedAt,
-      }));
+      const updatedPreform = {
+  ...preform,
+  doctorName: profileName,
+  doctorSignature: user.profileSignature,
+  doctorSignedAt: signedAt,
+};
 
-      setDischarge((prev) => ({
-        ...prev,
-        doctorName: profileName,
-        doctorSignature: user.profileSignature,
-        doctorSignedAt: signedAt,
-      }));
+const updatedDischarge = {
+  ...discharge,
+  doctorName: profileName,
+  doctorSignature: user.profileSignature,
+  doctorSignedAt: signedAt,
+};
 
-      setTimeout(() => {
-  onSavePreform && onSavePreform();
-  onSaveDischarge && onSaveDischarge();
-}, 100);
+setPreform(updatedPreform);
+setDischarge(updatedDischarge);
 
-      showSuccess("Semnătura medicului a fost aplicată.");
+onSavePreform && onSavePreform(updatedPreform, true);
+onSaveDischarge && onSaveDischarge(updatedDischarge, true);
+
+      showSuccess("Semnătura a fost aplicată și fișele au fost salvate.");
       return;
     }
 
-    setPreform((prev) => ({
-      ...prev,
-      nurseName: profileName,
-      nurseSignature: user.profileSignature,
-      nurseSignedAt: signedAt,
-    }));
+   const updatedPreform = {
+  ...preform,
+  nurseName: profileName,
+  nurseSignature: user.profileSignature,
+  nurseSignedAt: signedAt,
+};
 
-    setDischarge((prev) => ({
-      ...prev,
-      nurseName: profileName,
-      nurseSignature: user.profileSignature,
-      nurseSignedAt: signedAt,
-    }));
+const updatedDischarge = {
+  ...discharge,
+  nurseName: profileName,
+  nurseSignature: user.profileSignature,
+  nurseSignedAt: signedAt,
+};
 
-    setTimeout(() => {
-  onSavePreform && onSavePreform();
-  onSaveDischarge && onSaveDischarge();
-}, 100);
+setPreform(updatedPreform);
+setDischarge(updatedDischarge);
 
-    showSuccess("Semnătura asistentului a fost aplicată.");
+onSavePreform && onSavePreform(updatedPreform, true);
+onSaveDischarge && onSaveDischarge(updatedDischarge, true);
+
+    showSuccess("Semnătura a fost aplicată și fișele au fost salvate.");
   };
 
   if (readOnly) return null;
@@ -94,7 +98,7 @@ export default function SignaturesSection({
             onClick={() => applyProfileSignature("nurse")}
             style={theme.button.primary}
           >
-            Semnează ca asistent(ă)
+            Semnează ca asistent
           </button>
         )}
 

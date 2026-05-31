@@ -301,7 +301,46 @@ export default function AdminPersonal({
               <option value="AVAILABLE">AVAILABLE</option>
               <option value="BUSY">BUSY</option>
             </select>
+
+            <input
+  type="file"
+  accept="image/*"
+  onChange={(e) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    const reader = new FileReader();
+
+    reader.onloadend = () => {
+      setEditForm({
+        ...editForm,
+        profileImage: reader.result,
+      });
+    };
+
+    reader.readAsDataURL(file);
+  }}
+  style={{
+    padding: 12,
+    borderRadius: 14,
+    border: "1px solid #cbd5e1",
+  }}
+/>
           </div>
+
+          {editForm.profileImage && (
+  <img
+    src={editForm.profileImage}
+    alt="Poză profil"
+    style={{
+      width: 90,
+      height: 90,
+      borderRadius: "50%",
+      objectFit: "cover",
+      border: "2px solid #e2e8f0",
+    }}
+  />
+)}
 
           <div style={{ display: "flex", justifyContent: "flex-end", gap: 10 }}>
             <button type="button" onClick={onCancelEditUser} style={secondaryButtonStyle}>

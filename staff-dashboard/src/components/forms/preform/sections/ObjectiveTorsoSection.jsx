@@ -84,23 +84,12 @@ export default function ObjectiveTorsoSection({ preform, setPreform }) {
         <div style={titleStyle}>TORACE / APARAT RESPIRATOR</div>
 
         <CheckboxField
-          label="NORMAL"
-          checked={
-            preform.respThoraxAspectNormal &&
-            preform.respThoraxPercussionNormal &&
-            preform.respVesicularBilateralNormal &&
-            preform.respOropharynxNormal
-          }
-          onChange={(v) =>
-            setPreform({
-              ...preform,
-              respThoraxAspectNormal: v,
-              respThoraxPercussionNormal: v,
-              respVesicularBilateralNormal: v,
-              respOropharynxNormal: v,
-            })
-          }
-        />
+  label="NORMAL"
+  checked={preform.respNormal}
+  onChange={(v) =>
+    setPreform({ ...preform, respNormal: v })
+  }
+/>
 
         <CheckboxGrid
           columns={2}

@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useAuth } from "../context/AuthContext";
 import NearbyHospitalsMap from "../components/patient/NearbyHospitalsMap";
 import Card from "../components/patient/portal/Card";
@@ -8,6 +8,7 @@ import VisitHistorySection from "../components/patient/portal/VisitHistorySectio
 import QuestionsSection from "../components/patient/portal/QuestionsSection";
 import useIsMobile from "../hooks/useIsMobile";
 import usePatientPortalData from "../hooks/usePatientPortalData";
+import { apiGet } from "../api/api";
 import {
   headerStyle,
   headerSubtitleStyle,
@@ -19,6 +20,21 @@ import {
 
 export default function PatientPortal() {
   const { user, logout, login } = useAuth();
+  useEffect(() => {
+  if (!user?.id) return;
+
+  const refreshUser = async () => {
+    try {
+      const freshUser = await apiGet(`/auth/users/${user.id}`);
+      login(freshUser);
+    } catch (err) {
+      console.error("Eroare refresh date pacient:", err);
+    }
+  };
+
+  refreshUser();
+}, [user?.id]);
+
   const isMobile = useIsMobile();
 
   const [historyOpen, setHistoryOpen] = useState(false);

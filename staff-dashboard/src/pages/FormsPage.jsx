@@ -313,7 +313,7 @@ const canEditReceptionFields = isReception || isDoctor || isNurse;
     });
   }, [selected?.id]);
 
-  const savePreform = async (overridePreform = null) => {
+  const savePreform = async (overridePreform = null, silent = false) => {
   if (!selected || isClosedVisit) return;
 
   const isValidOverride =
@@ -328,6 +328,15 @@ const canEditReceptionFields = isReception || isDoctor || isNurse;
     ...dataToSave,
     triageColor: dataToSave.triageColor || selected?.triageColor || "",
   };
+
+if (
+  isReception &&
+  !normalizedPreform.takenOverBy?.trim()
+) {
+  setMsg("Completează câmpul «Preluat de».");
+  showError("Completează câmpul «Preluat de».");
+  return;
+}
 
   if (isReception && !normalizedPreform.triageColor) {
     setMsg("Selectează codul de triaj înainte de salvarea fișei.");
@@ -354,10 +363,14 @@ const canEditReceptionFields = isReception || isDoctor || isNurse;
     if (isReception) {
       await updateVisitStatusData(selected, "WAITING_CONSULT");
       setMsg("Fișa de pre-spitalizare a fost salvată. Pacientul este în așteptare consult.");
-      showSuccess("Fișa salvată. Pacientul este în așteptare consult.");
+      if (!silent) {
+  showSuccess("Fișa salvată. Pacientul este în așteptare consult.");
+}
     } else {
       setMsg("Fișa de pre-spitalizare a fost salvată.");
-      showSuccess("Fișa de pre-spitalizare a fost salvată.");
+      if (!silent) {
+  showSuccess("Fișa de pre-spitalizare a fost salvată.");
+}
     }
 
     lastEditAtRef.current = 0;
@@ -479,7 +492,7 @@ const canEditReceptionFields = isReception || isDoctor || isNurse;
     showInfo("Culoarea triajului a fost modificată manual.");
   };
 
- const saveDischarge = async (overrideDischarge = null) => {
+ const saveDischarge = async (overrideDischarge = null, silent = false) => {
   if (!selected || isClosedVisit) return;
 
   const isValidOverride =
@@ -501,7 +514,9 @@ const canEditReceptionFields = isReception || isDoctor || isNurse;
     lastEditAtRef.current = 0;
 
     setMsg("Fișa de externare a fost salvată.");
-    showSuccess("Fișa de externare a fost salvată.");
+    if (!silent) {
+  showSuccess("Fișa de externare a fost salvată.");
+}
 
     setDischargeSaved(true);
   } catch (e) {

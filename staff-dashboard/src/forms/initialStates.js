@@ -93,6 +93,7 @@ export const initialPreformState = {
   neckPalpableFormations: false,
   neckOther: "",
 
+  noseNormal: false,
   noseNostrilsNormal: false,
   noseMucosaNormal: false,
   noseOther: "",
@@ -103,6 +104,7 @@ export const initialPreformState = {
   noseTraumaLeft: false,
   noseTraumaRight: false,
 
+  earNormal: false,
   earTympanicMembraneNormal: false,
   earExternalCanalsNormal: false,
   earAuricleNormal: false,
@@ -116,6 +118,7 @@ export const initialPreformState = {
   earTraumaLeft: false,
   earTraumaRight: false,
 
+  eyeNormal: false,
   eyeMobilityNormal: false,
   eyePupilsNormal: false,
   eyeExamOther: "",
@@ -149,6 +152,7 @@ export const initialPreformState = {
   cvCarotidMurmur: false,
   cvObservations: "",
 
+  respNormal: false,
   respThoraxAspectNormal: false,
   respThoraxPercussionNormal: false,
   respVesicularBilateralNormal: false,

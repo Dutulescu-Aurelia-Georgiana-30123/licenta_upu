@@ -63,6 +63,11 @@ export default function PatientRegisterModal({ open, onClose }) {
       return;
     }
 
+    if (phone.replace(/\D/g, "").length < 10) {
+  setError("Numărul de telefon trebuie să conțină minimum 10 cifre.");
+  return;
+}
+
     if (!password || !confirmPassword) {
       setError("Introdu parola și confirmarea parolei.");
       return;
@@ -200,7 +205,9 @@ export default function PatientRegisterModal({ open, onClose }) {
                 <div style={labelStyle}>Telefon</div>
                 <input
                   value={phone}
-                  onChange={(e) => setPhone(e.target.value)}
+                  onChange={(e) =>
+  setPhone(e.target.value.replace(/\D/g, "").slice(0, 10))
+}
                   style={inputStyle}
                   placeholder="Ex: 0712345678"
                 />
