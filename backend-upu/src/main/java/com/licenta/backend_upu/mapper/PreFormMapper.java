@@ -68,7 +68,7 @@ public class PreFormMapper {
         e.setDeathHour(req.getDeathHour());
         e.setResuscitationNotStartedReason(req.getResuscitationNotStartedReason());
 
-        e.setAv(req.getAv());
+
         e.setTrc(req.getTrc());
         e.setHistoryCardiac(req.getHistoryCardiac());
         e.setHistoryNeurologic(req.getHistoryNeurologic());
@@ -243,7 +243,7 @@ public class PreFormMapper {
         r.setDeathHour(e.getDeathHour());
         r.setResuscitationNotStartedReason(e.getResuscitationNotStartedReason());
 
-        r.setAv(e.getAv());
+
         r.setTrc(e.getTrc());
         r.setHistoryCardiac(e.getHistoryCardiac());
         r.setHistoryNeurologic(e.getHistoryNeurologic());

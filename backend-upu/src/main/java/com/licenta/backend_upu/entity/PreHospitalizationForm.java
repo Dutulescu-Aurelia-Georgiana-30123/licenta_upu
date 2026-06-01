@@ -86,8 +86,6 @@ public class PreHospitalizationForm {
     private Boolean resuscitationFailed;
     private String deathHour;
     private String resuscitationNotStartedReason;
-
-    private String av;
     private String trc;
 
     private Boolean historyCardiac;

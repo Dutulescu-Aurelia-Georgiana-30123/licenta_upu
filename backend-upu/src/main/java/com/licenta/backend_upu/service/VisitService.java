@@ -53,7 +53,8 @@ public class VisitService {
             boolean isFinalStatus =
                     newStatus == VisitStatus.DISCHARGED ||
                             newStatus == VisitStatus.ADMITTED ||
-                            newStatus == VisitStatus.TRANSFERRED;
+                            newStatus == VisitStatus.TRANSFERRED ||
+                            newStatus == VisitStatus.CANCELLED;
 
             if (isFinalStatus && savedVisit.getDoctor() != null) {
                 User doctor = savedVisit.getDoctor();
@@ -63,7 +64,8 @@ public class VisitService {
                         List.of(
                                 VisitStatus.DISCHARGED,
                                 VisitStatus.ADMITTED,
-                                VisitStatus.TRANSFERRED
+                                VisitStatus.TRANSFERRED,
+                                VisitStatus.CANCELLED
                         )
                 );
 
@@ -81,7 +83,8 @@ public class VisitService {
                         List.of(
                                 VisitStatus.DISCHARGED,
                                 VisitStatus.ADMITTED,
-                                VisitStatus.TRANSFERRED
+                                VisitStatus.TRANSFERRED,
+                                VisitStatus.CANCELLED
                         )
                 );
 
@@ -103,7 +106,8 @@ public class VisitService {
                 List.of(
                         VisitStatus.DISCHARGED,
                         VisitStatus.ADMITTED,
-                        VisitStatus.TRANSFERRED
+                        VisitStatus.TRANSFERRED,
+                        VisitStatus.CANCELLED
                 )
         );
     }
@@ -124,7 +128,8 @@ public class VisitService {
                 List.of(
                         VisitStatus.DISCHARGED,
                         VisitStatus.ADMITTED,
-                        VisitStatus.TRANSFERRED
+                        VisitStatus.TRANSFERRED,
+                        VisitStatus.CANCELLED
                 )
         );
 
@@ -155,7 +160,8 @@ public class VisitService {
                 List.of(
                         VisitStatus.DISCHARGED,
                         VisitStatus.ADMITTED,
-                        VisitStatus.TRANSFERRED
+                        VisitStatus.TRANSFERRED,
+                        VisitStatus.CANCELLED
                 )
         );
 
@@ -171,11 +177,17 @@ public class VisitService {
     }
 
     public List<Visit> getVisitsByDoctor(Long doctorId) {
-        return visitRepository.findByDoctor_IdOrderByCreatedAtDesc(doctorId);
+        return visitRepository.findByDoctor_IdOrderByCreatedAtDesc(doctorId)
+                .stream()
+                .filter(visit -> visit.getStatus() != VisitStatus.CANCELLED)
+                .toList();
     }
 
     public List<Visit> getVisitsByNurse(Long nurseId) {
-        return visitRepository.findByNurse_IdOrderByCreatedAtDesc(nurseId);
+        return visitRepository.findByNurse_IdOrderByCreatedAtDesc(nurseId)
+                .stream()
+                .filter(visit -> visit.getStatus() != VisitStatus.CANCELLED)
+                .toList();
     }
 
     public Visit getActiveVisitByPatientCnp(String cnp) {
@@ -185,7 +197,8 @@ public class VisitService {
                         List.of(
                                 VisitStatus.DISCHARGED,
                                 VisitStatus.ADMITTED,
-                                VisitStatus.TRANSFERRED
+                                VisitStatus.TRANSFERRED,
+                                VisitStatus.CANCELLED
                         )
                 )
                 .orElse(null);
@@ -197,7 +210,8 @@ public class VisitService {
                 List.of(
                         VisitStatus.DISCHARGED,
                         VisitStatus.ADMITTED,
-                        VisitStatus.TRANSFERRED
+                        VisitStatus.TRANSFERRED,
+                        VisitStatus.CANCELLED
                 )
         );
     }

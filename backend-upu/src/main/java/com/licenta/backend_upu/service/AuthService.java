@@ -148,7 +148,7 @@ public class AuthService {
 
         User user = new User();
 
-        user.setEmail(email);
+        user.setEmail(email != null ? email : medicalPatient.getEmail());
         user.setPassword(request.getPassword().trim());
         user.setRole(Role.PATIENT);
 

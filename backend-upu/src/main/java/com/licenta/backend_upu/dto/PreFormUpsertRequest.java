@@ -71,7 +71,6 @@ public class PreFormUpsertRequest {
     private String deathHour;
     private String resuscitationNotStartedReason;
 
-    private String av;
     private String trc;
     private Boolean historyCardiac;
     private Boolean historyNeurologic;
