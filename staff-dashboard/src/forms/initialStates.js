@@ -51,7 +51,6 @@ export const initialPreformState = {
   reason: "",
 
   respiratoryRate: "",
-  av: "",
   pulse: "",
   systolicBp: "",
   diastolicBp: "",

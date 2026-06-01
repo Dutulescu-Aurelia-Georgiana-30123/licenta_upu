@@ -2,6 +2,24 @@ function safe(value) {
   return value === null || value === undefined || value === "" ? "-" : String(value);
 }
 
+function formatLocalDateTime(value) {
+  if (!value) return "-";
+
+  const text = String(value);
+
+  const [datePart, timePartWithMs] = text.split("T");
+  const timePart = timePartWithMs?.split(".")?.[0];
+
+  if (!datePart || !timePart) {
+    return text;
+  }
+
+  const [year, month, day] = datePart.split("-");
+  const [hour, minute] = timePart.split(":");
+
+  return `${day}.${month}.${year}, ${hour}:${minute}`;
+}
+
 function CheckItem({ checked, label }) {
   return (
     <div style={{ marginBottom: 4 }}>
@@ -65,7 +83,7 @@ function SignatureBlock({ title, name, signature, signedAt }) {
 
       <div>
         <b>Semnat la:</b>{" "}
-        {signedAt ? new Date(signedAt).toLocaleString("ro-RO") : "-"}
+        {formatLocalDateTime(signedAt)}
       </div>
     </div>
   );

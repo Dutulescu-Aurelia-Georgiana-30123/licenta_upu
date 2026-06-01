@@ -19,15 +19,6 @@ export default function VitalSignsSection({ preform, setPreform }) {
       </label>
 
       <label>
-        AV
-        <input
-          value={preform.av}
-          onChange={(e) => setPreform({ ...preform, av: e.target.value })}
-          style={{ width: "100%", padding: 8, marginTop: 6 }}
-        />
-      </label>
-
-      <label>
         Puls
         <input
           value={preform.pulse}

@@ -3,12 +3,12 @@ import { CheckItem, LrRow, SectionTitle, safe } from "./PrintCommon";
 export default function PrintObjectiveExam({ preform }) {
   return (
     <div
-      style={{
-        border: "1.5px solid #000",
-        padding: 10,
-        marginBottom: 14,
-      }}
-    >
+  style={{
+    border: "1.5px solid #000",
+    padding: 10,
+    marginBottom: 14,
+  }}
+>
       <SectionTitle>EXAMEN OBIECTIV</SectionTitle>
 
       <div style={{ marginBottom: 12 }}>
@@ -312,7 +312,15 @@ export default function PrintObjectiveExam({ preform }) {
 
 function PrintBox({ title, children }) {
   return (
-    <div style={{ border: "1px solid #000", padding: 10, marginBottom: 14 }}>
+    <div
+      style={{
+        border: "1px solid #000",
+        padding: 10,
+        marginBottom: 14,
+        breakInside: "avoid",
+        pageBreakInside: "avoid",
+      }}
+    >
       <SectionTitle>{title}</SectionTitle>
       {children}
     </div>
@@ -322,6 +330,8 @@ function PrintBox({ title, children }) {
 const boxStyle = {
   border: "1px solid #000",
   padding: 8,
+  breakInside: "avoid",
+  pageBreakInside: "avoid",
 };
 
 const titleStyle = {

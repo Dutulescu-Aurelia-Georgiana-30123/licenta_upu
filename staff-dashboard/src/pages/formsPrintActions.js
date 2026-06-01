@@ -13,12 +13,16 @@ export async function exportCombinedPdf({ selected, setMsg }) {
   }
 
   const opt = {
-    margin: 0.4,
-    filename: `visit_${selected.id}.pdf`,
-    image: { type: "jpeg", quality: 0.85 },
-    html2canvas: { scale: 1.2, useCORS: true },
-    jsPDF: { unit: "cm", format: "a4", orientation: "portrait" },
-  };
+  margin: 0.4,
+  filename: `visit_${selected.id}.pdf`,
+  image: { type: "jpeg", quality: 0.9 },
+  html2canvas: { scale: 1.5, useCORS: true },
+  jsPDF: { unit: "cm", format: "a4", orientation: "portrait" },
+  pagebreak: {
+    mode: ["css", "legacy"],
+    avoid: ["div"],
+  },
+};
 
   const pdfBlob = await html2pdf()
     .set(opt)
@@ -64,12 +68,16 @@ export async function downloadCombinedPdf({ selected, setMsg }) {
   }
 
   const opt = {
-    margin: 0.4,
-    filename: `fise_vizita_${selected.id}.pdf`,
-    image: { type: "jpeg", quality: 0.9 },
-    html2canvas: { scale: 1.2, useCORS: true },
-    jsPDF: { unit: "cm", format: "a4", orientation: "portrait" },
-  };
+  margin: 0.4,
+  filename: `fise_vizita_${selected.id}.pdf`,
+  image: { type: "jpeg", quality: 0.9 },
+  html2canvas: { scale: 1.5, useCORS: true },
+  jsPDF: { unit: "cm", format: "a4", orientation: "portrait" },
+  pagebreak: {
+    mode: ["css", "legacy"],
+    avoid: ["div"],
+  },
+};
 
   await html2pdf().set(opt).from(element).save();
 

@@ -27,7 +27,20 @@ export default function SignaturesSection({
       return;
     }
 
-    const signedAt = new Date().toISOString();
+    const now = new Date();
+
+const signedAt =
+  now.getFullYear() +
+  "-" +
+  String(now.getMonth() + 1).padStart(2, "0") +
+  "-" +
+  String(now.getDate()).padStart(2, "0") +
+  "T" +
+  String(now.getHours()).padStart(2, "0") +
+  ":" +
+  String(now.getMinutes()).padStart(2, "0") +
+  ":" +
+  String(now.getSeconds()).padStart(2, "0");
 
     if (type === "doctor") {
       const updatedPreform = {
@@ -54,7 +67,7 @@ onSaveDischarge && onSaveDischarge(updatedDischarge, true);
       return;
     }
 
-   const updatedPreform = {
+const updatedPreform = {
   ...preform,
   nurseName: profileName,
   nurseSignature: user.profileSignature,

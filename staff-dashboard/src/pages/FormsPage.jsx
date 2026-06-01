@@ -52,7 +52,7 @@ function getMissingRequiredAiFields(preform) {
   if (!preform.age) missingFields.push("vârsta");
   if (!preform.sex) missingFields.push("sexul");
   if (!preform.temperature) missingFields.push("temperatura");
-  if (!preform.pulse && !preform.av) missingFields.push("pulsul / AV");
+  if (!preform.pulse) missingFields.push("pulsul");
   if (!preform.respiratoryRate) missingFields.push("frecvența respiratorie");
   if (!preform.systolicBp) missingFields.push("TA sistolică");
   if (!preform.diastolicBp) missingFields.push("TA diastolică");

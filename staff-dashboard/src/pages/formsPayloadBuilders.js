@@ -18,7 +18,7 @@ export function buildAiTriagePayload(preform) {
     varsta: Number(preform.age || 40),
     sex: preform.sex === "F" ? 2 : 1,
     temperatura: Number(preform.temperature || 36.8),
-    puls: Number(preform.pulse || preform.av || 80),
+    puls: Number(preform.pulse || 80),
     respiratie: Number(preform.respiratoryRate || 18),
     ta_sistolica: Number(preform.systolicBp || 120),
     ta_diastolica: Number(preform.diastolicBp || 80),

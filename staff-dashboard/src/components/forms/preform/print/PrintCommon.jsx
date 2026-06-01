@@ -77,6 +77,21 @@ export function safe(value) {
   return value || "-";
 }
 
+function formatLocalDateTime(value) {
+  if (!value) return "-";
+
+  const text = String(value);
+  const [datePart, timePartWithMs] = text.split("T");
+  const timePart = timePartWithMs?.split(".")?.[0];
+
+  if (!datePart || !timePart) return text;
+
+  const [year, month, day] = datePart.split("-");
+  const [hour, minute] = timePart.split(":");
+
+  return `${day}.${month}.${year}, ${hour}:${minute}`;
+}
+
 export function SignatureBlock({ title, name, signature, signedAt }) {
   return (
     <div
@@ -120,7 +135,7 @@ export function SignatureBlock({ title, name, signature, signedAt }) {
 
       <div>
         <b>Semnat la:</b>{" "}
-        {signedAt ? new Date(signedAt).toLocaleString("ro-RO") : "-"}
+        {formatLocalDateTime(signedAt)}
       </div>
     </div>
   );

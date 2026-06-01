@@ -181,4 +181,6 @@ const sectionBoxStyle = {
   border: "1px solid #000",
   padding: 10,
   marginBottom: 14,
+  breakInside: "avoid",
+  pageBreakInside: "avoid",
 };
