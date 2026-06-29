@@ -3,7 +3,7 @@ from typing import Dict, Any
 from fastapi import FastAPI
 from catboost import CatBoostClassifier
 
-from src.final_pipeline import predict_triage
+from src.final_pipeline import predict_triage,normalize_patient_input,prepare_single_patient,apply_safety_rules
 from fastapi.middleware.cors import CORSMiddleware
 
 
