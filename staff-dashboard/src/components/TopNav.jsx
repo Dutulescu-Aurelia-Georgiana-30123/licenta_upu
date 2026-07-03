@@ -3,11 +3,11 @@ import { useAuth } from "../context/AuthContext";
 export default function TopNav({ active, onChange }) {
   const { logout } = useAuth();
   const items = [
-    { key: "home", label: "Dashboard", icon: "▦" },
+    { key: "home", label: "Acasă", icon: "▦" },
     { key: "patients", label: "Pacienți", icon: "👥" },
     { key: "visits", label: "Vizite", icon: "📋" },
     { key: "forms", label: "Fișe", icon: "📝" },
-    { key: "archive", label: "Arhivă", icon: "🗂" },
+    { key: "archive", label: "Arhivă", icon: "📁" },
   ];
 
   const handleLogout = () => {
@@ -111,39 +111,6 @@ export default function TopNav({ active, onChange }) {
           );
         })}
       </nav>
-
-      <div
-        style={{
-          marginTop: 28,
-          padding: 18,
-          borderRadius: 22,
-          background:
-            "linear-gradient(135deg, rgba(8,184,179,0.12), rgba(8,184,179,0.03))",
-          border: "1px solid rgba(8,184,179,0.12)",
-        }}
-      >
-        <div
-          style={{
-            fontSize: 13,
-            color: "#069a96",
-            fontWeight: 900,
-            marginBottom: 8,
-          }}
-        >
-          Sistem activ
-        </div>
-
-        <div
-          style={{
-            fontSize: 12,
-            color: "#667085",
-            lineHeight: 1.5,
-            fontWeight: 600,
-          }}
-        >
-          Platforma UPU funcționează normal.
-        </div>
-      </div>
 
       <div style={{ flex: 1 }} />
 

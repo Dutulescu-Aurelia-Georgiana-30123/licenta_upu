@@ -240,17 +240,30 @@ export default function HomePage({ onNavigate }) {
         }}
       >
         <div
-          style={{
-            position: "relative",
-            overflow: "hidden",
-            borderRadius: 34,
-            padding: 30,
-            background:
-              "linear-gradient(135deg, rgba(8,184,179,0.96), rgba(6,154,150,0.86))",
-            color: "white",
-            boxShadow: "0 28px 80px rgba(8, 184, 179, 0.22)",
-          }}
-        >
+  style={{
+    position: "relative",
+    overflow: "hidden",
+    borderRadius: 34,
+    padding: 30,
+
+    backgroundImage: `
+      linear-gradient(
+        135deg,
+        rgba(8,184,179,0.88),
+        rgba(6,154,150,0.82)
+      ),
+      url("/images/receptie.jpg")
+    `,
+
+    backgroundSize: "cover",
+    backgroundPosition: "center",
+    backgroundRepeat: "no-repeat",
+
+    color: "white",
+
+    boxShadow: "0 28px 80px rgba(8,184,179,0.22)",
+  }}
+>
           <div
             style={{
               position: "absolute",
@@ -307,12 +320,12 @@ export default function HomePage({ onNavigate }) {
                 marginBottom: 0,
                 maxWidth: 720,
                 lineHeight: 1.7,
-                opacity: 0.92,
+                opacity: 1,
+textShadow: "0 2px 10px rgba(0,0,0,0.12)",
                 fontWeight: 600,
               }}
             >
-              Vizualizare pacienți, vizite active, triaj, medici disponibili și
-              documente medicale într-un singur panou operațional.
+              Vizualizare pacienți, vizite active, triaj, medici disponibili și documente medicale într-un singur panou operațional.
             </p>
 
             <div style={{ display: "flex", gap: 12, marginTop: 24, flexWrap: "wrap" }}>

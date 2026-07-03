@@ -175,7 +175,6 @@ export default function PatientRegisterModal({ open, onClose }) {
                   value={lastName}
                   onChange={(e) => setLastName(e.target.value)}
                   style={inputStyle}
-                  placeholder="Ex: Popescu"
                 />
               </label>
 
@@ -185,7 +184,6 @@ export default function PatientRegisterModal({ open, onClose }) {
                   value={firstName}
                   onChange={(e) => setFirstName(e.target.value)}
                   style={inputStyle}
-                  placeholder="Ex: Maria"
                 />
               </label>
 
@@ -197,7 +195,6 @@ export default function PatientRegisterModal({ open, onClose }) {
                     setCnp(e.target.value.replace(/\D/g, "").slice(0, 13))
                   }
                   style={inputStyle}
-                  placeholder="13 cifre"
                 />
               </label>
 
@@ -209,7 +206,6 @@ export default function PatientRegisterModal({ open, onClose }) {
   setPhone(e.target.value.replace(/\D/g, "").slice(0, 10))
 }
                   style={inputStyle}
-                  placeholder="Ex: 0712345678"
                 />
               </label>
 

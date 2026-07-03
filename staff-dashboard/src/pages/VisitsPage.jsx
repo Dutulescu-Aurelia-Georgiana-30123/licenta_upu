@@ -238,23 +238,21 @@ export default function VisitsPage({ selected, onSelect }) {
           overflow: "hidden",
           borderRadius: 32,
           padding: 26,
-          background:
-            "linear-gradient(135deg, rgba(8,184,179,0.96), rgba(6,154,150,0.86))",
+          backgroundImage: `
+  linear-gradient(
+    135deg,
+    rgba(8,184,179,0.88),
+    rgba(6,154,150,0.78)
+  ),
+  url("/images/receptie.jpg")
+`,
+backgroundSize: "cover",
+backgroundPosition: "center",
+backgroundRepeat: "no-repeat",
           color: "white",
           boxShadow: "0 28px 80px rgba(8, 184, 179, 0.20)",
         }}
       >
-        <div
-          style={{
-            position: "absolute",
-            width: 220,
-            height: 220,
-            borderRadius: "50%",
-            background: "rgba(255,255,255,0.16)",
-            right: -60,
-            top: -80,
-          }}
-        />
 
         <div style={{ position: "relative", zIndex: 1 }}>
           <div

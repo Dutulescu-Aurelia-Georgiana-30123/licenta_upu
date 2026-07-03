@@ -769,6 +769,71 @@ useEffect(() => {
   if (!selected) {
     return (
       <div style={{ width: "100%" }}>
+        <div
+  style={{
+    position: "relative",
+    overflow: "hidden",
+    borderRadius: 32,
+    padding: 28,
+    backgroundImage: `
+      linear-gradient(
+        135deg,
+        rgba(8,184,179,0.86),
+        rgba(6,154,150,0.72)
+      ),
+      url("/images/receptie.jpg")
+    `,
+    backgroundSize: "cover",
+    backgroundPosition: "center",
+    backgroundRepeat: "no-repeat",
+    color: "white",
+    boxShadow: "0 28px 80px rgba(8,184,179,0.20)",
+    marginBottom: 18,
+  }}
+>
+  <div style={{ position: "relative", zIndex: 1 }}>
+    <div
+      style={{
+  display: "inline-flex",
+  alignItems: "center",
+  gap: 9,
+  padding: "8px 13px",
+  borderRadius: 999,
+  background: "rgba(255,255,255,0.18)",
+  fontWeight: 900,
+  marginBottom: 16,
+}}
+    >
+      📝 Fișe medicale
+    </div>
+
+    <h2
+  style={{
+    margin: 0,
+    fontSize: 34,
+    letterSpacing: -1.1,
+    lineHeight: 1.1,
+  }}
+>
+      Gestionarea fișelor medicale
+    </h2>
+
+    <p
+      style={{
+  marginTop: 12,
+  marginBottom: 0,
+  maxWidth: 720,
+  lineHeight: 1.65,
+  opacity: 0.92,
+  fontWeight: 600,
+  textShadow: "0 2px 12px rgba(0,0,0,0.14)",
+}}
+    >
+      Completează fișa de pre-spitalizare, fișa de externare și gestionează
+      documentele medicale ale pacientului într-o singură interfață.
+    </p>
+  </div>
+</div>
         <div>
           <h2
             style={{
@@ -996,16 +1061,6 @@ useEffect(() => {
         }}
       >
         <div>
-          <h2
-            style={{
-              margin: 0,
-              fontSize: 28,
-              color: "#0f172a",
-              letterSpacing: -0.6,
-            }}
-          >
-            Fișe ({selected.visitCode || `vizita ${selected.id}`})
-          </h2>
           {isReception && (
   <button
     type="button"
