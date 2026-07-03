@@ -399,6 +399,21 @@ if (
     }
   };
 
+  const autoSaveDischarge = async () => {
+  if (!selected || isClosedVisit) return;
+  if (!hasUserEditedRef.current) return;
+
+  try {
+    const payload = buildDischargePayload(discharge);
+    await saveDischargeData(selected, payload);
+
+    lastEditAtRef.current = 0;
+    hasUserEditedRef.current = false;
+  } catch (e) {
+    console.error("Eroare autosave discharge:", e);
+  }
+};
+
   useEffect(() => {
     if (!selected || isClosedVisit) return;
     if (!hasUserEditedRef.current) return;
@@ -417,6 +432,25 @@ if (
       }
     };
   }, [preform, selected?.id, isClosedVisit]);
+
+  useEffect(() => {
+  if (!selected || isClosedVisit) return;
+  if (!hasUserEditedRef.current) return;
+
+  if (autosaveTimeoutRef.current) {
+    clearTimeout(autosaveTimeoutRef.current);
+  }
+
+  autosaveTimeoutRef.current = setTimeout(() => {
+    autoSaveDischarge();
+  }, 3000);
+
+  return () => {
+    if (autosaveTimeoutRef.current) {
+      clearTimeout(autosaveTimeoutRef.current);
+    }
+  };
+}, [discharge, selected?.id, isClosedVisit]);
 
   const runAiTriage = async () => {
     if (!selected || isClosedVisit) return;
@@ -704,67 +738,38 @@ if (!discharge.doctorSignature || !discharge.nurseSignature) {
 
 useEffect(() => {
   if (!selected || isClosedVisit) return;
-  if (!isDoctor) return;
+  if (!isDoctor && !isNurse) return;
 
   const interval = setInterval(async () => {
+    const now = Date.now();
+
+    if (now - lastEditAtRef.current < 4000) return;
+
     try {
-      const result = await loadPreformData(selected);
-      const data = result?.data;
+      await loadPreformIntoState({
+        selected,
+        setLoading: () => {},
+        setMsg: () => {},
+        setPatientDetails,
+        setPreform,
+        loadPreformData,
+        setAiTriageResult,
+      });
 
-      let parsedDetails = {};
-      try {
-        parsedDetails = data?.details ? JSON.parse(data.details) : {};
-      } catch {
-        parsedDetails = {};
-      }
-
-      setPreform((prev) => ({
-        ...prev,
-        nurseName: data?.nurseName || parsedDetails?.nurseName || prev.nurseName,
-        nurseSignature:
-          data?.nurseSignature ||
-          parsedDetails?.nurseSignature ||
-          prev.nurseSignature,
-        nurseSignedAt:
-          data?.nurseSignedAt ||
-          parsedDetails?.nurseSignedAt ||
-          prev.nurseSignedAt,
-      }));
-
-      const dischargeResult = await loadDischargeData(selected);
-      const dischargeData = dischargeResult?.data;
-
-      let parsedDischargeDetails = {};
-      try {
-        parsedDischargeDetails = dischargeData?.details
-          ? JSON.parse(dischargeData.details)
-          : {};
-      } catch {
-        parsedDischargeDetails = {};
-      }
-
-      setDischarge((prev) => ({
-        ...prev,
-        nurseName:
-          dischargeData?.nurseName ||
-          parsedDischargeDetails?.nurseName ||
-          prev.nurseName,
-        nurseSignature:
-          dischargeData?.nurseSignature ||
-          parsedDischargeDetails?.nurseSignature ||
-          prev.nurseSignature,
-        nurseSignedAt:
-          dischargeData?.nurseSignedAt ||
-          parsedDischargeDetails?.nurseSignedAt ||
-          prev.nurseSignedAt,
-      }));
+      await loadDischargeIntoState({
+        selected,
+        setMsg: () => {},
+        setPatientDetails,
+        setDischarge,
+        loadDischargeData,
+      });
     } catch (e) {
-      console.error("Eroare sync semnătură asistent:", e);
+      console.error("Eroare sync fișe medicale:", e);
     }
-  }, 2000);
+  }, 2500);
 
   return () => clearInterval(interval);
-}, [selected?.id, isClosedVisit, isDoctor]);
+}, [selected?.id, isClosedVisit, isDoctor, isNurse]);
 
   if (!selected) {
     return (

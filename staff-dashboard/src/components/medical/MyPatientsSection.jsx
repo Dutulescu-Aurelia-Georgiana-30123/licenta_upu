@@ -2,18 +2,41 @@ import { useState } from "react";
 import { theme } from "../../styles/theme";
 import { StatusBadge, TriageBadge } from "./MedicalBadges";
 
-const LIMIT = 4;
+const LIMIT = 3;
 
 function staffName(firstName, lastName, email) {
   const fullName = `${firstName || ""} ${lastName || ""}`.trim();
   return fullName || email || "Neasignat";
 }
 
-export default function MyPatientsSection({ myVisits }) {
+export default function MyPatientsSection({ myVisits, onOpenVisit }) {
   const [expanded, setExpanded] = useState(false);
+  const [search, setSearch] = useState("");
 
-  const visibleVisits = expanded ? myVisits : myVisits.slice(0, LIMIT);
-  const hasMore = myVisits.length > LIMIT;
+  const filteredVisits = myVisits.filter((v) => {
+    const q = search.trim().toLowerCase();
+
+    if (!q) return true;
+
+    const patientName = `${v.patientFirstName || ""} ${
+      v.patientLastName || ""
+    }`.toLowerCase();
+
+    const visitCode = (v.visitCode || "").toLowerCase();
+    const reason = (v.presentationReason || "").toLowerCase();
+
+    return (
+      patientName.includes(q) ||
+      visitCode.includes(q) ||
+      reason.includes(q)
+    );
+  });
+
+  const visibleVisits = expanded
+    ? filteredVisits
+    : filteredVisits.slice(0, LIMIT);
+
+  const hasMore = filteredVisits.length > LIMIT;
 
   return (
     <div style={theme.card.base}>
@@ -22,6 +45,16 @@ export default function MyPatientsSection({ myVisits }) {
           Pacienții mei
         </div>
         <div style={subTextStyle}>{myVisits.length} pacienți asignați</div>
+        <input
+  type="text"
+  placeholder="Caută după nume sau cod vizită"
+  value={search}
+  onChange={(e) => {
+    setSearch(e.target.value);
+    setExpanded(false);
+  }}
+  style={searchInputStyle}
+/>
       </div>
 
       {myVisits.length === 0 ? (
@@ -30,7 +63,11 @@ export default function MyPatientsSection({ myVisits }) {
         <>
           <div style={{ display: "grid", gap: 12 }}>
             {visibleVisits.map((v) => (
-              <div key={v.id} style={rowStyle}>
+              <div
+  key={v.id}
+  style={rowStyle}
+  onClick={() => onOpenVisit && onOpenVisit(v)}
+>
                 <div style={{ minWidth: 220, flex: 1 }}>
                   <div style={{ fontWeight: 950, color: theme.colors.text }}>
                     {v.patientFirstName} {v.patientLastName}
@@ -89,7 +126,7 @@ export default function MyPatientsSection({ myVisits }) {
             >
               {expanded
                 ? "Restrânge lista ↑"
-                : `Vezi încă ${myVisits.length - LIMIT} pacienți ↓`}
+                : `Vezi încă ${filteredVisits.length - LIMIT} pacienți ↓`}
             </button>
           )}
         </>
@@ -118,6 +155,7 @@ const rowStyle = {
   borderRadius: 22,
   background: "#f8fafc",
   border: `1px solid ${theme.colors.border}`,
+  cursor: "pointer",
 };
 
 const subTextStyle = {
@@ -140,4 +178,17 @@ const staffInfoStyle = {
   fontSize: 13,
   marginTop: 6,
   fontWeight: 800,
+};
+
+const searchInputStyle = {
+  width: "100%",
+  marginTop: 14,
+  padding: "13px 15px",
+  borderRadius: 18,
+  border: `1px solid ${theme.colors.border}`,
+  background: "#f8fafc",
+  color: theme.colors.text,
+  outline: "none",
+  fontWeight: 800,
+  boxSizing: "border-box",
 };

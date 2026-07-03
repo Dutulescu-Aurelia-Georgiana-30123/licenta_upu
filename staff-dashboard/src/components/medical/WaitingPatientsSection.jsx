@@ -2,7 +2,7 @@ import { useState, useMemo } from "react";
 import { theme } from "../../styles/theme";
 import { StatusBadge, TriageBadge } from "./MedicalBadges";
 
-const LIMIT = 4;
+const LIMIT = 3;
 
 function staffName(firstName, lastName, email) {
   const fullName = `${firstName || ""} ${lastName || ""}`.trim();

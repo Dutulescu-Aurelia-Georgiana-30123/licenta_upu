@@ -322,27 +322,35 @@ const isNurse = user?.role === "NURSE";
           />
 
           <div
-            style={{
-              display: "grid",
-              gridTemplateColumns: "1.15fr 0.85fr",
-              gap: 18,
-              alignItems: "start",
-            }}
-          >
-            <div style={{ display: "grid", gap: 18 }}>
-              <WaitingPatientsSection
-  visits={visits}
-  onTakePatient={takePatient}
-  isDoctor={isDoctor}
-  isNurse={isNurse}
-/>
-            </div>
+  style={{
+    display: "grid",
+    gridTemplateColumns: "1.15fr 0.85fr",
+    gap: 18,
+    alignItems: "start",
+  }}
+>
+  <div style={{ display: "grid", gap: 18 }}>
+    <WaitingPatientsSection
+      visits={visits}
+      onTakePatient={takePatient}
+      isDoctor={isDoctor}
+      isNurse={isNurse}
+    />
 
-            <div style={{ display: "grid", gap: 18 }}>
-              <MyPatientsSection myVisits={myVisits} />
-              {isDoctor && <QuestionsSection />}
-            </div>
-          </div>
+    {isDoctor && <QuestionsSection />}
+  </div>
+
+  <div style={{ display: "grid", gap: 18 }}>
+    <MyPatientsSection
+  myVisits={myVisits}
+  onOpenVisit={(visit) => {
+    setSelectedVisitForForms(visit);
+    setPreviewOnly(true);
+    setShowForms(true);
+  }}
+/>
+  </div>
+</div>
         </>
       )}
     </div>
