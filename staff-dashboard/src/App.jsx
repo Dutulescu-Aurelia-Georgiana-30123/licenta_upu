@@ -73,6 +73,11 @@ export default function App() {
     loadSavedVisit();
   }, [activePage]);
 
+  const isClosedVisitStatus = (status) =>
+  status === "DISCHARGED" ||
+  status === "ADMITTED" ||
+  status === "TRANSFERRED";
+
   const content = useMemo(() => {
     if (activePage === "home") return <HomePage onNavigate={changePage} />;
 
@@ -102,9 +107,10 @@ export default function App() {
     if (activePage === "forms") {
       return (
         <FormsPage
-          selected={selectedVisit}
-          onSelectVisit={selectVisit}
-        />
+  selected={selectedVisit}
+  onSelectVisit={selectVisit}
+  previewOnly={isClosedVisitStatus(selectedVisit?.status)}
+/>
       );
     }
 
@@ -196,7 +202,7 @@ export default function App() {
                   letterSpacing: -0.7,
                 }}
               >
-                UPU Dashboard
+                UPU Dashboard - Recepție
               </div>
 
               <div

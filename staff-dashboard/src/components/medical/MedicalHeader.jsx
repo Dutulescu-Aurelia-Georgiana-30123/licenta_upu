@@ -46,7 +46,9 @@ export default function MedicalHeader({
             letterSpacing: -0.7,
           }}
         >
-          Interfață medicală
+          {user?.role === "DOCTOR"
+  ? "Interfață medicală – Medici"
+  : "Interfață medicală – Asistenți"}
         </div>
 
         <div
